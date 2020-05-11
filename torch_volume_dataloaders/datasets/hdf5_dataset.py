@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import Dataset
 
 
-class HDF5Dataset(Dataset):
+class H5Dataset(Dataset):
     """
     Loading the HDF5 Data Sets.
     """
