@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     # Generating train and validation dataloader.
     train_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
-                                               num_workers=num_workers, pin_memory=pin_memory, drop_last=True)
+                                               num_workers=num_workers, pin_memory=pin_memory)
 
     for i in range(epoch):
 
