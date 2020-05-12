@@ -111,7 +111,7 @@ average time: 6.2s
 0m 5s
 0m 3s
 
-Total Time: 2m 29s  
+Total Time: 2m 29s  2m 21s 2m 22s
 Average Time: 2,98s
 
 ## HDF LZF Compression 50 examples
@@ -167,5 +167,5 @@ Average Time: 2,98s
 0m 4s
 0m 2s
 
-Total time: 2m 5s  
+Total time: 2m 5s  1m 47s  1m 48s  
 Average time: 2,5s
