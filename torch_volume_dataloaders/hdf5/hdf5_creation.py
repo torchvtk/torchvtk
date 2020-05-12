@@ -22,7 +22,7 @@ def main():
 
     # Hyperparameters for Training.
     seed = 77
-    train_size = 0.75
+    train_size = 1
 
     # load all arrays from the folder
     folders = os.listdir(root_folder)
@@ -35,7 +35,7 @@ def main():
 
     # Groups of the training HDF5.
     # Create the File were the Data will be stored.
-    file = h5py.File(os.path.join("D:", os.sep, "DownloadDatasets", "medical_decathlon", "train-segmentation.h5"), 'w')
+    file = h5py.File(os.path.join("D:", os.sep, "DownloadDatasets", "medical_decathlon", "speedtest_hdf5.h5"), 'w')
     train_image_file = file.create_group("images")
     train_mask_file = file.create_group("groundtruth")
 
@@ -48,6 +48,7 @@ def main():
         mask = np.load(os.path.join(root_folder_gt, x.split(".")[0] + "-gt.npy"))
 
         # normalization yes or no?
+        # hyperparameter maybe float16 for amp.
         train_slides = train_slides.astype(np.float32)
         train_slides = min_max_normalization(train_slides, 0.001)
 
@@ -56,28 +57,93 @@ def main():
         i += 1
 
     file.close()
+    print("Amount of images", i-1)
     del file, train_slides, train_image_file, train_mask_file, mask
-    # Groups of the HDF5.
-    file = h5py.File(os.path.join("D:", os.sep, "DownloadDatasets", "medical_decathlon", "test-segmentation.h5"), 'w')
 
-    test_image_file = file.create_group("images")
-    test_mask_file = file.create_group("groundtruth")
 
-    # create test data.
+
+    # COMPRESSION GZIP
+    file = h5py.File(os.path.join("D:", os.sep, "DownloadDatasets", "medical_decathlon", "speedtest_hdf5-gzip.h5"), 'w')
+    train_image_file = file.create_group("images")
+    train_mask_file = file.create_group("groundtruth")
+
+    # create train data.
     i = 0
-    for x in test_files:
-        test_slides = np.load(os.path.join(root_folder, x))
+    for x in train_files:
+        train_slides = np.load(os.path.join(root_folder, x))
+
         # load the masks
         mask = np.load(os.path.join(root_folder_gt, x.split(".")[0] + "-gt.npy"))
 
         # normalization yes or no?
-        test_slides = test_slides.astype(np.float32)
-        test_slides = min_max_normalization(test_slides, 0.001)
-        # save the train slides and the masks.
-        test_image_file.create_dataset(str(i), data=test_slides)
-        test_mask_file.create_dataset(str(i), data=mask)
+        # hyperparameter maybe float16 for amp.
+        train_slides = train_slides.astype(np.float32)
+        train_slides = min_max_normalization(train_slides, 0.001)
+
+        train_image_file.create_dataset(str(i), compression="gzip", compression_opts=9, data=train_slides)
+        train_mask_file.create_dataset(str(i), compression="gzip", compression_opts=9, data=mask)
         i += 1
+
     file.close()
+    print("Amount of images", i - 1)
+    del file, train_slides, train_image_file, train_mask_file, mask
+
+
+
+    # COMPRESSION LZF
+    file = h5py.File(os.path.join("D:", os.sep, "DownloadDatasets", "medical_decathlon", "speedtest_hdf5-lzf.h5"), 'w')
+    train_image_file = file.create_group("images")
+    train_mask_file = file.create_group("groundtruth")
+
+    # create train data.
+    i = 0
+    for x in train_files:
+        train_slides = np.load(os.path.join(root_folder, x))
+
+        # load the masks
+        mask = np.load(os.path.join(root_folder_gt, x.split(".")[0] + "-gt.npy"))
+
+        # normalization yes or no?
+        # hyperparameter maybe float16 for amp.
+        train_slides = train_slides.astype(np.float32)
+        train_slides = min_max_normalization(train_slides, 0.001)
+
+        train_image_file.create_dataset(str(i), compression="lzf", data=train_slides)
+        train_mask_file.create_dataset(str(i), compression="lzf", data=mask)
+        i += 1
+
+    file.close()
+    print("Amount of images", i - 1)
+    del file, train_slides, train_image_file, train_mask_file, mask
+
+
+
+    # COMPRESSION SZIP
+    file = h5py.File(os.path.join("D:", os.sep, "DownloadDatasets", "medical_decathlon", "speedtest_hdf5-szip.h5"),
+                     'w')
+    train_image_file = file.create_group("images")
+    train_mask_file = file.create_group("groundtruth")
+
+    # create train data.
+    i = 0
+    for x in train_files:
+        train_slides = np.load(os.path.join(root_folder, x))
+
+        # load the masks
+        mask = np.load(os.path.join(root_folder_gt, x.split(".")[0] + "-gt.npy"))
+
+        # normalization yes or no?
+        # hyperparameter maybe float16 for amp.
+        train_slides = train_slides.astype(np.float32)
+        train_slides = min_max_normalization(train_slides, 0.001)
+
+        train_image_file.create_dataset(str(i), compression="szip", data=train_slides)
+        train_mask_file.create_dataset(str(i), compression="szip", data=mask)
+        i += 1
+
+    file.close()
+    print("Amount of images", i - 1)
+    del file, train_slides, train_image_file, train_mask_file, mask
 
 
 if __name__ == '__main__':

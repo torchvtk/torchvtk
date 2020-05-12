@@ -1,7 +1,7 @@
 import h5py
 import torch
 from torch.utils.data import Dataset
-
+import numpy as np
 
 class H5Dataset(Dataset):
     """
@@ -23,7 +23,9 @@ class H5Dataset(Dataset):
 
         if self.dataset is None:
             image = h5py.File(self.root_dir, 'r')["images"][str(idx)]
-            mask = h5py.File(self.root_dir, 'r')["masks"][str(idx)]
+            image = np.array(image)
+            mask = h5py.File(self.root_dir, 'r')["groundtruth"][str(idx)]
+            mask = np.array(mask)
 
         # kann auch als numpy array geladen werden, eventuell noch permutation, data type changes.
         return torch.from_numpy(image), torch.from_numpy(mask)
