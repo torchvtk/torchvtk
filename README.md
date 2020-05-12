@@ -4,6 +4,7 @@ PyTorch volume data loading framework
 Requires Python 3.6
 ```
 cd torch-volume-dataloaders
+git submodule --update --init
 conda install pytorch torchvision cudatoolkit=10.2 -c pytorch
 conda install gdcm -c conda-forge
 pip install pydicom dicom_numpy h5py 
