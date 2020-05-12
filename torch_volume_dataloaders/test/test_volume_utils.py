@@ -51,12 +51,14 @@ class TestNormalizeHounsfield(TensorTestCase):
     def test_values_match(self):
         self.assertSameValues(normalize_hounsfield(self.anp), self.anpr)
         self.assertSameValues(normalize_hounsfield(self.apt), self.aptr)
+        self.assertCloseValues(normalize_hounsfield((1,2,3)), np.array([0.0002442, 0.0004884, 0.0007326], dtype=np.float32))
+        self.assertCloseValues(normalize_hounsfield([1,2,3]), np.array([0.0002442, 0.0004884, 0.0007326], dtype=np.float32))
+        self.assertAlmostEqual(normalize_hounsfield(1), 0.0002442)
+
 
     def test_invalid_type_exception(self):
         with self.assertRaises(Exception): normalize_hounsfield('abcd')
         with self.assertRaises(Exception): normalize_hounsfield({'answer': 42})
-        with self.assertRaises(Exception): normalize_hounsfield((1,2,3))
-        with self.assertRaises(Exception): normalize_hounsfield([3,2,1])
 
     def test_boundaries(self):
         self.assertAll(normalize_hounsfield(self.bnp) >= 0.0)

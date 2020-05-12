@@ -13,7 +13,7 @@ def make_nd(t, n):
         return t[nons]
 
 def make_4d(t):
-    '''  Prepends singleton dimensions to `t` until 5D '''
+    '''  Prepends singleton dimensions to `t` until 4D '''
     return make_nd(t, 4)
 
 def make_5d(t):
@@ -21,9 +21,11 @@ def make_5d(t):
     return make_nd(t, 5)
 
 def normalize_hounsfield(vol, dtype=None):
-    ''' Normalizes `vol` by 4095 and clamps to [0,1]. `dtype` defaults to 32-bit float'''
-    if isinstance(dtype, torch.dtype): vol = torch.tensor(vol, dtype=dtype)
-    if np.issctype(dtype):             vol = np.array(    vol, dtype=dtype)
+    ''' Normalizes `vol` by 4095 and clamps to [0,1]. `dtype=None` defaults to 32-bit float'''
+    if   isinstance(dtype, torch.dtype): vol = torch.tensor(vol, dtype=dtype)
+    elif np.issctype(dtype):             vol = np.array(    vol, dtype=dtype)
+    elif dtype is None:
+        vol = vol.float() if torch.is_tensor(vol) else np.array(vol).astype(np.float32)
     if   torch.is_tensor(vol):
         return torch.clamp(vol / 4095.0, 0.0, 1.0)
     elif isinstance(vol, np.ndarray):
