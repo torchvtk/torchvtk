@@ -53,7 +53,7 @@
 0m 11s
 0m 5s
 
-total time 5m 14s
+Total time 5m 14s  4m 42s 5m 6s
 
 average time: 6.2s
 

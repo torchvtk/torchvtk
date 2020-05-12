@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
 
     dataset = H5Dataset(
-            h5_dir=os.path.join("D:", os.sep, "DownloadDatasets", "medical_decathlon", "speedtest_hdf5-gzip.h5"))
+            h5_dir=os.path.join("D:", os.sep, "DownloadDatasets", "medical_decathlon", "speedtest_hdf5.h5"))
 
     amount_of_examples = 50
 
@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
 
     # create histogram
-    plt.hist(times, bins=5, color='c')
+    plt.hist(times, color='b')
     plt.xlabel("Seconds")
     plt.ylabel("Frequency")
     plt.savefig("hdf5.png")
