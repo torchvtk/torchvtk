@@ -9,7 +9,7 @@ import pydicom
 import dicom_numpy
 
 __all__ = ['hidden_prints', 'hidden_errors', 'read_dicom_folder', 'get_largest_dir',
-    'get_volume_gen', 'get_volume_dirs']
+    'num_slices_between', 'get_volume_dirs']
 
 @contextmanager
 def hidden_prints():
@@ -47,6 +47,13 @@ def get_largest_dir(dirs, minsize=100):
     m = max(dirs, key=lambda d: len(os.listdir(d)) if os.path.isdir(d) else 0)
     if len(os.listdir(m)) >= minsize: return m
     else: return None
+
+def num_slices_between(minz, maxz):
+    def _comp(path):
+        print(path)
+        num_slices = len(os.listdir(path))
+        return minz <= num_slices and num_slices <= maxz 
+    return _comp
 
 def get_volume_dirs(path):
     path = Path(path)
