@@ -31,3 +31,10 @@ def normalize_hounsfield(vol, dtype=None):
     elif isinstance(vol, np.ndarray):
         return np.clip(vol / 4095.0, 0.0, 1.0)
     else: raise Exception(f'vol (type={type(vol)}) is neither torch.tensor, nor np.ndarray')
+
+def normalize_voxel_scale(vol, vox_scl):
+    assert torch.is_tensor(vol)
+    vox_scl = torch.tensor(vox_scl)
+    assert vox_scl.shape == torch.Size([3])
+    new_shape = torch.Size((torch.tensor(vol.shape) * vox_scl).round().long())
+    return F.interpolate(make_5d(vol), size=new_shape, align_corners=True, mode='trilinear')
