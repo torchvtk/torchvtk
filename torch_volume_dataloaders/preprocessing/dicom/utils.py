@@ -50,9 +50,8 @@ def get_largest_dir(dirs, minsize=100):
 
 def num_slices_between(minz, maxz):
     def _comp(path):
-        print(path)
         num_slices = len(os.listdir(path))
-        return minz <= num_slices and num_slices <= maxz 
+        return minz <= num_slices and num_slices <= maxz
     return _comp
 
 def get_volume_dirs(path):
