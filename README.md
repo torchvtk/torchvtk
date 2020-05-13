@@ -9,7 +9,7 @@ git submodule --update --init
 conda install pytorch torchvision cudatoolkit=10.2 -c pytorch
 conda install gdcm -c conda-forge
 pip install pydicom dicom_numpy h5py numpy matplotlib
-pip install torch_volume_dataloaders/ext/torchsearchsorted torch_volume_dataloaders/ext/torchinterp1d
+pip install ext/torchsearchsorted ext/torchinterp1d
 pip install -e .
 ```
 
