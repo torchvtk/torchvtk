@@ -10,7 +10,7 @@ from torch_volume_dataloaders.utils.volume_utils import normalize_hounsfield, no
 
 def get_volume_gen(volume_dirs, apply_dcm_rescale=False, permute_c_contiguous=True):
     ''' Make a generator that loads volumes from a list of volume directories, `volume_dirs`.
-    Returns: (volume:np.ndarray , index_to_pos_4x4:np.ndarray) '''
+    Returns: (volume: np.ndarray , voxel_scale: np.ndarray, volume_name: string) '''
     rescale = None if apply_dcm_rescale else False
     def vol_gen():
         for vol_dir in volume_dirs:
