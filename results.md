@@ -169,3 +169,9 @@ Average Time: 2,98s
 
 Total time: 2m 5s  1m 47s  1m 48s  
 Average time: 2,5s
+
+
+## CQ500 TorchDataset 395 examples
+Total Time: 278.9s
+Average Time: 0.706s
+Max Time: 1.948s
