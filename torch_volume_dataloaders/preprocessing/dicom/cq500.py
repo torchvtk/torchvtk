@@ -45,7 +45,7 @@ def process_volumes(vol_gen, save_path, dtype=torch.float16, normalize_voxel_scl
     save_path = Path(save_path)
     if not save_path.exists(): save_path.mkdir()
     for vol, vox_scl, vol_name in vol_gen:
-        vol     = torch.FloatTensor(vol)
+        vol     = make_4d(torch.FloatTensor(vol.astype(np.float32)))
         vox_scl = torch.FloatTensor(vox_scl)
         if normalize_intensities: vol = normalize_hounsfield(vol)
         if normalize_voxel_scl:

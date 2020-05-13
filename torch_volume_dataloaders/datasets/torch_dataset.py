@@ -3,18 +3,13 @@ import torch
 from torch.utils.data import Dataset
 
 from pathlib import Path
-import logging
-log = logging.getLogger(__name__)
-
-from ..utils.volume_utils import make_4D
-
 
 # %%
 class TorchDataset(Dataset):
-    def __init__(self, path, filter_fn=None, dict_keys=[]):
+    def __init__(self, path, filter_fn=None, preprocess_fn=None):
         super().__init__()
         self.path = Path(path)
-        self.dict_keys = dict_keys
+        self.preprocess_fn = preprocess_fn
         items = self.path.rglob('*.pt')
         if filter_fn is not None:
             items = filter(filter_fn, self.items)
@@ -24,7 +19,6 @@ class TorchDataset(Dataset):
 
     def __getitem__(self, i):
         data = torch.load(self.items[i])
-        if len(self.dict_keys) > 0:
-            return [make_4D(data[key]) for key in self.dict_keys]
-        else:
-            return make_4D(data)
+        if self.preprocess_fn is not None:
+              return self.preprocess_fn(data)
+        else: return data
