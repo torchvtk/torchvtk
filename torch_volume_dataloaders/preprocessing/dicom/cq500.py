@@ -30,6 +30,14 @@ def get_volume_gen(volume_dirs, apply_dcm_rescale=False, permute_c_contiguous=Tr
     return vol_gen()
 
 def traverse_cq500_folders(path, min_slices=1, max_slices=float("inf")):
+    ''' Traverses the CQ500 folder structure and extracts all paths pointing to a directory containing .dcm files
+    Args:
+        path (string, Path): Path to the CQ500 dataset.
+        min_slices (int): Minimum number of slices (.dcm files) inside a DICOM directory
+        max_slices (int): Maximum number of slices (.dcm files) inside a DICOM directory
+    Returns:
+        List of paths to directories containing an appropriate number of .dcm files (slices)
+    '''
     path = Path(path)
     flatten = lambda l: [item for sublist in l for item in sublist]
     return list(
@@ -41,6 +49,15 @@ def traverse_cq500_folders(path, min_slices=1, max_slices=float("inf")):
            path.iterdir()))))))                                # Iterate over path directory
 
 def process_volumes(vol_gen, save_path, dtype=torch.float16, normalize_voxel_scl=False, normalize_intensities=True, print_info=False):
+    ''' Processes volumes from a volume generator `vol_gen`, normalizes them, converts to PyTorch and saves to disk
+    Args:
+        vol_gen (generator): Generator returning tuples of volume, voxel scale and volume name, like `get_volume_gen`
+        save_path (string, Path): Path to save the PyTorch tensors to
+        dtype (torch.dtype): Final dtype to save the data. Normalization is always done with torch.float32
+        normalize_voxel_scl (bool): If True, resamples the volume to compensate for a non-uniform grid. Can drastically enlarge volume dimensions!
+        normalize_intensities (bool): Whether the volume intensities is normalized by 4095 using `normalize_hounsfield`
+        print_info (bool): Whether information about the result tensors is printed while processing
+    '''
     assert isinstance(dtype, torch.dtype)
     save_path = Path(save_path)
     if not save_path.exists(): save_path.mkdir()
