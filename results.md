@@ -172,6 +172,8 @@ Average time: 2,5s
 
 
 ## CQ500 TorchDataset 395 examples
+![CQ500 Results on Domes PC](torch_volume_dataloaders/benchmarks/results/cq500_torch_dome.png)
+
 Total Time: 278.9s
 Average Time: 0.706s
 Max Time: 1.948s
