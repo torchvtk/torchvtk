@@ -14,20 +14,25 @@ if __name__ == '__main__':
     dataset = H5Dataset(
             h5_dir=os.path.join("D:", os.sep, "DownloadDatasets", "medical_decathlon", "speedtest_hdf5.h5"))
 
-    amount_of_examples = 50
+    amount_of_examples = 5
 
     times = []
     since = time.time()
+
     for i in range(amount_of_examples):
-        since1 = time.time()
+        before = time.time()
         x, y = dataset[i]
-        time_elapsed1 = time.time() - since1
-        print('{:.0f}m {:.0f}s'.format(time_elapsed1 // 60, time_elapsed1 % 60))
-        times.append(time_elapsed1)
+        after = time.time()
+        times.append(after - before)
 
-    time_elapsed = time.time() - since
-    print('{:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
+    times = np.array(times)
+    avg_time = np.mean(times)
+    max_time = np.max(times)
+    total_time = np.sum(times)
 
+    print("average time per sample", avg_time)
+    print("maximal time", max_time)
+    print("total time", total_time)
 
     # create histogram
     plt.hist(times, color='b')

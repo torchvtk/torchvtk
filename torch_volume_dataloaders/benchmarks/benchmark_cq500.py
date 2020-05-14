@@ -12,7 +12,7 @@ if __name__ == '__main__':
         Benchmarks loading the CQ500 dataset as a TorchDataset
     ''')
     parser.add_argument('ds_path', type=str, help='Path to the TorchDataset')
-    parser.add_argument('-plot',   type=str, default=None help='Path to save result plot')
+    parser.add_argument('-plot',   type=str, default=None, help='Path to save result plot')
     parser.add_argument('-pct',    type=float, default=None, help='Percentage of the dataset to benchmark. Must be in [0,1]')
     parser.add_argument('--noplot', action='store_false', help="Don't print plot of results")
     args = parser.parse_args()
