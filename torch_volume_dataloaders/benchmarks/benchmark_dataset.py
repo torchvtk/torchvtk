@@ -4,11 +4,23 @@ import torch
 from torch.utils.data import Dataset
 import numpy as np
 
+from tqdm import trange
+
 import matplotlib.pyplot as plt
 
-__all__ = ['run_benchmark']
+__all__ = ['print_results', 'run_benchmark']
 
 def noop(a): return a
+
+def print_results(result_dict):
+    ''' Prints dictionary in a readable way (trimming long lists, reducing tensors to shape and dtype). '''
+    for k, v in result_dict.items():
+        if   isinstance(v, (list, tuple)):
+            print(k, f'List ({len(v)}): {v[:10]}....')
+        elif isinstance(v, (np.ndarray, torch.Tensor)):
+            print(k, f'Tensor ({v.shape}, dtype={v.dtype}')
+        else:
+            print(k, v)
 
 def run_benchmark(dataset, pct=None, preprocess_fn=noop, print_plot=True, save_plot=None):
     ''' Benchmarks a Dataset by loading `pct` percent of the dataset, measuring performance and plotting results
@@ -26,7 +38,7 @@ def run_benchmark(dataset, pct=None, preprocess_fn=noop, print_plot=True, save_p
         num_items = int(pct * len(dataset))
     times = []
     sizes = []
-    for i in range(num_items):
+    for i in trange(num_items):
         before = time()
         it = preprocess_fn(dataset[i])
         after = time()

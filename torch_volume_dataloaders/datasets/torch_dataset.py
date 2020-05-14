@@ -6,7 +6,13 @@ from pathlib import Path
 
 # %%
 class TorchDataset(Dataset):
+    ''' A Dataset loading serialized PyTorch tensors from disk. '''
     def __init__(self, path, filter_fn=None, preprocess_fn=None):
+        ''' Initializes TorchDataset
+        Args:
+            path (string, Path): Path to the TorchDataset directory (containing *.pt)
+            filter_fn (function): Function that filters the found items. Input is filepath
+            preprocess_fn (function): Function to process the loaded dirctionary. '''
         super().__init__()
         self.path = Path(path)
         self.preprocess_fn = preprocess_fn
