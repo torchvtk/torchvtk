@@ -18,7 +18,7 @@ class HDF5_Pytorch():
             y = y.numpy()
 
             self.images.create_dataset(str(self.i), data=x)
-            self.images.create_dataset(str(self.i), data=y)
+            self.groundtruth.create_dataset(str(self.i), data=y)
 
             self.i += 1
 

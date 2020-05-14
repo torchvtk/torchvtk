@@ -17,8 +17,6 @@ if __name__ == '__main__':
     amount_of_examples = 5
 
     times = []
-    since = time.time()
-
     for i in range(amount_of_examples):
         before = time.time()
         x, y = dataset[i]
