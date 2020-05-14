@@ -16,11 +16,11 @@ def print_results(result_dict):
     ''' Prints dictionary in a readable way (trimming long lists, reducing tensors to shape and dtype). '''
     for k, v in result_dict.items():
         if   isinstance(v, (list, tuple)):
-            print(k, f'List ({len(v)}): {v[:10]}....')
+            print(f'{k}: List ({len(v)}): {v[:10]}....')
         elif isinstance(v, (np.ndarray, torch.Tensor)):
-            print(k, f'Tensor ({v.shape}, dtype={v.dtype}')
+            print(f'{k}: Tensor ({v.shape}, dtype={v.dtype}')
         else:
-            print(k, v)
+            print(f'{k}: {v}')
 
 def run_benchmark(dataset, pct=None, preprocess_fn=noop, print_plot=True, save_plot=None):
     ''' Benchmarks a Dataset by loading `pct` percent of the dataset, measuring performance and plotting results

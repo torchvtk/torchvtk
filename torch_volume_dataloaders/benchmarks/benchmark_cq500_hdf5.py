@@ -11,20 +11,17 @@ if __name__ == '__main__':
         Benchmarks loading the CQ500 dataset as a HDF5 Dataset
     ''')
     parser.add_argument('ds_path', type=str, help='Path to the H5Dataset')
-    parser.add_argument('-plot',   type=str, default=None, help='Path to save result plot')
-    parser.add_argument('-pct',    type=float, default=None, help='Percentage of the dataset to benchmark. Must be in [0,1]')
+    parser.add_argument('-plot',   type=str, default=None, help='Path to save result plot (Will save Reopen and OpenOnce separate automatically)')
+    parser.add_argument('-pct',    type=float, default=None, help='Percentage of the dataset to benchmark. Must be in [0,1]. Defaults to full dataset')
+    parser.add_argument('-open',   type=str, default='once', help='Whether to open the HDF5 file on __getitem__ ("reopen") or only once ("once"). Defaults to once')
     parser.add_argument('--noplot', action='store_false', help="Don't print plot of results")
     args = parser.parse_args()
 
-    pp = Path(args.plot)
-    print('======== Results for Dataset that reopens file on __get__ ============')
-    reopen_pp = pp.parent / (pp.stem + '_reopen' + pp.suffix)
-    ds_reopen = H5DatasetReopen(args.ds_path, preprocess_fn=lambda d: d['vol'])
-    reopen_results = run_benchmark(ds_reopen, save_plot=reopen_pp, pct=args.pct, print_plot=args.noplot)
-    print_results(reopen_results)
+    if args.open.lower() == 'reopen':
+          ds_cls = H5DatasetReopen
+    else: ds_cls = H5DatasetOpenOnce
 
-    print('======== Results for Dataset that opens file only once ============')
-    openonce_pp = pp.parent / (pp.stem + '_openonce' + pp.suffix)
-    ds_openonce = H5DatasetOpenOnce(args.ds_path, preprocess_fn=lambda d: d['vol'])
-    openonce_results = run_benchmark(ds_openonce, save_plot=openonce_pp, pct=args.pct, print_plot=args.noplot)
-    print_results(openonce_results)
+    print('======== Results for Dataset that reopens file on __get__ ============')
+    ds = ds_cls(args.ds_path, preprocess_fn=lambda d: d['vol'])
+    results = run_benchmark(ds, save_plot=args.plot, pct=args.pct, print_plot=args.noplot)
+    print_results(results)
