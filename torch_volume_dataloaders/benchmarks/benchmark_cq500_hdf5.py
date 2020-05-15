@@ -21,7 +21,7 @@ if __name__ == '__main__':
           ds_cls = H5DatasetReopen
     else: ds_cls = H5DatasetOpenOnce
 
-    print('======== Results for Dataset that reopens file on __get__ ============')
+    print(f'======== Results for H5Dataset ({ds_cls}) {ds_path} ============')
     ds = ds_cls(args.ds_path, preprocess_fn=lambda d: d['vol'])
     results = run_benchmark(ds, save_plot=args.plot, pct=args.pct, print_plot=args.noplot)
     print_results(results)
