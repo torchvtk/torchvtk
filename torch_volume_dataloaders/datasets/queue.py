@@ -6,7 +6,7 @@ import numpy as np
 
 from itertools import cycle
 from functools import partial
-import time
+import time, math, psutil
 
 from torch_volume_dataloaders.datasets.torch_dataset import TorchDataset
 
@@ -58,6 +58,7 @@ class TorchQueueDataset(IterableDataset):
                 - 'onsample' refills the queue after it got sampled
                 - 'always' keeps refilling the queue as fast as possible
                 - 'interval' refills the queue regularly. Set fill_interval
+            print('onsample: added sample, qsize:', len(queue))
             fill_interval (float): Time intervals in seconds between queue fillings
             num_workers (int): Number of threads loading in data
             q_maxlen (int): Set queue size. Overrides `ram_use`
@@ -73,7 +74,7 @@ class TorchQueueDataset(IterableDataset):
         self.items = list(map(list, np.array_split(torch_ds.items, num_workers)))
         self.datasets = [TorchDataset(items, preprocess_fn=torch_ds.preprocess_fn) for items in self.items]
         self.sample_tfm = sample_tfm
-        self.q_maxlen = q_maxlen if q_maxlen is not None else self._get_queue_sz(ram_use)
+        self.q_maxlen = q_maxlen if q_maxlen is not None else self._get_queue_sz(ram_use, file_list=torch_ds.items)
         self.manager = mp.Manager() # Manager for shared resources
         self.mode = mode # Set worker functions for dataloading mode
         if   mode == 'onsample': # Pops and adds a new item when sampled
@@ -120,6 +121,15 @@ class TorchQueueDataset(IterableDataset):
             else: time.sleep(polling_interval)
         print(f'Warning: Queue is not filled, but timeout of {timeout}s was reached!')
 
-    def _get_queue_sz(self, ram_use):
+    def _get_queue_sz(self, ram_use, file_list):
         ''' Determines a queue size from available system memory '''
-        return 32 # TODO: replace this dummy, implement actual logic
+        mem_budget = psutil.virtual_memory().available * ram_use / 1e6
+        file_szs = torch.tensor(list(map(lambda p: p.stat().st_size, file_list))) / 1e6
+        avg_sz = file_szs.mean().item()
+        qlen = math.floor(mem_budget / avg_sz)
+        print(f'''
+        Automatic Queue Length:
+            Items have average size: {avg_sz}MB.
+            Suggested Queue Length: {qlen}
+            which would take on average {qlen * avg_sz}MB memory (Budget: {mem_budget}MB).''')
+        return qlen
