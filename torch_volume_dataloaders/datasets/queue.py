@@ -30,6 +30,7 @@ def _share_mem(d):
         if torch.is_tensor(t): t.share_memory_()
 
 def load_always(ds, queue, q_maxlen, tfm=noop):
+    ''' Worker job used to fill queue async as fast as possible. '''
     while True:
         idxs = torch.randperm(len(ds))
         for i in idxs:
@@ -39,6 +40,7 @@ def load_always(ds, queue, q_maxlen, tfm=noop):
             queue.insert(0, d)
 
 def load_onsample(ds, queue, q_maxlen, sample_event, tfm=noop):
+    ''' Worker job used to fill queue on sampling. '''
     while True:
         idxs = torch.randperm(len(ds))
         for i in idxs:
@@ -50,7 +52,7 @@ def load_onsample(ds, queue, q_maxlen, sample_event, tfm=noop):
 
 class TorchQueueDataset(IterableDataset):
     def __init__(self, torch_ds, mode='onsample', fill_interval=None, num_workers=1, q_maxlen=None, ram_use=0.75,
-        wait_fill=True, sample_tfm=noop, bs=1, collate_fn=dict_collate_fn):
+        wait_fill=True, sample_tfm=noop, batch_tfm=noop, bs=1, collate_fn=dict_collate_fn):
         '''
         Args:
             torch_ds (TorchDataset): A TorchDataset to be used for queueing
@@ -58,13 +60,13 @@ class TorchQueueDataset(IterableDataset):
                 - 'onsample' refills the queue after it got sampled
                 - 'always' keeps refilling the queue as fast as possible
                 - 'interval' refills the queue regularly. Set fill_interval
-            print('onsample: added sample, qsize:', len(queue))
             fill_interval (float): Time intervals in seconds between queue fillings
             num_workers (int): Number of threads loading in data
             q_maxlen (int): Set queue size. Overrides `ram_use`
-            ram_use (float): Fraction of available system memory to use for queue. Default is 75%
+            ram_use (float): Fraction of available system memory to use for queue or memory budget in MB (>1.0). Default is 75%
             wait_fill (int, bool): Boolean whether queue should be filled on init or Int to fill the queue at least with a certain amount of items
             sample_tfm (Transform, function): Applicable transform (receiving and producing a dict) that is applied upon sampling from the queue
+            batch_tfm (Transform, function):  Transforms to be applied on batches of items
             bs (int): Batch Size
             collate_fn (function): Collate Function to merge items to batches. Default assumes dictionaries (like from TorchDataset) and stacks all tensors, while collecting non-tensors in a list
         '''
@@ -74,6 +76,7 @@ class TorchQueueDataset(IterableDataset):
         self.items = list(map(list, np.array_split(torch_ds.items, num_workers)))
         self.datasets = [TorchDataset(items, preprocess_fn=torch_ds.preprocess_fn) for items in self.items]
         self.sample_tfm = sample_tfm
+        self.batch_tfm  = batch_tfm
         self.q_maxlen = q_maxlen if q_maxlen is not None else self._get_queue_sz(ram_use, file_list=torch_ds.items)
         self.manager = mp.Manager() # Manager for shared resources
         self.mode = mode # Set worker functions for dataloading mode
@@ -100,7 +103,10 @@ class TorchQueueDataset(IterableDataset):
     def qsize(self): return len(self.queue)
 
     def batch_generator(self):
-        ''' Generator for sampling the queue. '''
+        ''' Generator for sampling the queue.
+        This makes use of the object attributes bs (batch size) and the collate function
+        Returns: Generator that samples randomly samples batches from the queue.
+        '''
         while True:
             idxs = torch.randperm(len(self.queue))[:self.bs]
             samples = [self.sample_tfm(self.queue[i]) for i in idxs]
@@ -113,23 +119,33 @@ class TorchQueueDataset(IterableDataset):
     def __iter__(self): return iter(self.batch_generator())
 
     def wait_fill_queue(self, fill_atleast=None, timeout=60, polling_interval=0.25):
+        ''' Waits untill the queue is filled (`fill_atleast`=None) or until filled with at least `fill_atleast`. Timeouts.
+        Args:
+            fill_atleast (int): Waits until queue is at least filled with so many items.
+            timeout (Number): Time in seconds before this method terminates regardless of the queue size
+            polling_interval (Number): Time in seconds how fast the queue size is polled while waiting.
+        '''
         timed_out = time.time() + timeout
         while time.time() < timed_out:
             if (self.qsize >= self.q_maxlen or
                (fill_atleast is not None and self.qsize >= fill_atleast)):
                 return
             else: time.sleep(polling_interval)
-        print(f'Warning: Queue is not filled, but timeout of {timeout}s was reached!')
+        print(f'Warning: Queue is not filled ({self.qsize} / {self.q_maxlen}), but timeout of {timeout}s was reached!')
 
     def _get_queue_sz(self, ram_use, file_list):
-        ''' Determines a queue size from available system memory '''
-        mem_budget = psutil.virtual_memory().available * ram_use / 1e6
+        ''' Determines a queue size from available system memory.
+        Args:
+            ram_use (float): Percentage of available system memory to use or memory budget in MB
+            file_list ([Path]): List of paths. Is used to determine average item size.
+        Returns: Suggested queue length
+        '''
+        if ram_use <= 1.0:
+              mem_budget = psutil.virtual_memory().available * ram_use / 1e6
+        else: mem_budget = ram_use
         file_szs = torch.tensor(list(map(lambda p: p.stat().st_size, file_list))) / 1e6
         avg_sz = file_szs.mean().item()
         qlen = math.floor(mem_budget / avg_sz)
-        print(f'''
-        Automatic Queue Length:
-            Items have average size: {avg_sz}MB.
-            Suggested Queue Length: {qlen}
-            which would take on average {qlen * avg_sz}MB memory (Budget: {mem_budget}MB).''')
+        print(f'''Automatic Queue Length for average Item size {avg_sz:.1f}MB:
+Suggested Queue Length: {qlen}, which would take on average {qlen * avg_sz:.1f}MB memory (Budget: {mem_budget:.1f}MB).''')
         return qlen
