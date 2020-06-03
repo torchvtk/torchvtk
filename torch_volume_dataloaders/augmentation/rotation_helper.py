@@ -11,11 +11,9 @@ import math
 
 
 class RotationHelper():
-    def __init__(self, param):
-
-        print("[INFO] setup transform")
-
-        self.param = param
+    def __init__(self, device):
+        super().__init__()
+        self.device = device
 
     def rotate(self, volume, rotation_matrix):
 
@@ -24,7 +22,7 @@ class RotationHelper():
 
         indices = self.get_graphics_grid_coords_3d(size, size, size, coord_dim=0)
         indices = indices.expand(batch_size, 3, size, size, size)
-        indices = indices.to(self.param.device)
+        indices = indices.to(self.device)
 
         indices_rotated = torch.bmm(rotation_matrix, indices.view(batch_size, 3, -1)).view(batch_size, 3, size, size, size)
 
@@ -45,8 +43,8 @@ class RotationHelper():
 
     def get_vector_random(self, batch_size):
 
-        theta = torch.empty((batch_size), dtype=torch.float).uniform_(0, 2 * np.pi).to(self.param.device)
-        u = torch.empty((batch_size), dtype=torch.float).uniform_(-1.0, 1.0).to(self.param.device)
+        theta = torch.empty((batch_size), dtype=torch.float).uniform_(0, 2 * np.pi).to(self.device)
+        u = torch.empty((batch_size), dtype=torch.float).uniform_(-1.0, 1.0).to(self.device)
 
         x = torch.sqrt(1 - u * u) * torch.cos(theta)
         y = torch.sqrt(1 - u * u) * torch.sin(theta)
@@ -67,17 +65,17 @@ class RotationHelper():
         bs = eye.size(0)
 
         if up_vector is None:
-            up_vector = torch.nn.functional.normalize(torch.tensor([0.0, 1.0, 0.0]).expand(bs, 3), dim=1).to(self.param.device)
+            up_vector = torch.nn.functional.normalize(torch.tensor([0.0, 1.0, 0.0]).expand(bs, 3), dim=1).to(self.device)
 
         if target is None:
-            target = torch.nn.functional.normalize(torch.tensor([0.0, 0.0, 0.0]).expand(bs, 3), dim=1).to(self.param.device)
+            target = torch.nn.functional.normalize(torch.tensor([0.0, 0.0, 0.0]).expand(bs, 3), dim=1).to(self.device)
 
         z_axis = torch.nn.functional.normalize(eye - target, dim=1).expand(bs, 3)
         x_axis = torch.nn.functional.normalize(torch.cross(up_vector, z_axis), dim=1)
         y_axis = torch.cross(z_axis, x_axis, dim=1)
         view_matrix = torch.stack([x_axis, y_axis, z_axis], dim=2)
 
-        return view_matrix.to(self.param.device)
+        return view_matrix.to(self.device)
 
     def resample(self, volume, indices_rotated):
 

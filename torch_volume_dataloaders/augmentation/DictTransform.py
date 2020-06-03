@@ -21,15 +21,20 @@ class RotateDictTransform(object):
         self.fillcolor_vol = fillcolor_vol
         self.fillcolor_mask = fillcolor_mask
         self.apply_on = apply_on
+        self.rotation_helper = RotationHelper(self.device)
 
     def __call__(self, sample):
         # dict
-        if self.apply_on is ["vol"]:
+        if self.apply_on[0] is "vol":
             # to vol
             # get batch size and create random rotation matrix.
-            rotation_matrix = RotationHelper.get_rotation_matrix_random(len(sample))
+            print(len(sample["vol"]))
+            rotation_matrix = self.rotation_helper.get_rotation_matrix_random(1)
             vol = sample["vol"]
-            vol = RotationHelper.rotate(vol, rotation_matrix)
+            #vol = vol.squeeze(0)
+            if vol.dtype is torch.float16:
+                vol = vol.to(torch.float32)
+            vol = self.rotation_helper.rotate(vol, rotation_matrix)
             # todo check if stacking works correctly.
             sample["vol"] = vol
         else:
@@ -83,24 +88,25 @@ class NoiseDictTransform(object):
 
 class BlurDictTransform(object):
 
-    def __init__(self, channels, kernel_size, device=torch.device("cpu"), dtype=torch.float32, sigma=0.001):
+    def __init__(self, channels, kernel_size, device=torch.device("cpu"), dtype=torch.float32, sigma=10):
         super().__init__()
         self.channels = channels
         self.kernel_size = kernel_size
         self.device = device
         self.dtype = dtype
-        self.sigma = sigma
-
+        self.sigma = [sigma, sigma, sigma]
+        self.kernel_size = [kernel_size] * 3
         # code from: https://discuss.pytorch.org/t/is-there-anyway-to-do-gaussian-filtering-for-an-image-2d-3d-in-pytorch/12351/10
         # initialize conv layer.
         kernel = 1
-        meshgrids = torch.meshgrid(
+
+        self.meshgrids = torch.meshgrid(
             [
                 torch.arange(size, dtype=torch.float32)
                 for size in kernel_size
             ]
         )
-        for size, std, mgrid in zip(kernel_size, sigma, meshgrids):
+        for size, std, mgrid in zip(kernel_size, self.sigma, self.meshgrids):
             mean = (size - 1) / 2
             kernel *= 1 / (std * math.sqrt(2 * math.pi)) * torch.exp(-((mgrid - mean) / std) ** 2 / 2)
 
@@ -112,13 +118,18 @@ class BlurDictTransform(object):
         kernel = kernel.repeat(channels, *[1] * (kernel.dim() - 1))
 
         # todo check if that method of assigning works
-        self.register_buffer('weight', kernel)
-        #self.weight = kernel
+        # self.register_buffer('weight', kernel)
+        self.weight = kernel
         self.groups = channels
 
         self.conv = f.conv3d
 
     def __call__(self, sample):
-        sample = self.conv(sample, weight=self.weight, groups=self.groups)
+        vol = sample["vol"]
+
+        if vol.dtype is torch.float16:
+            vol = vol.to(torch.float32)
+        vol = self.conv(vol, weight=self.weight, groups=self.groups, padding=1)
+        sample["vol"] = vol
         return sample
 
