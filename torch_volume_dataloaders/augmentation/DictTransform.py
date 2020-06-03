@@ -127,12 +127,21 @@ class BlurDictTransform(object):
     def __call__(self, sample):
         vol = sample["vol"]
 
+        # scale to float 32 for conv, otherwise amp needed.
         if vol.dtype is torch.float16:
             vol = vol.to(torch.float32)
 
+        # if dtype is cuda move to gpu.
         if self.device is "cuda":
             vol = vol.to(self.device)
+
+        # Do Gaussian Blur.
         vol = self.conv(vol, weight=self.weight, groups=self.groups, padding=1)
+
+        # Rescale to float 16
+        if vol.dtype is self.dtype:
+            vol = vol.to(torch.float16)
+
         sample["vol"] = vol
         return sample
 
