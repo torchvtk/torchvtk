@@ -70,8 +70,14 @@ class NoiseDictTransform(object):
             vol = vol.to(self.device)
             vol = torch.add(vol, noise)
 
-        sample["vol"] = vol
 
+        # conversion to the correct float type
+
+        if self.dtype == torch.float16:
+            vol = vol.to(torch.float16)
+        else:
+            vol = vol.to(torch.float32)
+        sample["vol"] = vol
         return sample
 
 

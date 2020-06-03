@@ -22,11 +22,11 @@ print(vol.min())
 print(vol.shape)
 
 
-view_batch(vol, width=512, height=512)
+#view_batch(vol, width=512, height=512)
 
 tfms = NoiseDictTransform(device="cpu")
 noise_cpu = tfms(file)
-view_batch(noise_cpu["vol"], width=512, height=512)
+#view_batch(noise_cpu["vol"], width=512, height=512)
 del tfms
 tfms = NoiseDictTransform(device="cuda")
 
