@@ -129,6 +129,8 @@ class BlurDictTransform(object):
 
         if vol.dtype is torch.float16:
             vol = vol.to(torch.float32)
+
+        vol = vol.to(self.device)
         vol = self.conv(vol, weight=self.weight, groups=self.groups, padding=1)
         sample["vol"] = vol
         return sample
