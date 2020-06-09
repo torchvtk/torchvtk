@@ -8,14 +8,45 @@ import random
 from torch_volume_dataloaders.augmentation.rotation_helper import RotationHelper
 
 
-class RotateDictTransform(object):
+class DictTransform():
+
+    def __init__(self, device=torch.device("cpu"), apply_on=["vol", "mask"], dtype=torch.float32):
+        super().__init__()
+        self.device = device
+        self.dtype = dtype
+
+        # todo split dict and call subtransforms
+    def __call__(self, sample):
+        # extract the volumes
+
+        if self.device == "cuda":
+            vol = sample["vol"]
+            mask = sample["mask"]
+            vol = vol.to(self.device)
+            mask = mask.to(self.device)
+
+        # do augmentations
+
+
+
+
+        # change dtype
+        if self.dtype == torch.float16:
+            vol = vol.to(torch.float16)
+        
+
+
+
+
+
+
+class RotateDictTransform(DictTransform):
 
     def __init__(self, device=torch.device("cpu"), axis=0, fillcolor_vol=-1024, fillcolor_mask=0, degree=10,
                  apply_on=["vol", "mask"], dtype=torch.float32):
         super().__init__()
 
-        self.device = device
-        self.dtype = dtype
+
         self.degree = degree
         self.axis = axis
         self.fillcolor_vol = fillcolor_vol
@@ -50,7 +81,7 @@ class RotateDictTransform(object):
         return sample
 
 
-class NoiseDictTransform(object):
+class NoiseDictTransform(DictTransform):
 
     def __init__(self, device=torch.device("cpu"), dtype=torch.float32, noise_variance=(0.001, 0.05)):
         super().__init__()
@@ -65,7 +96,6 @@ class NoiseDictTransform(object):
         noise = np.random.normal(0.0, variance, size=vol.shape)
         
         if self.device == "cpu":
-            # todo not sure if that works
             vol = vol + noise
         else:
             noise = torch.from_numpy(noise)
@@ -86,7 +116,7 @@ class NoiseDictTransform(object):
         return sample
 
 
-class BlurDictTransform(object):
+class BlurDictTransform(DictTransform):
 
     def __init__(self, channels, kernel_size, device=torch.device("cpu"), dtype=torch.float32, sigma=10):
         super().__init__()
@@ -99,7 +129,8 @@ class BlurDictTransform(object):
         # code from: https://discuss.pytorch.org/t/is-there-anyway-to-do-gaussian-filtering-for-an-image-2d-3d-in-pytorch/12351/10
         # initialize conv layer.
         kernel = 1
-
+        # todo add dynamic padding for higher kerner_size
+        #
         self.meshgrids = torch.meshgrid(
             [
                 torch.arange(size, dtype=torch.float32)

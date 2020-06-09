@@ -37,16 +37,16 @@ print(vol.shape)
 
 
 # test for gaussian noise
-#view_batch(vol, width=512, height=512)
-# tfms = NoiseDictTransform(device="cpu")
-# noise_cpu = tfms(file)
-# #view_batch(noise_cpu["vol"], width=512, height=512)
-# del tfms
-# tfms = NoiseDictTransform(device="cuda")
-#
-# noise_gpu = tfms(file)
-# view_batch(noise_gpu["vol"], width=512, height=512)
 view_batch(vol.squeeze(0).squeeze(0), width=512, height=512)
+tfms = NoiseDictTransform(device="cpu")
+noise_cpu = tfms(file)
+view_batch(noise_cpu["vol"].squeeze(0).squeeze(0), width=512, height=512)
+del tfms
+tfms = NoiseDictTransform(device="cuda")
+
+noise_gpu = tfms(file)
+view_batch(noise_gpu["vol"].squeeze(0).squeeze(0), width=512, height=512)
+# view_batch(vol.squeeze(0).squeeze(0), width=512, height=512)
 
 
 # test for gaussian blur
