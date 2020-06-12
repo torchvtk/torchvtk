@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 
-from torch_volume_dataloaders.augmentation.DictTransform import RotateDictTransform, BlurDictTransform, NoiseDictTransform
+from torch_volume_dataloaders.augmentation.DictTransform import RotateDictTransform, BlurDictTransform, NoiseDictTransform, DictTransform
 
 
 # import test image
@@ -13,13 +13,30 @@ file_path = os.path.join("D:", os.sep, "DownloadDatasets", "medical_decathlon", 
 
 file = torch.load(file_path)
 
-vol = file["vol"].numpy()
-mask = file["mask"].numpy()
+vol = file["vol"]
+mask = file["mask"]
 
-vol = vol.astype(np.float32)
-print(vol.max())
-print(vol.min())
+vol_16 = vol
+vol_32 = vol.to(torch.float32)
+
+vol_16 = vol_16.unsqueeze(0)
+vol_32 = vol_32.unsqueeze(0)
+
 print(vol.shape)
+print(vol_16.dtype)
+print(vol_32.dtype)
+
+
+
+# Test Dict Transform.
+
+super = DictTransform(NoiseDictTransform)
+
+noise_cpu = super(file)
+noise_cpu["vol"] = noise_cpu["vol"].squeeze(0).squeeze(0)
+del super
+tfms = NoiseDictTransform(device="cuda")
+
 
 
 # check for random rotation
@@ -37,15 +54,15 @@ print(vol.shape)
 
 
 # test for gaussian noise
-view_batch(vol.squeeze(0).squeeze(0), width=512, height=512)
-tfms = NoiseDictTransform(device="cpu")
-noise_cpu = tfms(file)
-view_batch(noise_cpu["vol"].squeeze(0).squeeze(0), width=512, height=512)
-del tfms
-tfms = NoiseDictTransform(device="cuda")
-
-noise_gpu = tfms(file)
-view_batch(noise_gpu["vol"].squeeze(0).squeeze(0), width=512, height=512)
+# view_batch(vol.squeeze(0).squeeze(0), width=512, height=512)
+# tfms = NoiseDictTransform(device="cpu")
+# noise_cpu = tfms(file)
+# view_batch(noise_cpu["vol"].squeeze(0).squeeze(0), width=512, height=512)
+# del tfms
+# tfms = NoiseDictTransform(device="cuda")
+#
+# noise_gpu = tfms(file)
+# view_batch(noise_gpu["vol"].squeeze(0).squeeze(0), width=512, height=512)
 # view_batch(vol.squeeze(0).squeeze(0), width=512, height=512)
 
 
@@ -63,7 +80,7 @@ view_batch(blur_gpu["vol"].squeeze(0).squeeze(0), width=512, height=512)
 
 
 # check for specific rotation
-
+# todo add tests for torch 16
 
 
 

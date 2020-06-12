@@ -8,25 +8,27 @@ import random
 from torch_volume_dataloaders.augmentation.rotation_helper import RotationHelper
 
 
-class DictTransform():
+class DictTransform(object):
 
-    def __init__(self, device=torch.device("cpu"), apply_on=["vol", "mask"], dtype=torch.float32):
+    def __init__(self, func, device=torch.device("cpu"), apply_on=["vol", "mask"], dtype=torch.float32):
         super().__init__()
         self.device = device
         self.dtype = dtype
+        self.func = func
 
         # todo split dict and call subtransforms
     def __call__(self, sample):
         # extract the volumes
 
+        vol = sample["vol"]
+        mask = sample["mask"]
         if self.device == "cuda":
-            vol = sample["vol"]
-            mask = sample["mask"]
             vol = vol.to(self.device)
             mask = mask.to(self.device)
 
         # do augmentations
 
+        fun = self.func()
 
 
 
