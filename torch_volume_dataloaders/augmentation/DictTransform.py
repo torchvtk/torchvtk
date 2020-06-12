@@ -1,9 +1,7 @@
 import numpy as np
 import torch
-from torch import nn
 from torch.nn import functional as f
 import math
-from PIL import Image
 import random
 from torch_volume_dataloaders.augmentation.rotation_helper import RotationHelper
 
@@ -12,11 +10,11 @@ class DictTransform(object):
 
     def __init__(self, func, device=torch.device("cpu"), apply_on=["vol", "mask"], dtype=torch.float32):
         super().__init__()
-        self.device = device
-        self.dtype = dtype
         self.func = func
+        self.device = device
+        self.apply_on = apply_on
+        self.dtype = dtype
 
-        # todo split dict and call subtransforms
     def __call__(self, sample):
         # extract the volumes
 
@@ -27,33 +25,31 @@ class DictTransform(object):
             mask = mask.to(self.device)
 
         # do augmentations
-
-        fun = self.func()
-
-
+        if self.apply_on == "vol":
+            tfms = self.func(vol)
+            sample = [vol, mask]
+            tfms(sample)
+        else:
+            tfms = self.func(vol, mask)
+            tfms(vol)
 
         # change dtype
         if self.dtype == torch.float16:
             vol = vol.to(torch.float16)
-        
+            if mask.dtype == torch.float32:
+                mask = mask.to(torch.float16)
 
-
-
-
+        return vol, mask
 
 
 class RotateDictTransform(DictTransform):
 
-    def __init__(self, device=torch.device("cpu"), axis=0, fillcolor_vol=-1024, fillcolor_mask=0, degree=10,
-                 apply_on=["vol", "mask"], dtype=torch.float32):
+    def __init__(self, axis=0, fillcolor_vol=-1024, fillcolor_mask=0, degree=10):
         super().__init__()
-
-
         self.degree = degree
         self.axis = axis
         self.fillcolor_vol = fillcolor_vol
         self.fillcolor_mask = fillcolor_mask
-        self.apply_on = apply_on
         self.rotation_helper = RotationHelper(self.device)
 
     def __call__(self, sample):
@@ -85,47 +81,29 @@ class RotateDictTransform(DictTransform):
 
 class NoiseDictTransform(DictTransform):
 
-    def __init__(self, device=torch.device("cpu"), dtype=torch.float32, noise_variance=(0.001, 0.05)):
+    def __init__(self, noise_variance=(0.001, 0.05)):
         super().__init__()
-        self.device = device
-        self.dtype = dtype
         self.noise_variance = noise_variance
 
     def __call__(self, sample):
-        vol = sample["vol"]
-        
+
         variance = random.uniform(self.noise_variance[0], self.noise_variance[1])
-        noise = np.random.normal(0.0, variance, size=vol.shape)
+        noise = np.random.normal(0.0, variance, size=sample.shape)
         
-        if self.device == "cpu":
-            vol = vol + noise
-        else:
-            noise = torch.from_numpy(noise)
+        noise = torch.from_numpy(noise)
 
-            #todo check if already on gpu for vol
-            noise = noise.to(self.device)
-            vol = vol.to(self.device)
-            vol = torch.add(vol, noise)
+        noise = noise.to(self.device)
+        sample = torch.add(sample, noise)
 
-
-        # conversion to the correct float type
-
-        if self.dtype == torch.float16:
-            vol = vol.to(torch.float16)
-        else:
-            vol = vol.to(torch.float32)
-        sample["vol"] = vol
         return sample
 
 
 class BlurDictTransform(DictTransform):
 
-    def __init__(self, channels, kernel_size, device=torch.device("cpu"), dtype=torch.float32, sigma=10):
+    def __init__(self, channels, kernel_size, sigma=10):
         super().__init__()
         self.channels = channels
         self.kernel_size = kernel_size
-        self.device = device
-        self.dtype = dtype
         self.sigma = [sigma, sigma, sigma]
         self.kernel_size = [kernel_size] * 3
         # code from: https://discuss.pytorch.org/t/is-there-anyway-to-do-gaussian-filtering-for-an-image-2d-3d-in-pytorch/12351/10
@@ -158,23 +136,7 @@ class BlurDictTransform(DictTransform):
         self.conv = f.conv3d
 
     def __call__(self, sample):
-        vol = sample["vol"]
 
-        # scale to float 32 for conv, otherwise amp needed.
-        if vol.dtype is torch.float16:
-            vol = vol.to(torch.float32)
-
-        # if dtype is cuda move to gpu.
-        if self.device is "cuda":
-            vol = vol.to(self.device)
-
-        # Do Gaussian Blur.
-        vol = self.conv(vol, weight=self.weight, groups=self.groups, padding=1)
-
-        # Rescale to float 16
-        if vol.dtype is self.dtype:
-            vol = vol.to(torch.float16)
-
-        sample["vol"] = vol
-        return sample
+        vol = self.conv(sample, weight=self.weight, groups=self.groups, padding=1)
+        return vol
 
