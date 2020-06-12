@@ -1,8 +1,10 @@
+import math
+import random
+
 import numpy as np
 import torch
 from torch.nn import functional as f
-import math
-import random
+
 from torch_volume_dataloaders.augmentation.rotation_helper import RotationHelper
 
 
@@ -26,12 +28,12 @@ class DictTransform(object):
 
         # do augmentations
         if self.apply_on == "vol":
-            tfms = self.func(vol)
-            sample = [vol, mask]
+            tfms = self.func()
             tfms(sample)
         else:
-            tfms = self.func(vol, mask)
-            tfms(vol)
+            sample = [vol, mask]
+            tfms = self.func()
+            tfms(sample)
 
         # change dtype
         if self.dtype == torch.float16:
@@ -52,31 +54,22 @@ class RotateDictTransform(DictTransform):
         self.fillcolor_mask = fillcolor_mask
         self.rotation_helper = RotationHelper(self.device)
 
-    def __call__(self, sample):
-        # dict
-        if self.apply_on[0] is "vol":
-            # to vol
-            # get batch size and create random rotation matrix.
-            print(len(sample["vol"]))
-            rotation_matrix = self.rotation_helper.get_rotation_matrix_random(1)
-            vol = sample["vol"]
-            #vol = vol.squeeze(0)
-            if vol.dtype is torch.float16:
-                vol = vol.to(torch.float32)
-            vol = self.rotation_helper.rotate(vol, rotation_matrix)
-            # todo check if stacking works correctly.
-            sample["vol"] = vol
-        else:
-            # to vol and mask.
-            rotation_matrix = RotationHelper.get_rotation_matrix_random(len(sample))
-            vol = sample["vol"]
-            vol = RotationHelper.rotate(vol, rotation_matrix)
-            sample["vol"] = vol
-            mask = sample["mask"]
-            mask = RotationHelper.rotate(mask, rotation_matrix)
-            sample["mask"] = mask
+    def transform_vol(self, vol):
+        rotation_matrix = self.rotation_helper.get_rotation_matrix_random(1)
+        # vol = vol.squeeze(0)
+        if vol.dtype is torch.float16:
+            vol = vol.to(torch.float32)
+        vol = self.rotation_helper.rotate(vol, rotation_matrix)
+        return vol
 
-        return sample
+
+    def transform_vol__mask(self, vol, mask ):
+        # to vol and mask.
+        rotation_matrix = RotationHelper.get_rotation_matrix_random(len(sample))
+        vol = RotationHelper.rotate(vol, rotation_matrix)
+        mask = RotationHelper.rotate(mask, rotation_matrix)
+
+        return [vol, mask]
 
 
 class NoiseDictTransform(DictTransform):
@@ -86,10 +79,9 @@ class NoiseDictTransform(DictTransform):
         self.noise_variance = noise_variance
 
     def __call__(self, sample):
-
         variance = random.uniform(self.noise_variance[0], self.noise_variance[1])
         noise = np.random.normal(0.0, variance, size=sample.shape)
-        
+
         noise = torch.from_numpy(noise)
 
         noise = noise.to(self.device)
@@ -136,7 +128,23 @@ class BlurDictTransform(DictTransform):
         self.conv = f.conv3d
 
     def __call__(self, sample):
-
         vol = self.conv(sample, weight=self.weight, groups=self.groups, padding=1)
         return vol
+
+
+class Cropping(DictTransform):
+    def __init__(self):
+        super().__init__()
+
+    def get_crop(self, t, min_i, max_i):
+        ''' Crops `t` in the last 3 dimensions for given 3D `min_i` and `max_i` like t[..., min_i[j]:max_i[j],..]'''
+        return t[..., min_i[0]:max_i[0], min_i[1]:max_i[1], min_i[2]:max_i[2]]
+
+    def get_crop_around(self, t, mid, size):
+        return t[mid[0] - size // 2:  mid[0] + size // 2,
+               mid[1] - size // 2:  mid[1] + size // 2,
+               mid[2] - size // 2:  mid[2] + size // 2]
+
+    def get_center_crop(self, t, size):
+        return self.get_crop_around(t, (torch.Tensor([*t.shape]) // 2).long(), size)
 
