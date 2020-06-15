@@ -30,10 +30,10 @@ print(vol_32.dtype)
 
 # Test Dict Transform.
 
-super = DictTransform(NoiseDictTransform)
+super = DictTransform(RotateDictTransform, degree=10)
 
 noise_cpu = super(file)
-noise_cpu["vol"] = noise_cpu["vol"].squeeze(0).squeeze(0)
+# noise_cpu["vol"] = noise_cpu["vol"].squeeze(0).squeeze(0)
 del super
 tfms = NoiseDictTransform(device="cuda")
 
