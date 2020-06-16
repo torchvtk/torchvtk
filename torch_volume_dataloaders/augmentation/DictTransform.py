@@ -12,13 +12,17 @@ class DictTransform(object):
 
     def __init__(self, func, device=torch.device("cpu"), apply_on=["vol", "mask"], dtype=torch.float32, **kwargs):
         super().__init__()
+
+        transforms = [RotateDictTransform, NoiseDictTransform, BlurDictTransform, Cropping]
+
+        assert func in transforms
+
         self.func = func
         self.device = device
         self.apply_on = apply_on
         self.dtype = dtype
-        self.kwargs = kwargs
 
-    def __call__(self, sample):
+    def __call__(self, sample, **kwargs):
         # extract the volumes
 
         vol = sample["vol"]
@@ -27,13 +31,13 @@ class DictTransform(object):
             vol = vol.to(self.device)
             mask = mask.to(self.device)
 
-        # do augmentations
-        if self.apply_on == "vol":
-            tfms = self.func()
-            tfms(sample)
+        if self.apply_on == ["vol"]:
+            tfms = self.func(**kwargs)
+            tfms(vol)
         else:
+            # assert vol.shape == mask.shape
             sample = [vol, mask]
-            tfms = self.func(self.kwargs)
+            tfms = self.func(**kwargs)
             # tfms = self.func()
             tfms(sample)
 
@@ -60,10 +64,10 @@ class RotateDictTransform(DictTransform):
         # transform to args
         # super(RotateDictTransform, self).__init__()
 
-        self.degree = kwargs.degree
-        self.axis = kwargs.axis
-        self.fillcolor_vol = kwargs.fillcolor_vol
-        self.fillcolor_mask = kwargs.fillcolor_mask
+        self.degree = kwargs["degree"]
+        self.axis = kwargs["axis"]
+        self.fillcolor_vol = kwargs["fillcolor_vol"]
+        self.fillcolor_mask = kwargs["fillcolor_mask"]
         DictTransform.__init__(self)
         self.rotation_helper = RotationHelper(self.device)
 
@@ -77,7 +81,7 @@ class RotateDictTransform(DictTransform):
 
     def transform_vol__mask(self, vol, mask ):
         # to vol and mask.
-        rotation_matrix = RotationHelper.get_rotation_matrix_random(len(sample))
+        rotation_matrix = RotationHelper.get_rotation_matrix_random(1)
         vol = RotationHelper.rotate(vol, rotation_matrix)
         mask = RotationHelper.rotate(mask, rotation_matrix)
 
@@ -86,10 +90,14 @@ class RotateDictTransform(DictTransform):
 
 class NoiseDictTransform(DictTransform):
 
-    def __init__(self, noise_variance=(0.001, 0.05)):
-        super(NoiseDictTransform, self).__init__()
-        self.noise_variance = noise_variance
-        DictTransform.__init__(self)
+    def __init__(self, **kwargs):
+        """
+        noise_variance=(0.001, 0.05)
+        :param noise_variance:
+        """
+        super(NoiseDictTransform, self).__init__(**kwargs)
+        self.noise_variance = kwargs["noise_variance"]
+        DictTransform.__init__(self, **kwargs)
 
     def __call__(self, sample):
         variance = random.uniform(self.noise_variance[0], self.noise_variance[1])
@@ -105,13 +113,13 @@ class NoiseDictTransform(DictTransform):
 
 class BlurDictTransform(DictTransform):
 
-    def __init__(self, channels, kernel_size, sigma=10):
-        super(BlurDictTransform, self).__init__()
-        self.channels = channels
-        self.kernel_size = kernel_size
-        self.sigma = [sigma, sigma, sigma]
-        self.kernel_size = [kernel_size] * 3
-        DictTransform.__init__(self)
+    def __init__(self, **kwargs):
+        super(BlurDictTransform, self).__init__(**kwargs)
+        self.channels = kwargs["channels"]
+        self.kernel_size = kwargs["kernel_size"]
+        self.sigma = [kwargs["sigma"], kwargs["sigma"], kwargs["sigma"]]
+        self.kernel_size = kwargs["kernel_size"] * 3
+        DictTransform.__init__(self, **kwargs)
         # code from: https://discuss.pytorch.org/t/is-there-anyway-to-do-gaussian-filtering-for-an-image-2d-3d-in-pytorch/12351/10
         # initialize conv layer.
         kernel = 1
@@ -120,10 +128,10 @@ class BlurDictTransform(DictTransform):
         self.meshgrids = torch.meshgrid(
             [
                 torch.arange(size, dtype=torch.float32)
-                for size in kernel_size
+                for size in self.kernel_size
             ]
         )
-        for size, std, mgrid in zip(kernel_size, self.sigma, self.meshgrids):
+        for size, std, mgrid in zip(self.kernel_size, self.sigma, self.meshgrids):
             mean = (size - 1) / 2
             kernel *= 1 / (std * math.sqrt(2 * math.pi)) * torch.exp(-((mgrid - mean) / std) ** 2 / 2)
 
@@ -132,12 +140,12 @@ class BlurDictTransform(DictTransform):
 
         # Reshape to depthwise convolutional weight
         kernel = kernel.view(1, 1, *kernel.size())
-        kernel = kernel.repeat(channels, *[1] * (kernel.dim() - 1))
+        kernel = kernel.repeat(self.channels, *[1] * (kernel.dim() - 1))
 
         # todo check if that method of assigning works
         # self.register_buffer('weight', kernel)
         self.weight = kernel
-        self.groups = channels
+        self.groups = self.channels
 
         self.conv = f.conv3d
 
@@ -147,9 +155,9 @@ class BlurDictTransform(DictTransform):
 
 
 class Cropping(DictTransform):
-    def __init__(self):
-        super(Cropping, self).__init__()
-        DictTransform.__init__(self)
+    def __init__(self, **kwargs):
+        super(Cropping, self).__init__(**kwargs)
+        DictTransform.__init__(self, **kwargs)
 
     def get_crop(self, t, min_i, max_i):
         ''' Crops `t` in the last 3 dimensions for given 3D `min_i` and `max_i` like t[..., min_i[j]:max_i[j],..]'''
