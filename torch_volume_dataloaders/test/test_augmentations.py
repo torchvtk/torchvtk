@@ -30,17 +30,18 @@ print(vol_32.dtype)
 
 # Test Dict Transform.
 
-super = DictTransform(NoiseDictTransform, apply_on=["vol"])
+tfms = DictTransform(func=NoiseDictTransform, apply_on=["vol"])
 
-noise_cpu = super(file, func=NoiseDictTransform, noise_variance=(0.1,1))
+noise_cpu = tfms(file, func=NoiseDictTransform, noise_variance=(0.01,0.02))
+view_batch(noise_cpu[0], width=512, height=512)
 # noise_cpu["vol"] = noise_cpu["vol"].squeeze(0).squeeze(0)
-del super
-tfms = NoiseDictTransform(device="cuda")
+del tfms
+tfms = DictTransform(func=NoiseDictTransform, apply_on=["vol"], device="cuda")
+noise_gpu = tfms(file, func=NoiseDictTransform, noise_variance=(0.01,0.02))
 
 
 
 # check for random rotation
-# view_batch(vol, width=512, height=512)
 # fixme rotation is on the wrong axis and resampling does not seem to work
 # tfms = RotateDictTransform(device="cpu", apply_on=["vol"])
 # noise_cpu = tfms(file)
@@ -67,8 +68,8 @@ tfms = NoiseDictTransform(device="cuda")
 
 
 # test for gaussian blur
-tfms = BlurDictTransform(1, (3,3,3))
-blur_cpu = tfms(file)
+tfms = BlurDictTransform(func=BlurDictTransform, channels=1, kernel_size=(3,3,3), sigma=1)
+blur_cpu = tfms(file, func=BlurDictTransform)
 tmp= blur_cpu["vol"]
 tmp = tmp.squeeze(0).squeeze(0)
 

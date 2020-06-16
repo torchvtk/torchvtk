@@ -33,13 +33,13 @@ class DictTransform(object):
 
         if self.apply_on == ["vol"]:
             tfms = self.func(**kwargs)
-            tfms(vol)
+            vol = tfms(vol)
         else:
             # assert vol.shape == mask.shape
             sample = [vol, mask]
             tfms = self.func(**kwargs)
             # tfms = self.func()
-            tfms(sample)
+            vol, mask = tfms(sample)
 
         # change dtype
         if self.dtype == torch.float16:
@@ -114,9 +114,12 @@ class NoiseDictTransform(DictTransform):
 class BlurDictTransform(DictTransform):
 
     def __init__(self, **kwargs):
+        """
+
+        :param kwargs: muss contain channels kernel size and sigma
+        """
         super(BlurDictTransform, self).__init__(**kwargs)
         self.channels = kwargs["channels"]
-        self.kernel_size = kwargs["kernel_size"]
         self.sigma = [kwargs["sigma"], kwargs["sigma"], kwargs["sigma"]]
         self.kernel_size = kwargs["kernel_size"] * 3
         DictTransform.__init__(self, **kwargs)
