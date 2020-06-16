@@ -79,7 +79,7 @@ class RotateDictTransform(DictTransform):
         vol = self.rotation_helper.rotate(vol, rotation_matrix)
         return vol
 
-    def transform_vol__mask(self, vol, mask ):
+    def transform_vol__mask(self, vol, mask):
         # to vol and mask.
         rotation_matrix = RotationHelper.get_rotation_matrix_random(1)
         vol = RotationHelper.rotate(vol, rotation_matrix)
@@ -170,4 +170,3 @@ class Cropping(DictTransform):
 
     def get_center_crop(self, t, size):
         return self.get_crop_around(t, (torch.Tensor([*t.shape]) // 2).long(), size)
-
