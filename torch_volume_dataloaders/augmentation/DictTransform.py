@@ -123,7 +123,7 @@ class BlurDictTransform(DictTransform):
         # DictTransform.__init__(self, **kwargs)
         self.channels = kwargs["channels"]
         self.sigma = [kwargs["sigma"], kwargs["sigma"], kwargs["sigma"]]
-        self.kernel_size = kwargs["kernel_size"] * 3
+        self.kernel_size = kwargs["kernel_size"]
         # code from: https://discuss.pytorch.org/t/is-there-anyway-to-do-gaussian-filtering-for-an-image-2d-3d-in-pytorch/12351/10
         # initialize conv layer.
         kernel = 1
@@ -154,7 +154,11 @@ class BlurDictTransform(DictTransform):
         self.conv = f.conv3d
 
     def __call__(self, sample):
+        if sample.dtype == torch.float16:
+            sample = sample.to(torch.float32)
+        sample = sample.unsqueeze(0)
         vol = self.conv(sample, weight=self.weight, groups=self.groups, padding=1)
+        vol = vol.squeeze(0)
         return vol
 
 

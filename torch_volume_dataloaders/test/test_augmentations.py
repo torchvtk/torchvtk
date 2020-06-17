@@ -53,14 +53,14 @@ noise_gpu = tfms(file, func=NoiseDictTransform, noise_variance=(0.01,0.02))
 
 
 # test for gaussian blur
-tfms = DictTransform(func=BlurDictTransform)
+tfms = DictTransform(func=BlurDictTransform, apply_on=["vol"])
 blur_cpu = tfms(file, func=BlurDictTransform, channels=1, kernel_size=(3,3,3), sigma=1)
 tmp= blur_cpu["vol"]
 tmp = tmp.squeeze(0).squeeze(0)
 
 view_batch(tmp, width=512, height=512)
-tfms = DictTransform(1, (3,3,3), device="cuda")
-blur_gpu = tfms(file)
+tfms = DictTransform(func=BlurDictTransform, apply_on=["vol"], device="cuda")
+blur_gpu = tfms(file, func=BlurDictTransform, channels=1, kernel_size=(3,3,3), sigma=1)
 view_batch(blur_gpu["vol"].squeeze(0).squeeze(0), width=512, height=512)
 
 
