@@ -15,13 +15,13 @@ file = torch.load(file_path)
 
 # Test Dict Transform.
 
-# tfms = DictTransform(func=NoiseDictTransform, device="cpu", apply_on=["vol"])
+tfms = DictTransform(func=NoiseDictTransform, device="cpu", apply_on=["vol"])
 #
-# noise_cpu = tfms(file, func=NoiseDictTransform, noise_variance=(0.01,0.02))
+noise_cpu = tfms(file, func=NoiseDictTransform, noise_variance=(0.01,0.02))
 # view_batch(noise_cpu[0], width=512, height=512)
 # noise_cpu["vol"] = noise_cpu["vol"].squeeze(0).squeeze(0)
-# del tfms
-tfms = DictTransform(func=NoiseDictTransform, apply_on=["vol"], device="cuda")
+del tfms
+tfms = DictTransform(func=NoiseDictTransform,  device="cuda", apply_on=["vol"])
 noise_gpu = tfms(file, func=NoiseDictTransform, noise_variance=(0.01,0.02))
 
 
@@ -53,13 +53,13 @@ noise_gpu = tfms(file, func=NoiseDictTransform, noise_variance=(0.01,0.02))
 
 
 # test for gaussian blur
-tfms = BlurDictTransform(func=BlurDictTransform, channels=1, kernel_size=(3,3,3), sigma=1)
-blur_cpu = tfms(file, func=BlurDictTransform)
+tfms = DictTransform(func=BlurDictTransform)
+blur_cpu = tfms(file, func=BlurDictTransform, channels=1, kernel_size=(3,3,3), sigma=1)
 tmp= blur_cpu["vol"]
 tmp = tmp.squeeze(0).squeeze(0)
 
 view_batch(tmp, width=512, height=512)
-tfms = BlurDictTransform(1, (3,3,3), device="cuda")
+tfms = DictTransform(1, (3,3,3), device="cuda")
 blur_gpu = tfms(file)
 view_batch(blur_gpu["vol"].squeeze(0).squeeze(0), width=512, height=512)
 

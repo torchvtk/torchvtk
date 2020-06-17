@@ -10,7 +10,7 @@ from torch_volume_dataloaders.augmentation.rotation_helper import RotationHelper
 
 class DictTransform(object):
 
-    def __init__(self, func, apply_on=["vol", "mask"], dtype=torch.float32, **kwargs):
+    def __init__(self, func, device="cpu", apply_on=["vol", "mask"], dtype=torch.float32, **kwargs):
         super().__init__()
 
         transforms = [RotateDictTransform, NoiseDictTransform, BlurDictTransform, Cropping]
@@ -18,7 +18,7 @@ class DictTransform(object):
         assert func in transforms
 
         self.func = func
-        self.device = kwargs["device"]
+        self.device = device
         self.apply_on = apply_on
         self.dtype = dtype
 
@@ -119,11 +119,11 @@ class BlurDictTransform(DictTransform):
 
         :param kwargs: muss contain channels kernel size and sigma
         """
-        super(BlurDictTransform, self).__init__(**kwargs)
+        # super(BlurDictTransform, self).__init__(**kwargs)
+        # DictTransform.__init__(self, **kwargs)
         self.channels = kwargs["channels"]
         self.sigma = [kwargs["sigma"], kwargs["sigma"], kwargs["sigma"]]
         self.kernel_size = kwargs["kernel_size"] * 3
-        DictTransform.__init__(self, **kwargs)
         # code from: https://discuss.pytorch.org/t/is-there-anyway-to-do-gaussian-filtering-for-an-image-2d-3d-in-pytorch/12351/10
         # initialize conv layer.
         kernel = 1
