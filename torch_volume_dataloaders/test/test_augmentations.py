@@ -13,29 +13,14 @@ file_path = os.path.join("D:", os.sep, "DownloadDatasets", "medical_decathlon", 
 
 file = torch.load(file_path)
 
-vol = file["vol"]
-mask = file["mask"]
-
-vol_16 = vol
-vol_32 = vol.to(torch.float32)
-
-vol_16 = vol_16.unsqueeze(0)
-vol_32 = vol_32.unsqueeze(0)
-
-print(vol.shape)
-print(vol_16.dtype)
-print(vol_32.dtype)
-
-
-
 # Test Dict Transform.
 
-tfms = DictTransform(func=NoiseDictTransform, apply_on=["vol"])
-
-noise_cpu = tfms(file, func=NoiseDictTransform, noise_variance=(0.01,0.02))
-view_batch(noise_cpu[0], width=512, height=512)
+# tfms = DictTransform(func=NoiseDictTransform, device="cpu", apply_on=["vol"])
+#
+# noise_cpu = tfms(file, func=NoiseDictTransform, noise_variance=(0.01,0.02))
+# view_batch(noise_cpu[0], width=512, height=512)
 # noise_cpu["vol"] = noise_cpu["vol"].squeeze(0).squeeze(0)
-del tfms
+# del tfms
 tfms = DictTransform(func=NoiseDictTransform, apply_on=["vol"], device="cuda")
 noise_gpu = tfms(file, func=NoiseDictTransform, noise_variance=(0.01,0.02))
 

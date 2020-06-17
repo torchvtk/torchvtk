@@ -10,7 +10,7 @@ from torch_volume_dataloaders.augmentation.rotation_helper import RotationHelper
 
 class DictTransform(object):
 
-    def __init__(self, func, device=torch.device("cpu"), apply_on=["vol", "mask"], dtype=torch.float32, **kwargs):
+    def __init__(self, func, apply_on=["vol", "mask"], dtype=torch.float32, **kwargs):
         super().__init__()
 
         transforms = [RotateDictTransform, NoiseDictTransform, BlurDictTransform, Cropping]
@@ -18,7 +18,7 @@ class DictTransform(object):
         assert func in transforms
 
         self.func = func
-        self.device = device
+        self.device = kwargs["device"]
         self.apply_on = apply_on
         self.dtype = dtype
 
@@ -32,12 +32,12 @@ class DictTransform(object):
             mask = mask.to(self.device)
 
         if self.apply_on == ["vol"]:
-            tfms = self.func(**kwargs)
+            tfms = self.func(self.device, **kwargs)
             vol = tfms(vol)
         else:
             # assert vol.shape == mask.shape
             sample = [vol, mask]
-            tfms = self.func(**kwargs)
+            tfms = self.func(self.device, **kwargs)
             # tfms = self.func()
             vol, mask = tfms(sample)
 
@@ -52,7 +52,7 @@ class DictTransform(object):
 
 class RotateDictTransform(DictTransform):
 
-    def __init__(self, **kwargs):
+    def __init__(self, device, **kwargs):
         """
             ,axis=0, fillcolor_vol=-1024, fillcolor_mask=0, degree=10
         :param args:
@@ -90,14 +90,15 @@ class RotateDictTransform(DictTransform):
 
 class NoiseDictTransform(DictTransform):
 
-    def __init__(self, **kwargs):
+    def __init__(self, device, **kwargs):
         """
         noise_variance=(0.001, 0.05)
         :param noise_variance:
         """
-        super(NoiseDictTransform, self).__init__(**kwargs)
+        # super(NoiseDictTransform, self).__init__(**kwargs)
         self.noise_variance = kwargs["noise_variance"]
-        DictTransform.__init__(self, **kwargs)
+        self.device = device
+        # DictTransform.__init__(self, **kwargs)
 
     def __call__(self, sample):
         variance = random.uniform(self.noise_variance[0], self.noise_variance[1])
@@ -113,7 +114,7 @@ class NoiseDictTransform(DictTransform):
 
 class BlurDictTransform(DictTransform):
 
-    def __init__(self, **kwargs):
+    def __init__(self, device, **kwargs):
         """
 
         :param kwargs: muss contain channels kernel size and sigma
