@@ -1,5 +1,6 @@
 import math
 import random
+from abc import abstractmethod
 
 import numpy as np
 import torch
@@ -13,18 +14,23 @@ class DictTransform(object):
     def __init__(self, func, device="cpu", apply_on=["vol", "mask"], dtype=torch.float32, **kwargs):
         super().__init__()
 
-        transforms = [RotateDictTransform, NoiseDictTransform, BlurDictTransform, Cropping]
-
-        assert func in transforms
-
-        self.func = func
         self.device = device
         self.apply_on = apply_on
         self.dtype = dtype
 
+    @abstractmethod
+    def transform(self, data): pass
+
+    def __call__(self, data):
+        for key in self.apply_on:
+            data[key] = self.transform(data[key])
+        return data
+
+
     def __call__(self, sample, **kwargs):
         # extract the volumes
 
+        # todo dynamic keys.
         vol = sample["vol"]
         mask = sample["mask"]
         if self.device == "cuda":
@@ -63,13 +69,23 @@ class RotateDictTransform(DictTransform):
         """
         # transform to args
         # super(RotateDictTransform, self).__init__()
-
+        self.apply_on = kwargs["apply_on"]
+        DictTransform.__init__(self, func=RotateDictTransform, apply_on=self.apply_on, **kwargs)
         self.degree = kwargs["degree"]
         self.axis = kwargs["axis"]
         self.fillcolor_vol = kwargs["fillcolor_vol"]
         self.fillcolor_mask = kwargs["fillcolor_mask"]
-        DictTransform.__init__(self)
+        self.device = device
         self.rotation_helper = RotationHelper(self.device)
+
+    @abstractmethod
+    def __call__(self, sample):
+
+        # if apply on both then ...
+        if self.apply_on == ["vol"]:
+            self.transform_vol(self, sample)
+        else:
+            self.transform_vol_mask(self, sample[0], sample[1])
 
     def transform_vol(self, vol):
         rotation_matrix = self.rotation_helper.get_rotation_matrix_random(1)
@@ -79,7 +95,7 @@ class RotateDictTransform(DictTransform):
         vol = self.rotation_helper.rotate(vol, rotation_matrix)
         return vol
 
-    def transform_vol__mask(self, vol, mask):
+    def transform_vol_mask(self, vol, mask):
         # to vol and mask.
         rotation_matrix = RotationHelper.get_rotation_matrix_random(1)
         vol = RotationHelper.rotate(vol, rotation_matrix)
@@ -96,6 +112,7 @@ class NoiseDictTransform(DictTransform):
         :param noise_variance:
         """
         # super(NoiseDictTransform, self).__init__(**kwargs)
+        # todo super class
         self.noise_variance = kwargs["noise_variance"]
         self.device = device
         # DictTransform.__init__(self, **kwargs)
@@ -153,13 +170,16 @@ class BlurDictTransform(DictTransform):
 
         self.conv = f.conv3d
 
-    def __call__(self, sample):
-        if sample.dtype == torch.float16:
-            sample = sample.to(torch.float32)
+
+    def transform(self, data):
+        if data.dtype == torch.float16:
+            sample = data.to(torch.float32)
         sample = sample.unsqueeze(0)
         vol = self.conv(sample, weight=self.weight, groups=self.groups, padding=1)
         vol = vol.squeeze(0)
         return vol
+
+
 
 
 class Cropping(DictTransform):
