@@ -179,11 +179,6 @@ class VolumeRaycaster(nn.Module):
         samples = torch.stack([x,y,z, torch.ones_like(x)], dim=-1).expand(bs,-1,-1,-1,-1)
         samples_poses = torch.bmm(samples.reshape(bs, -1, 4), inv_tfm).reshape(bs, self.ray_samples, self.h, self.w, 4)
 
-
-
-
-
-
     def forward(self, vol, tfm=None):
         ''' Renders a volume (using given transforms) using raycasting.
         Args:
@@ -200,8 +195,6 @@ class VolumeRaycaster(nn.Module):
         sample_coords = self.samples.expand(bs, -1, -1, -1, -1)
         if torch.is_tensor(tfm):
             tfm = tfm.to(self.dtype).to(self.device)
-            print('Transform:\n', tfm)
-            print('Sample Coords', sample_coords.shape, sample_coords[0,64,120,120])
             n_ch = tfm.size(-1)
             if   sample_coords.size(-1) < n_ch: sample_coords = homogenize_vec(sample_coords)
             elif sample_coords.size(-1) > n_ch: sample_coords = sample_coords[..., :n_ch]
@@ -211,7 +204,6 @@ class VolumeRaycaster(nn.Module):
                 .contiguous())
             sample_coords[..., :3] /= sample_coords[..., [3]] # divide by homogeneous
             sample_coords = sample_coords[..., :3]
-            print('Sample Coords', sample_coords.shape, sample_coords[0,64,128,128], f'Min: {sample_coords.min()}, Max: {sample_coords.max()}')
             self.sample_coords = sample_coords.cpu()
         elif tfm is None: sample_coords
         else: sample_coords = tfm(sample_coords)
