@@ -6,12 +6,12 @@ import numpy as np
 import torch
 from torch.nn import functional as f
 
-from torch_volume_dataloaders.augmentation.rotation_helper import RotationHelper
+from torch_vtk.augmentation.rotation_helper import RotationHelper
 
 
 class DictTransform(object):
 
-    def __init__(self, func, device="cpu", apply_on=["vol", "mask"], dtype=torch.float32, **kwargs):
+    def __init__(self, device="cpu", apply_on=["vol", "mask"], dtype=torch.float32, **kwargs):
         super().__init__()
 
         self.device = device
@@ -22,38 +22,22 @@ class DictTransform(object):
     def transform(self, data): pass
 
     def __call__(self, data):
+
         for key in self.apply_on:
-            data[key] = self.transform(data[key])
+            #   put on the right device.
+            if self.device == "cuda":
+                key = key.to(self.device)
+
+            if self.dtype is torch.float16:
+                key = key.to(torch.float32)
+
+            k = self.transform(data[key])
+
+            if self.dtype is torch.float16:
+                k = k.to(torch.float16)
+            data[key] = k
         return data
 
-
-    def __call__(self, sample, **kwargs):
-        # extract the volumes
-
-        # todo dynamic keys.
-        vol = sample["vol"]
-        mask = sample["mask"]
-        if self.device == "cuda":
-            vol = vol.to(self.device)
-            mask = mask.to(self.device)
-
-        if self.apply_on == ["vol"]:
-            tfms = self.func(self.device, **kwargs)
-            vol = tfms(vol)
-        else:
-            # assert vol.shape == mask.shape
-            sample = [vol, mask]
-            tfms = self.func(self.device, **kwargs)
-            # tfms = self.func()
-            vol, mask = tfms(sample)
-
-        # change dtype
-        if self.dtype == torch.float16:
-            vol = vol.to(torch.float16)
-            if mask.dtype == torch.float32:
-                mask = mask.to(torch.float16)
-
-        return vol, mask
 
 
 class RotateDictTransform(DictTransform):
@@ -78,20 +62,20 @@ class RotateDictTransform(DictTransform):
         self.device = device
         self.rotation_helper = RotationHelper(self.device)
 
-    @abstractmethod
-    def __call__(self, sample):
+    # @abstractmethod
+    # def __call__(self, sample):
+    #
+    #     # if apply on both then ...
+    #     if self.apply_on == ["vol"]:
+    #         self.transform_vol(self, sample)
+    #     else:
+    #         self.transform_vol_mask(self, sample[0], sample[1])
 
-        # if apply on both then ...
-        if self.apply_on == ["vol"]:
-            self.transform_vol(self, sample)
-        else:
-            self.transform_vol_mask(self, sample[0], sample[1])
-
-    def transform_vol(self, vol):
+    def transform(self, data):
         rotation_matrix = self.rotation_helper.get_rotation_matrix_random(1)
         # vol = vol.squeeze(0)
-        if vol.dtype is torch.float16:
-            vol = vol.to(torch.float32)
+        if data.dtype is torch.float16:
+            vol = data.to(torch.float32)
         vol = self.rotation_helper.rotate(vol, rotation_matrix)
         return vol
 
@@ -106,41 +90,36 @@ class RotateDictTransform(DictTransform):
 
 class NoiseDictTransform(DictTransform):
 
-    def __init__(self, device, **kwargs):
-        """
-        noise_variance=(0.001, 0.05)
-        :param noise_variance:
-        """
-        # super(NoiseDictTransform, self).__init__(**kwargs)
-        # todo super class
-        self.noise_variance = kwargs["noise_variance"]
+    def __init__(self, device, noise_variance=(0.001, 0.05), apply_on=["vol"], dtype=torch.float32):
+
         self.device = device
-        # DictTransform.__init__(self, **kwargs)
+        self.noise_variance = noise_variance
+        DictTransform.__init__(self, self.device, apply_on=apply_on)
 
-    def __call__(self, sample):
+    def transform(self, data):
         variance = random.uniform(self.noise_variance[0], self.noise_variance[1])
-        noise = np.random.normal(0.0, variance, size=sample.shape)
-
+        noise = np.random.normal(0.0, variance, size=data.shape)
         noise = torch.from_numpy(noise)
-
         noise = noise.to(self.device)
-        sample = torch.add(sample, noise)
-
+        sample = torch.add(data, noise)
         return sample
 
 
 class BlurDictTransform(DictTransform):
 
-    def __init__(self, device, **kwargs):
+    def __init__(self, apply_on=["vol"], dtype=torch.float32, device= "cpu", channels=1, kernel_size=(3, 3, 3), sigma=1):
         """
 
-        :param kwargs: muss contain channels kernel size and sigma
+        :param device:
+        :param channels:
+        :param kernel_size:
+        :param sigma:
         """
-        # super(BlurDictTransform, self).__init__(**kwargs)
-        # DictTransform.__init__(self, **kwargs)
-        self.channels = kwargs["channels"]
-        self.sigma = [kwargs["sigma"], kwargs["sigma"], kwargs["sigma"]]
-        self.kernel_size = kwargs["kernel_size"]
+        self.channels = channels
+        self.sigma = [sigma, sigma, sigma]
+        self.kernel_size = kernel_size
+        self.device = device
+        DictTransform.__init__(self, self.device, apply_on=apply_on)
         # code from: https://discuss.pytorch.org/t/is-there-anyway-to-do-gaussian-filtering-for-an-image-2d-3d-in-pytorch/12351/10
         # initialize conv layer.
         kernel = 1
@@ -170,16 +149,11 @@ class BlurDictTransform(DictTransform):
 
         self.conv = f.conv3d
 
-
     def transform(self, data):
-        if data.dtype == torch.float16:
-            sample = data.to(torch.float32)
-        sample = sample.unsqueeze(0)
+        sample = data.unsqueeze(0)
         vol = self.conv(sample, weight=self.weight, groups=self.groups, padding=1)
         vol = vol.squeeze(0)
         return vol
-
-
 
 
 class Cropping(DictTransform):
