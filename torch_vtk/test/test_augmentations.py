@@ -3,7 +3,7 @@ import os
 import torch
 from batchviewer import view_batch
 
-from torch_volume_dataloaders.augmentation.DictTransform import BlurDictTransform, NoiseDictTransform, DictTransform, RotateDictTransform
+from torch_vtk.augmentation.DictTransform import BlurDictTransform, NoiseDictTransform, DictTransform, RotateDictTransform
 
 # import test image
 file_path = os.path.join("D:", os.sep, "DownloadDatasets", "medical_decathlon", "Numpy", "torch", "0.pt")
