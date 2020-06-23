@@ -5,7 +5,6 @@ import math
 import torch
 import torch.nn.functional as F
 from torch import nn
-import glm
 
 from torch_vtk.utils.volume_utils import make_2d
 
@@ -116,21 +115,16 @@ def get_random_pos(bs=1, distance=(1,5)):
 
 #%%
 class VolumeRaycaster(nn.Module):
-    def __init__(self, density_factor=100, ray_samples=512, resolution=(640,480),
-        device=torch.device('cpu'), dtype=torch.float32):
+    def __init__(self, density_factor=100, ray_samples=512, resolution=(640,480)):
         ''' Initializes differentiable raycasting layer
         Args:
             density_factor (float): scales the overall density
             ray_samples (int): Number of samples along the rays
             resolution (int, (int, int)): Tuple describing width and height of the render. A single int produces a square image
-            device (torch.Device): The device on which sample coordinates are stored.
-            dtype (torch.dtype): Data type used for Raycasting. Choose either torch.float32 or torch.float16
             '''
         super().__init__()
         self.density_factor = density_factor
         self.ray_samples    = ray_samples
-        self.dtype          = dtype
-        self.device         = device
         if isinstance(resolution, tuple):
               self.w, self.h = resolution
         else: self.w, self.h = resolution, resolution
@@ -138,7 +132,7 @@ class VolumeRaycaster(nn.Module):
         Z = torch.linspace(-1, 1, ray_samples)
         W = torch.linspace(-1, 1, self.w)
         H = torch.linspace(-1, 1, self.h)
-        self.samples = self.get_coord_grid(Z, H, W).to(device).to(dtype)
+        self.samples = self.get_coord_grid(Z, H, W)
 
     def get_coord_grid(self, z, y, x):
         z, y, x = torch.meshgrid(z, y, x)
@@ -179,22 +173,23 @@ class VolumeRaycaster(nn.Module):
         samples = torch.stack([x,y,z, torch.ones_like(x)], dim=-1).expand(bs,-1,-1,-1,-1)
         samples_poses = torch.bmm(samples.reshape(bs, -1, 4), inv_tfm).reshape(bs, self.ray_samples, self.h, self.w, 4)
 
-    def forward(self, vol, tfm=None):
+    def forward(self, vol, tfm=None, output_alpha=False):
         ''' Renders a volume (using given transforms) using raycasting.
         Args:
             vol (Tensor): Batch of volumes to render. Shape (BS, C, D, H, W)
             tfm (Tensor or function): Either a (BS, 4, 4) transformation matrix or a function
                 that transforms sample coordinates of shape `ray_samples, height, width, 4`.
+            output_alpha (bool): Whether to output RGBA instead of RGB. Default is False
         Returns:
-            Batch of projected images of shape (BS, 4, H, W) with RGB and Alpha channels
+            Batch of projected images of shape (BS, 3, H, W) with RGB (and optionally Alpha) channels
         '''
         density = vol[:, [3]]
         color   = vol[:, :3]
         bs = color.size(0)
         # Expand for all items in batch
-        sample_coords = self.samples.expand(bs, -1, -1, -1, -1)
+        sample_coords = self.samples.expand(bs, -1, -1, -1, -1).to(vol.device).to(vol.dtype)
         if torch.is_tensor(tfm):
-            tfm = tfm.to(self.dtype).to(self.device)
+            tfm = tfm.to(vol.dtype).to(vol.device)
             n_ch = tfm.size(-1)
             if   sample_coords.size(-1) < n_ch: sample_coords = homogenize_vec(sample_coords)
             elif sample_coords.size(-1) > n_ch: sample_coords = sample_coords[..., :n_ch]
@@ -205,7 +200,7 @@ class VolumeRaycaster(nn.Module):
             sample_coords[..., :3] /= sample_coords[..., [3]] # divide by homogeneous
             sample_coords = sample_coords[..., :3]
             self.sample_coords = sample_coords.cpu()
-        elif tfm is None: sample_coords
+        elif tfm is None: pass
         else: sample_coords = tfm(sample_coords)
         # Compute opacity and transmission along rays
         density = self.density_factor * density / self.ray_samples
@@ -221,4 +216,5 @@ class VolumeRaycaster(nn.Module):
         alpha  = 1.0 - torch.prod(1 - density, dim=2)
         render = render * alpha
         # Concatenate to RGBA image
-        return torch.cat([render, alpha], dim=1)
+        if output_alpha: return torch.cat([render, alpha], dim=1)
+        else:            return render

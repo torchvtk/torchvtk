@@ -20,7 +20,7 @@ class TorchDataset(Dataset):
             assert self.path.is_dir()
             items = self.path.rglob('*.pt')
             if filter_fn is not None:
-                items = filter(filter_fn, self.items)
+                items = filter(filter_fn, items)
             self.items = list(items)
         elif isinstance(ds_files, (list, tuple)):
             for f in ds_files:

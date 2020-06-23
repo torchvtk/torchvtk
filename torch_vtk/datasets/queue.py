@@ -6,7 +6,7 @@ import numpy as np
 
 from itertools import cycle
 from functools import partial
-import time, math, psutil
+import time, math, psutil, os
 
 from torch_vtk.datasets.torch_dataset import TorchDataset
 
@@ -106,7 +106,7 @@ class TorchQueueDataset(IterableDataset):
     def __len__(self): return self.epoch_len
 
     def get_dataloader(self, **kwargs):
-        return DataLoader(self, batch_size=1, collate_fn=noop, **kwargs)
+        return DataLoader(self, batch_size=1, collate_fn=lambda it: it[0], **kwargs)
 
     def batch_generator(self):
         ''' Generator for sampling the queue.
@@ -124,7 +124,7 @@ class TorchQueueDataset(IterableDataset):
 
     def __iter__(self): return iter(self.batch_generator())
 
-    def wait_fill_queue(self, fill_atleast=None, timeout=60, polling_interval=0.25):
+    def wait_fill_queue(self, fill_atleast=None, timeout=30, polling_interval=0.25):
         ''' Waits untill the queue is filled (`fill_atleast`=None) or until filled with at least `fill_atleast`. Timeouts.
         Args:
             fill_atleast (int): Waits until queue is at least filled with so many items.

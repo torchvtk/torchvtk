@@ -34,13 +34,13 @@ def apply_tf_tex_torch(vol, tf_tex):
         The preclassified volume of shape ([N,] C, D, H, W)
     '''
     nc, res = tf_tex.size(-2), tf_tex.size(-1)
-    tf_tex = tf_tex.to(vol.device).to(x.dtype)
-    out_shape = vol.shape
+    tf_tex = tf_tex.to(vol.device).to(torch.float32)
+    out_shape = list(vol.shape)
     out_shape[-4] = nc
     tf_flat  = tf_tex.reshape(-1, res)
-    x_flat   = torch.linspace(0, 1, res, device=x.device, dtype=x.dtype).expand(tf_flat.size(0))
-    vol_flat = torch.expand(out_shape).reshape(-1)
-    return Interp1d()(x_flat, tf_flat, vol_flat).reshape(out_shape)
+    x_flat   = torch.linspace(0, 1, res, device=vol.device, dtype=torch.float32).expand(tf_flat.size(0), -1)
+    vol_flat = vol.expand(out_shape).reshape(tf_flat.size(0), -1).to(torch.float32)
+    return Interp1d()(x_flat, tf_flat, vol_flat).reshape(out_shape).to(vol.dtype)
 
 def apply_tf_torch(x, tf_pts):
     ''' Applies the TF described by points `tf_pts` (N x [0,1]^C+1 with x pos and C channels) to `x`
@@ -77,4 +77,5 @@ class TransferFunctionApplication(torch.nn.Module):
         self.as_pts     = as_pts
 
     def forward(self, x, tf):
-        return apply_tf_torch(x, tf)
+        if self.as_pts: return apply_tf_torch(x, tf)
+        else:           return apply_tf_tex_torch(x, tf)
