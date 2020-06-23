@@ -11,7 +11,7 @@ from torch_vtk.augmentation.rotation_helper import RotationHelper
 
 class DictTransform(object):
 
-    def __init__(self, device="cpu", apply_on=["vol", "mask"], dtype=torch.float32, **kwargs):
+    def __init__(self, device="cpu", apply_on=["vol", "mask"], dtype=torch.float32):
         super().__init__()
 
         self.device = device
@@ -25,24 +25,24 @@ class DictTransform(object):
 
         for key in self.apply_on:
             #   put on the right device.
+            tmp = data[key]
             if self.device == "cuda":
-                key = key.to(self.device)
+                tmp = tmp.to(self.device)
 
             if self.dtype is torch.float16:
-                key = key.to(torch.float32)
+                tmp = tmp.to(torch.float32)
 
-            k = self.transform(data[key])
+            tmp = self.transform(tmp)
 
             if self.dtype is torch.float16:
-                k = k.to(torch.float16)
-            data[key] = k
+                tmp = tmp.to(torch.float16)
+            data[key] = tmp
         return data
-
 
 
 class RotateDictTransform(DictTransform):
 
-    def __init__(self, device, **kwargs):
+    def __init__(self, device, degree=4, axis=0, apply_on=["vol"], fillcolor_vol=0, fillcolor_mask=0, dtype=torch.float32):
         """
             ,axis=0, fillcolor_vol=-1024, fillcolor_mask=0, degree=10
         :param args:
@@ -52,40 +52,19 @@ class RotateDictTransform(DictTransform):
         :param degree:
         """
         # transform to args
-        # super(RotateDictTransform, self).__init__()
-        self.apply_on = kwargs["apply_on"]
-        DictTransform.__init__(self, func=RotateDictTransform, apply_on=self.apply_on, **kwargs)
-        self.degree = kwargs["degree"]
-        self.axis = kwargs["axis"]
-        self.fillcolor_vol = kwargs["fillcolor_vol"]
-        self.fillcolor_mask = kwargs["fillcolor_mask"]
-        self.device = device
-        self.rotation_helper = RotationHelper(self.device)
-
-    # @abstractmethod
-    # def __call__(self, sample):
-    #
-    #     # if apply on both then ...
-    #     if self.apply_on == ["vol"]:
-    #         self.transform_vol(self, sample)
-    #     else:
-    #         self.transform_vol_mask(self, sample[0], sample[1])
+        DictTransform.__init__(self, device, apply_on=apply_on, dtype=dtype)
+        self.degree = degree
+        self.axis = axis
+        self.fillcolor_vol = fillcolor_vol
+        self.fillcolor_mask = fillcolor_mask
+        self.rotation_helper = RotationHelper(device)
+        self.rotation_matrix = None
 
     def transform(self, data):
-        rotation_matrix = self.rotation_helper.get_rotation_matrix_random(1)
-        # vol = vol.squeeze(0)
-        if data.dtype is torch.float16:
-            vol = data.to(torch.float32)
-        vol = self.rotation_helper.rotate(vol, rotation_matrix)
-        return vol
-
-    def transform_vol_mask(self, vol, mask):
-        # to vol and mask.
-        rotation_matrix = RotationHelper.get_rotation_matrix_random(1)
-        vol = RotationHelper.rotate(vol, rotation_matrix)
-        mask = RotationHelper.rotate(mask, rotation_matrix)
-
-        return [vol, mask]
+        if self.rotation_matrix is None:
+            rotation_matrix = self.rotation_helper.get_rotation_matrix_random(1)
+        data = self.rotation_helper.rotate(data, rotation_matrix)
+        return data
 
 
 class NoiseDictTransform(DictTransform):

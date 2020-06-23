@@ -7,21 +7,19 @@ from torch_vtk.augmentation.DictTransform import BlurDictTransform, NoiseDictTra
 
 # import test image
 file_path = os.path.join("D:", os.sep, "DownloadDatasets", "medical_decathlon", "Numpy", "torch", "0.pt")
-
 file = torch.load(file_path)
 
-# Test Dict Transform.
-
+# Test Noise Transform.
 tfms = NoiseDictTransform(device="cpu", apply_on=["vol"], noise_variance=(0.01, 0.02))
-
 noise_cpu = tfms(file)
 del tfms
 tfms = NoiseDictTransform(device="cuda", apply_on=["vol"], noise_variance=(0.01, 0.02))
 noise_gpu = tfms(file)
-#
+
+
 # check for random rotation
 # fixme rotation is on the wrong axis and resampling does not seem to work
-tfms = RotateDictTransform( device="cpu", degree=4, axis=0, apply_on=["vol"], fillcolor_vol=0, fillcolor_mask=0)
+tfms = RotateDictTransform(device="cpu", degree=4, axis=0, apply_on=["vol"], fillcolor_vol=0, fillcolor_mask=0)
 noise_cpu = tfms(file)
 noise_cpu["vol"] = noise_cpu["vol"].squeeze(0).squeeze(0)
 view_batch(noise_cpu["vol"], width=512, height=512)
