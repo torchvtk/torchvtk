@@ -2,7 +2,6 @@
 PyTorch volume data loading framework
 
 ### Installation Instructions
-Requires Python 3 <= 3.6, we recommend using a conda environment with the following setup for development
 ```
 pip install git+https://github.com/xeTaiz/torchvtk.git@master#egg=torchvtk
 # Optional for DICOM stuff only:
@@ -10,6 +9,7 @@ conda create --name "tvtk" python=3.6 && conda activate tvtk
 conda install gdcm -c conda-forge
 pip install pydicom dicom_numpy h5py numpy matplotlib
 ```
+If you need DICOM, and thus gdcm, your Python version needs to be <=3.6
 Modify `tvtk` in the third line (both after `--name` and at the end of the line) to your preferred environment name or just add the required packages to your existing environment.
 Note that the restriction to Python <= 3.6 is due to `gdcm` and higher version should work as well if you don't need DICOM loading capabilities.
 
