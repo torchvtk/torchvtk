@@ -24,8 +24,11 @@ class DictTransform(object):
     def __call__(self, data):
 
         for key in self.apply_on:
-            #   put on the right device.
             tmp = data[key]
+
+            if not torch.is_tensor(tmp):
+                tmp = torch.from_numpy(tmp)
+
             if self.device == "cuda":
                 tmp = tmp.to(self.device)
 
@@ -36,6 +39,10 @@ class DictTransform(object):
 
             if self.dtype is torch.float16:
                 tmp = tmp.to(torch.float16)
+            elif self.dtype is not torch.float16 or torch.float32:
+                tmp = tmp.to(torch.float32)
+            tmp = tmp.to(self.device)
+            # back on device?
             data[key] = tmp
         return data
 
@@ -73,9 +80,10 @@ class NoiseDictTransform(DictTransform):
 
         self.device = device
         self.noise_variance = noise_variance
-        DictTransform.__init__(self, self.device, apply_on=apply_on)
+        DictTransform.__init__(self, self.device, apply_on=apply_on, dtype=dtype)
 
     def transform(self, data):
+        #todo allow for batch
         variance = random.uniform(self.noise_variance[0], self.noise_variance[1])
         noise = np.random.normal(0.0, variance, size=data.shape)
         noise = torch.from_numpy(noise)
@@ -123,6 +131,7 @@ class BlurDictTransform(DictTransform):
 
         # todo check if that method of assigning works
         # self.register_buffer('weight', kernel)
+        kernel = kernel.to(self.device)
         self.weight = kernel
         self.groups = self.channels
 
