@@ -2,8 +2,8 @@ from setuptools import setup, find_packages
 setup(
     name="torchvtk",
     description="Efficient data loading and visualization for volumes in PyTorch",
-    version="0.1",
-    packages=['torchvtk'],
+    version="0.2.1",
+    packages=find_packages(),
     install_requires=[
         'torch', 'torchvision', 'numpy', 'matplotlib'
     ],
