@@ -31,10 +31,10 @@ file = torch.load(file_path)
 
 # Cropping
 view_batch(file["vol"], width=512, height=512)
-tfms = CroppingTransform(device="cpu",  apply_on=["vol"], dtype=torch.float32)
+tfms = CroppingTransform(device="cuda",  apply_on=["vol"], dtype=torch.float32)
 noise_cpu = tfms(file)
 noise_cpu["vol"] = noise_cpu["vol"].squeeze(0).squeeze(0)
-view_batch(noise_cpu["vol"], width=200, height=200)
+view_batch(noise_cpu["vol"], width=512, height=512)
 del tfms
 
 # check for random rotation

@@ -145,7 +145,7 @@ class BlurDictTransform(DictTransform):
 
 
 class CroppingTransform(DictTransform):
-    def __init__(self, apply_on=["vol"], dtype=torch.float32, device= "cpu", size=200, position=0):
+    def __init__(self, apply_on=["vol"], dtype=torch.float32, device= "cpu", size=20, position=0):
         DictTransform.__init__(self, device=device, apply_on=apply_on, dtype=dtype)
         self.size = size
         self.position = position
@@ -159,10 +159,15 @@ class CroppingTransform(DictTransform):
         ''' Crops `t` in the last 3 dimensions for given 3D `min_i` and `max_i` like t[..., min_i[j]:max_i[j],..]'''
         return t[..., min_i[0]:max_i[0], min_i[1]:max_i[1], min_i[2]:max_i[2]]
 
+    # fixme wrong dimensions get cropped
     def get_crop_around(self, data, mid, size):
-        return data[mid[0] - size // 2:  mid[0] + size // 2,
-               mid[1] - size // 2:  mid[1] + size // 2,
-               mid[2] - size // 2:  mid[2] + size // 2]
+        size = size // 2
+        if mid[0] == 0:
+            mid = mid.squeeze(0)
+        return data[...,mid[1] - size:mid[1] + size,
+               mid[2] - size:  mid[2] + size,
+               mid[3] - size:  mid[3] + size]
 
     def get_center_crop(self, data, size):
+        t = torch.Tensor([*data.shape]) // 2
         return self.get_crop_around(data, (torch.Tensor([*data.shape]) // 2).long(), size)
