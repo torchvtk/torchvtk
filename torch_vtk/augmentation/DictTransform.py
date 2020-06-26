@@ -164,9 +164,9 @@ class CroppingTransform(DictTransform):
         size = size // 2
         if mid[0] == 0:
             mid = mid.squeeze(0)
-        return data[...,mid[1] - size:mid[1] + size,
-               mid[2] - size:  mid[2] + size,
-               mid[3] - size:  mid[3] + size]
+        return data[...,mid[-3] - size:mid[-3] + size,
+               mid[-2] - size:  mid[-2] + size,
+               mid[-1] - size:  mid[-1] + size]
 
     def get_center_crop(self, data, size):
         t = torch.Tensor([*data.shape]) // 2
