@@ -106,7 +106,7 @@ class BlurDictTransform(DictTransform):
         self.sigma = [sigma, sigma, sigma]
         self.kernel_size = kernel_size
         self.device = device
-        DictTransform.__init__(self, self.device, apply_on=apply_on)
+        DictTransform.__init__(self, self.device, apply_on=apply_on, dtype=dtype)
         # code from: https://discuss.pytorch.org/t/is-there-anyway-to-do-gaussian-filtering-for-an-image-2d-3d-in-pytorch/12351/10
         # initialize conv layer.
         kernel = 1
@@ -144,19 +144,25 @@ class BlurDictTransform(DictTransform):
         return vol
 
 
-class Cropping(DictTransform):
-    def __init__(self, **kwargs):
-        super(Cropping, self).__init__(**kwargs)
-        DictTransform.__init__(self, **kwargs)
+class CroppingTransform(DictTransform):
+    def __init__(self, apply_on=["vol"], dtype=torch.float32, device= "cpu", size=200, position=0):
+        DictTransform.__init__(self, device=device, apply_on=apply_on, dtype=dtype)
+        self.size = size
+        self.position = position
+
+
+    def transform(self, data):
+        data= self.get_center_crop(data, self.size)
+        return data
 
     def get_crop(self, t, min_i, max_i):
         ''' Crops `t` in the last 3 dimensions for given 3D `min_i` and `max_i` like t[..., min_i[j]:max_i[j],..]'''
         return t[..., min_i[0]:max_i[0], min_i[1]:max_i[1], min_i[2]:max_i[2]]
 
-    def get_crop_around(self, t, mid, size):
-        return t[mid[0] - size // 2:  mid[0] + size // 2,
+    def get_crop_around(self, data, mid, size):
+        return data[mid[0] - size // 2:  mid[0] + size // 2,
                mid[1] - size // 2:  mid[1] + size // 2,
                mid[2] - size // 2:  mid[2] + size // 2]
 
-    def get_center_crop(self, t, size):
-        return self.get_crop_around(t, (torch.Tensor([*t.shape]) // 2).long(), size)
+    def get_center_crop(self, data, size):
+        return self.get_crop_around(data, (torch.Tensor([*data.shape]) // 2).long(), size)
