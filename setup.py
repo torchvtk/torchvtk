@@ -1,13 +1,13 @@
 from setuptools import setup, find_packages
 from pathlib import Path
 
-with open(Path(__file__).parent/'README.md') as f:
+with open(Path(__file__).parent/'README.md', encoding='utf-8') as f:
     long_description = f.read()
 setup(
     name="torchvtk",
     description="Efficient data loading and visualization for volumes in PyTorch",
     long_description=long_description,
-    long_description_context_type='text/markdown',
+    long_description_content_type='text/markdown',
     version="0.2.4",
     packages=find_packages(),
     url='https://github.com/xeTaiz/torchvtk',
