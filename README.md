@@ -1,7 +1,11 @@
 # torchvtk
 PyTorch volume data loading framework
+![Upload Python Package](https://github.com/xeTaiz/torchvtk/workflows/Upload%20Python%20Package/badge.svg?event=release)
 
 ## Installation Instructions
+The latest GitHub release is pushed to PyPi:
+![Upload Python Package](https://github.com/xeTaiz/torchvtk/workflows/Upload%20Python%20Package/badge.svg?event=release)
+To get the master run:
 ```
 pip install git+https://github.com/xeTaiz/torchvtk.git@master#egg=torchvtk
 ```
