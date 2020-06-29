@@ -4,6 +4,8 @@ setup(
     description="Efficient data loading and visualization for volumes in PyTorch",
     version="0.2.1",
     packages=find_packages(),
+    url='https://github.com/xeTaiz/torchvtk',
+    author='Dominik Engel, Marc Mezger',
     install_requires=[
         'torch', 'torchvision', 'numpy', 'matplotlib'
     ],
