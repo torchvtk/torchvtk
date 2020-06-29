@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 from pathlib import Path
 
-with open(Path(__file__)/'README.md') as f:
+with open(Path(__file__).parent/'README.md') as f:
     long_description = f.read()
 setup(
     name="torchvtk",
