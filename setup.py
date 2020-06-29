@@ -8,7 +8,7 @@ setup(
     description="Efficient data loading and visualization for volumes in PyTorch",
     long_description=long_description,
     long_description_context_type='text/markdown',
-    version="0.2.1",
+    version="0.2.4",
     packages=find_packages(),
     url='https://github.com/xeTaiz/torchvtk',
     author='Dominik Engel, Marc Mezger',
