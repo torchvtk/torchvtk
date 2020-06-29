@@ -119,8 +119,7 @@ class TorchQueueDataset(IterableDataset):
             if self.mode == 'onsample':
                 self.queue.pop()
                 self.sample_event.set()
-            if self.bs == 1: yield samples[0]
-            else:            yield self.batch_tfm(self.collate_fn(samples))
+            yield self.batch_tfm(self.collate_fn(samples))
 
     def __iter__(self): return iter(self.batch_generator())
 
