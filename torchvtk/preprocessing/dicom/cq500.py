@@ -6,7 +6,7 @@ import torch
 import dicom_numpy
 
 from utils import *
-from torch_vtk.utils.volume_utils import normalize_hounsfield, normalize_voxel_scale, make_4d
+from torchvtk.utils.volume_utils import normalize_hounsfield, normalize_voxel_scale, make_4d
 
 def get_volume_gen(volume_dirs, apply_dcm_rescale=False, permute_c_contiguous=True):
     ''' Make a generator that loads volumes from a list of volume directories, `volume_dirs`.

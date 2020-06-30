@@ -1,6 +1,6 @@
 #%%
 import torch
-from torch_vtk.utils.volume_utils import make_nd, normalize_hounsfield
+from torchvtk.utils.volume_utils import make_nd, normalize_hounsfield
 import numpy as np
 
 import unittest

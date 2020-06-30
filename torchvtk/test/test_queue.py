@@ -1,8 +1,8 @@
 #%%
 import torch
 
-from torch_vtk.datasets.queue import TorchQueueDataset
-from torch_vtk.datasets.torch_dataset import TorchDataset
+from torchvtk.datasets.queue import TorchQueueDataset
+from torchvtk.datasets.torch_dataset import TorchDataset
 
 
 # %%

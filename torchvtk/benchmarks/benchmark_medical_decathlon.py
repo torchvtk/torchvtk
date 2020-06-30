@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data.sampler import SubsetRandomSampler
 
-from torch_vtk.datasets.hdf5_dataset import H5Dataset
+from torchvtk.datasets.hdf5_dataset import H5Dataset
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':

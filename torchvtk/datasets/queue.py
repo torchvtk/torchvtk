@@ -8,7 +8,7 @@ from itertools import cycle
 from functools import partial
 import time, math, psutil, os
 
-from torch_vtk.datasets.torch_dataset import TorchDataset
+from torchvtk.datasets.torch_dataset import TorchDataset
 
 #%%
 def noop(a, *args, **kwargs): return a
@@ -36,8 +36,8 @@ def load_always(ds, queue, q_maxlen, tfm=noop):
         for i in idxs:
             d = tfm(ds[i])
             _share_mem(d)
-            if len(queue) >= q_maxlen: queue.pop()
             queue.insert(0, d)
+            if len(queue) >= q_maxlen: queue.pop()
 
 def load_onsample(ds, queue, q_maxlen, sample_event, tfm=noop):
     ''' Worker job used to fill queue on sampling. '''
@@ -114,13 +114,12 @@ class TorchQueueDataset(IterableDataset):
         Returns: Generator that samples randomly samples batches from the queue.
         '''
         while True:
-            idxs = torch.randperm(len(self.queue))[:self.bs]
+            idxs = torch.randperm(min(len(self.queue), self.q_maxlen))[:self.bs]
             samples = [self.sample_tfm(self.queue[i]) for i in idxs]
             if self.mode == 'onsample':
                 self.queue.pop()
                 self.sample_event.set()
-            if self.bs == 1: yield samples[0]
-            else:            yield self.batch_tfm(self.collate_fn(samples))
+            yield self.batch_tfm(self.collate_fn(samples))
 
     def __iter__(self): return iter(self.batch_generator())
 

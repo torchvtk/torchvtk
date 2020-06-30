@@ -4,8 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 
-from torch_vtk.rendering.raycast import *
-from torch_vtk.utils.tf_utils    import apply_tf_torch, read_inviwo_tf
+from torchvtk.rendering.raycast import *
+from torchvtk.utils.tf_utils    import apply_tf_torch, read_inviwo_tf
 
 # TODO: Add tests whether results with different dtypes (maybe devices) are similar.
 # TODO: Also maybe save reference image to reproduce in tests

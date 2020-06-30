@@ -3,8 +3,8 @@ from pathlib  import Path
 
 import torch
 
-from torch_vtk.datasets.hdf5_dataset import H5DatasetReopen, H5DatasetOpenOnce
-from torch_vtk.benchmarks.benchmark_dataset import run_benchmark, print_results
+from torchvtk.datasets.hdf5_dataset import H5DatasetReopen, H5DatasetOpenOnce
+from torchvtk.benchmarks.benchmark_dataset import run_benchmark, print_results
 
 if __name__ == '__main__':
     parser = ArgumentParser('Benchmark CQ500 loading', description='''

@@ -9,32 +9,32 @@
 
 
 ## CQ500 TorchDataset 395 examples
-![CQ500 Results on Domes PC](torch_volume_dataloaders/benchmarks/results/cq500_torch.png)
+![CQ500 Results on Domes PC](torchvtk/benchmarks/results/cq500_torch.png)
 
 Total Time: 278.9s
 Average Time: 0.706s
 Max Time: 1.948s
 
 ## CQ500 H5Dataset 395 examples (Reopen file handle on `__getitem__`)
-![CQ500 Results H5 Dome](torch_volume_dataloaders/benchmarks/results/cq500_hdf5_reopen.png)
+![CQ500 Results H5 Dome](torchvtk/benchmarks/results/cq500_hdf5_reopen.png)
 Total Time: 2276.3s
 Average Time: 5.76s
 Max Time: 13.53s
 
 ## CQ500 H5Dataset 395 examples (Open file once)
-![CQ500 Results H5 Dome](torch_volume_dataloaders/benchmarks/results/cq500_hdf5_openonce.png)
+![CQ500 Results H5 Dome](torchvtk/benchmarks/results/cq500_hdf5_openonce.png)
 Total Time: 2271.3s
 Average Time: 5.75s
 Max Time: 13.0s
 
 ## CQ500 H5Dataset 395 Examples (LZF Compression)
-![CQ500 Results H5 Dome](torch_volume_dataloaders/benchmarks/results/cq500_hdf5_lzf.png)
+![CQ500 Results H5 Dome](torchvtk/benchmarks/results/cq500_hdf5_lzf.png)
 Total Time: 4698.6s
 Average Time: 11.9s
 Max Time: 47.0s
 
 ## CQ500 H5Dataset 395 Examples (GZIP Compression)
-![CQ500 Results H5 Dome](torch_volume_dataloaders/benchmarks/results/cq500_hdf5_gzip.png)
+![CQ500 Results H5 Dome](torchvtk/benchmarks/results/cq500_hdf5_gzip.png)
 Total Time: 8823.2s
 Average Time: 22.34s
 Max Time: 98.55s

@@ -1,6 +1,0 @@
-[submodule "ext/torchinterp1d"]
-	path = ext/torchinterp1d
-	url = https://github.com/aliutkus/torchinterp1d.git
-[submodule "ext/torchsearchsorted"]
-	path = ext/torchsearchsorted
-	url = https://github.com/aliutkus/torchsearchsorted.git

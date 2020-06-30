@@ -4,8 +4,8 @@ from pathlib  import Path
 
 import torch
 
-from torch_vtk.datasets.torch_dataset import TorchDataset
-from torch_vtk.benchmarks.benchmark_dataset import run_benchmark
+from torchvtk.datasets.torch_dataset import TorchDataset
+from torchvtk.benchmarks.benchmark_dataset import run_benchmark
 
 if __name__ == '__main__':
     parser = ArgumentParser('Benchmark CQ500 loading', description='''
