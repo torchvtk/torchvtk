@@ -3,7 +3,7 @@ import os
 import torch
 from batchviewer import view_batch
 
-from torch_vtk.augmentation.DictTransform import BlurDictTransform, NoiseDictTransform, DictTransform, RotateDictTransform, CroppingTransform
+from torchvtk.augmentation.DictTransform import BlurDictTransform, NoiseDictTransform, RotateDictTransform, CroppingTransform
 
 # import test image
 file_path = os.path.join("D:", os.sep, "DownloadDatasets", "medical_decathlon", "Numpy", "torch", "0.pt")
@@ -30,12 +30,12 @@ file = torch.load(file_path)
 # file["vol"] = file["vol"].to("cpu")
 
 # Cropping
-view_batch(file["vol"], width=512, height=512)
-tfms = CroppingTransform(device="cuda",  apply_on=["vol"], dtype=torch.float32)
-noise_cpu = tfms(file)
-noise_cpu["vol"] = noise_cpu["vol"].squeeze(0).squeeze(0)
-view_batch(noise_cpu["vol"], width=512, height=512)
-del tfms
+# view_batch(file["vol"], width=512, height=512)
+# tfms = CroppingTransform(device="cuda",  apply_on=["vol"], dtype=torch.float32)
+# noise_cpu = tfms(file)
+# noise_cpu["vol"] = noise_cpu["vol"].squeeze(0).squeeze(0)
+# view_batch(noise_cpu["vol"], width=512, height=512)
+# del tfms
 
 # check for random rotation
 # fixme rotation is on the wrong axis and resampling does not seem to work

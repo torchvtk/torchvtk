@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from torch.nn import functional as f
 
-from torch_vtk.augmentation.rotation_helper import RotationHelper
+from torchvtk.augmentation.rotation_helper import RotationHelper
 
 
 class DictTransform(object):
