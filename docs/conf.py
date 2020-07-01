@@ -59,6 +59,8 @@ html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
 napoleon_include_init_with_doc = True
+autodoc_mock_imports = ['torch', 'torchvision', 'numpy', 'matplotlib', 'tqdm',
+    'pydicom', 'dicom_numpy', 'torchinterp1d', 'torchsearchsorted', 'psutil']
 
 from recommonmark.transform import AutoStructify
 github_root_doc = 'https://github.com/xeTaiz/torchvtk/tree/master/docs/'
