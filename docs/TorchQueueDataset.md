@@ -5,9 +5,10 @@ Depending on how fast you can actually load your data compared to running your n
 
 
 ```eval_rst
-.. autoclass:: torchvtk.datasets.TorchQueueDataset
-   :members:
-   :undoc-members:
-   :inherited-members:
-   :show-inheritance:
+.. automodule:: torchvtk.datasets
+..autoclass:: TorchQueueDataset
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
 ```

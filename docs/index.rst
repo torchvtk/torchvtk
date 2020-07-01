@@ -7,8 +7,8 @@ Welcome to torchvtk's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   TorchDataset
-   TorchQueueDataset
+   TorchDataset.md
+   TorchQueueDataset.md
 
 Indices and tables
 ==================
