@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 import torch
 import h5py
 
-from torchvtk.datasets.torch_dataset import TorchDataset
+from torchvtk.datasets import TorchDataset
 
 def torch_to_hdf5(torch_ds, hdf5_path, compression=None):
     ''' Converts a given TorchDataset `torch_ds` to a HDF5 Dataset and saves it to a given path

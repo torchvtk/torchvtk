@@ -1,9 +1,13 @@
 #%%
 import torch
+import torch.multiprocessing as mp
 from torch.utils.data import Dataset
 
 from pathlib import Path
-
+import shutil, json
+import torchvtk.datasets.urls as urls
+from torchvtk.datasets.download import download_all, extract_all
+from torchvtk.converters.dicom.cq500 import cq500_to_torch
 
 class TorchDataset(Dataset):
     ''' A Dataset loading serialized PyTorch tensors from disk. '''
@@ -37,3 +41,60 @@ class TorchDataset(Dataset):
         if self.preprocess_fn is not None:
               return self.preprocess_fn(data)
         else: return data
+
+    def cache_processed(self, process_fn, name, num_workers=0, delete_old_from_disk=False):
+        ''' Processes the given TorchDataset and serializes it (using the same root directory)
+        Args:
+            process_fn (function): The function to be applied on the inidividual items
+            name (str): Name of the new processed dataset
+            num_workers (int > 0): Number of threads used for processing
+            delete_old_from_disk (bool): If True, the root directory of the old, unprocessed, dataset is removed from disk.
+        Returns
+            TorchDataset with the new items. (no filter or preprocess fn set)
+        '''
+        target_path = self.path.parent/name
+        print(f'Preprocessing TorchDataset ({self.path}) to {target_path}...')
+        def work_fn(i):
+            fn = self.items[i]
+            tfn = target_path/fn.name
+            torch.save(torch.load(fn), tfn)
+
+        if num_workers > 0:
+            with mp.Pool(num_workers) as p:
+                p.map(work_fn, [i for i in range(len(self))])
+        else:
+            for i in range(len(self)): work_fn(i)
+
+        items = target_path.rglob('*.pt')
+        assert len(items) == len(self)
+        if delete_old_from_disk: shutil.rmtree(self.path)
+        return TorchDataset(items)
+
+    @staticmethod
+    def CQ500(tvtk_ds_path='~/.torchvtk/', num_workers=0, **kwargs):
+        ''' Get the QureAI CQ500 Dataset. Downloads, extracts and converts to TorchDataset if not locally available
+            Find the dataset here: http://headctstudy.qure.ai/dataset
+            Credits to Chilamkurthy et al. https://arxiv.org/abs/1803.05854
+        Args:
+            tvtk_ds_path(str, Path): Path where your torchvtk datasets shall be saved.
+            num_workers (int): Number of processes used for downloading, extracting, converting
+            **kwargs: Keyword arguments to pass on to TorchDataset.__init__()
+        Returns:
+            TorchDataset containing CQ500.
+        '''
+        path = Path(tvtk_ds_path).expanduser()
+        path.mkdir(exist_ok=True)
+        cq500path = path/'CQ500'
+        if cq500path.exists() and len(os.listdir(cq500path)) > 0:
+            return TorchDataset(cq500path, **kwargs)
+        else:
+            orig_path = path/'CQ500_orig'
+            print(f'Downloading CQ500 dataset to {orig_path}...')
+            files = download_all(urls.cq500, orig_path, num_workers=num_workers)
+            print('Extracting CQ500 dataset...')
+            files = extract_all(orig_path, delete_archives=True, num_workers=num_workers)
+            print(f'Converting CQ500 dataset to TorchDataset (in {cq500path})...')
+            cq500_to_torch(orig_path, cq500path, num_workers=num_workers)
+            print(f'Removing original CQ500 files ({orig_path})...')
+            shutil.rmtree(orig_path)
+            return TorchDataset(cq500path, **kwargs)

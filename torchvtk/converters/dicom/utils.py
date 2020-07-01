@@ -9,7 +9,7 @@ import pydicom
 import dicom_numpy
 
 __all__ = ['hidden_prints', 'hidden_errors', 'read_dicom_folder', 'get_largest_dir',
-    'num_slices_between', 'get_volume_dirs']
+    'num_slices_between']
 
 @contextmanager
 def hidden_prints():
