@@ -8,6 +8,7 @@ Welcome to torchvtk's documentation!
    :caption: Contents:
 
    TorchDataset
+   TorchQueueDataset
 
 Indices and tables
 ==================
