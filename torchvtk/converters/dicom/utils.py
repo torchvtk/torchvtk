@@ -31,10 +31,14 @@ def requires_dicom(func):
     else:          return _dummy
 
 @requires_dicom
-def test_has_dicom(): 'Tests if pydicom and dicom_numpy are installed.' pass
+def test_has_dicom():
+    'Tests if pydicom and dicom_numpy are installed.'
+    pass
 
 @requires_gdcm
-def test_has_gdcm(): 'Tests if gdcm (and thus pydicom) is installed.' pass
+def test_has_gdcm():
+    'Tests if gdcm (and thus pydicom) is installed.'
+    pass
 
 @contextmanager
 def hidden_prints():

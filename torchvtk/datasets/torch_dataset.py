@@ -10,9 +10,9 @@ from torchvtk.datasets.download import download_all, extract_all
 from torchvtk.converters.dicom import cq500_to_torch, test_has_gdcm
 
 class TorchDataset(Dataset):
-    ''' A Dataset loading serialized PyTorch tensors from disk. '''
     def __init__(self, ds_files, filter_fn=None, preprocess_fn=None):
-        ''' Initializes TorchDataset
+        ''' A dataset that uses serialized PyTorch Tensors
+
         Args:
             ds_files (str, Path (Dict), List of Path (Files)): Path to the TorchDataset directory (containing *.pt) or list of paths pointing to .pt files
             filter_fn (function): Function that filters the found items. Input is filepath
@@ -43,14 +43,19 @@ class TorchDataset(Dataset):
         else: return data
 
     def cache_processed(self, process_fn, name, num_workers=0, delete_old_from_disk=False):
-        ''' Processes the given TorchDataset and serializes it (using the same root directory)
+        ''' Processes the given TorchDataset and serializes it.
+        Iterates through the dataset and applies the given `process_fn` to each item (which should be a dictionary).
+        The resulting new dataset will be serialized next to the old one, using then given `name`.
+        This function can work multithreaded.
+
         Args:
             process_fn (function): The function to be applied on the inidividual items
             name (str): Name of the new processed dataset
             num_workers (int > 0): Number of threads used for processing
             delete_old_from_disk (bool): If True, the root directory of the old, unprocessed, dataset is removed from disk.
-        Returns
-            TorchDataset with the new items. (no filter or preprocess fn set)
+
+        Returns:
+            TorchDataset with the new items. (no filter or preprocess_fn set)
         '''
         target_path = self.path.parent/name
         print(f'Preprocessing TorchDataset ({self.path}) to {target_path}...')
@@ -72,13 +77,16 @@ class TorchDataset(Dataset):
 
     @staticmethod
     def CQ500(tvtk_ds_path='~/.torchvtk/', num_workers=0, **kwargs):
-        ''' Get the QureAI CQ500 Dataset. Downloads, extracts and converts to TorchDataset if not locally available
-            Find the dataset here: http://headctstudy.qure.ai/dataset
-            Credits to Chilamkurthy et al. https://arxiv.org/abs/1803.05854
+        ''' Get the QureAI CQ500 Dataset.
+        Downloads, extracts and converts to TorchDataset if not locally available
+        Find the dataset here: http://headctstudy.qure.ai/dataset
+        Credits to Chilamkurthy et al. https://arxiv.org/abs/1803.05854
+
         Args:
             tvtk_ds_path(str, Path): Path where your torchvtk datasets shall be saved.
             num_workers (int): Number of processes used for downloading, extracting, converting
             **kwargs: Keyword arguments to pass on to TorchDataset.__init__()
+
         Returns:
             TorchDataset containing CQ500.
         '''
