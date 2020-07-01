@@ -17,7 +17,8 @@ In the case of an item from the [CQ500](CQ500.md) datasets, data would be a dict
 Note that volumes saved in the torchvtk format are always scaled to `[0,1]` and saved as `torch.float16` or `torch.float32`. Also the shape for single-channel volumes is always 4-dimensional: `(1, D, H, W)`.
 
 ```eval_rst
-.. autoclass:: torchvtk.datasets.TorchDataset
+.. automodule:: torchvtk.datasets
+.. autoclass:: TorchDataset
    :members:
    :undoc-members:
    :inherited-members:
