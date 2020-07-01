@@ -2,13 +2,14 @@
 Welcome to torchvtk's documentation!
 ====================================
 
-
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Documentation:
 
    TorchDataset.md
    TorchQueueDataset.md
+
+
 
 Indices and tables
 ==================
