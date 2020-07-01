@@ -25,6 +25,7 @@ jobs:
     - name: Run Sphinx 
       uses: ammaraskar/sphinx-action@0.4
       with:
+        pre-build-command: "apt-get update -y && apt-get install -y git"
         docs-folder: "docs/"
     - name: Upload HTML Documentation as Artifact
       uses: actions/upload-artifact@v1
