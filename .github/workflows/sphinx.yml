@@ -21,6 +21,8 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
+    - name: Install torchvtk
+      run: pip install .
     - uses: ammaraskar/sphinx-action@0.4
       with:
         docs-folder: "docs/"
