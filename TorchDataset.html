@@ -159,7 +159,7 @@ Each volume is stored together as a serialized binary PyTorch file (<code class=
 <span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;/path/to/file.pt´)</span>
 </pre></div>
 </div>
-<p>In the case of an item from the <a class="reference external" href="CQ500">CQ500</a> datasets, data would be a dictionary of the form</p>
+<p>In the case of an item from the <a class="reference internal" href="#torchvtk.datasets.TorchDataset.CQ500" title="torchvtk.datasets.TorchDataset.CQ500"><a class="reference external" href="CQ500">CQ500</a></a> datasets, data would be a dictionary of the form</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
    <span class="s1">&#39;vol&#39;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(),</span>     <span class="c1"># Volume tensor of shape (C, D, H, W)</span>
    <span class="s1">&#39;vox_scl&#39;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(),</span> <span class="c1"># Scale of the voxels (for rectangular grids)</span>
@@ -168,6 +168,70 @@ Each volume is stored together as a serialized binary PyTorch file (<code class=
 </pre></div>
 </div>
 <p>Note that volumes saved in the torchvtk format are always scaled to <code class="docutils literal notranslate"><span class="pre">[0,1]</span></code> and saved as <code class="docutils literal notranslate"><span class="pre">torch.float16</span></code> or <code class="docutils literal notranslate"><span class="pre">torch.float32</span></code>. Also the shape for single-channel volumes is always 4-dimensional: <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">D,</span> <span class="pre">H,</span> <span class="pre">W)</span></code>.</p>
+<span class="target" id="module-torchvtk.datasets"></span><dl class="class">
+<dt id="torchvtk.datasets.TorchDataset">
+<em class="property">class </em><code class="sig-prename descclassname">torchvtk.datasets.</code><code class="sig-name descname">TorchDataset</code><span class="sig-paren">(</span><em class="sig-param">ds_files</em>, <em class="sig-param">filter_fn=None</em>, <em class="sig-param">preprocess_fn=None</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.datasets.TorchDataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.utils.data.Dataset</span></code></p>
+<dl class="method">
+<dt id="torchvtk.datasets.TorchDataset.CQ500">
+<em class="property">static </em><code class="sig-name descname">CQ500</code><span class="sig-paren">(</span><em class="sig-param">tvtk_ds_path='~/.torchvtk/'</em>, <em class="sig-param">num_workers=0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.datasets.TorchDataset.CQ500" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the QureAI CQ500 Dataset.
+Downloads, extracts and converts to TorchDataset if not locally available
+Find the dataset here: <a class="reference external" href="http://headctstudy.qure.ai/dataset">http://headctstudy.qure.ai/dataset</a>
+Credits to Chilamkurthy et al. <a class="reference external" href="https://arxiv.org/abs/1803.05854">https://arxiv.org/abs/1803.05854</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tvtk_ds_path</strong> (<em>str</em><em>, </em><em>Path</em>) – Path where your torchvtk datasets shall be saved.</p></li>
+<li><p><strong>num_workers</strong> (<em>int</em>) – Number of processes used for downloading, extracting, converting</p></li>
+<li><p><strong>**kwargs</strong> – Keyword arguments to pass on to TorchDataset.__init__()</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>TorchDataset containing CQ500.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.datasets.TorchDataset.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">ds_files</em>, <em class="sig-param">filter_fn=None</em>, <em class="sig-param">preprocess_fn=None</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.datasets.TorchDataset.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dataset that uses serialized PyTorch Tensors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ds_files</strong> (<em>str</em><em>, </em><em>Path</em><em> (</em><em>Dict</em><em>)</em><em>, </em><em>List of Path</em><em> (</em><em>Files</em><em>)</em>) – Path to the TorchDataset directory (containing <a href="#id1"><span class="problematic" id="id2">*</span></a>.pt) or list of paths pointing to .pt files</p></li>
+<li><p><strong>filter_fn</strong> (<em>function</em>) – Function that filters the found items. Input is filepath</p></li>
+<li><p><strong>preprocess_fn</strong> (<em>function</em>) – Function to process the loaded dirctionary.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.datasets.TorchDataset.cache_processed">
+<code class="sig-name descname">cache_processed</code><span class="sig-paren">(</span><em class="sig-param">process_fn</em>, <em class="sig-param">name</em>, <em class="sig-param">num_workers=0</em>, <em class="sig-param">delete_old_from_disk=False</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.datasets.TorchDataset.cache_processed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Processes the given TorchDataset and serializes it.
+Iterates through the dataset and applies the given <cite>process_fn</cite> to each item (which should be a dictionary).
+The resulting new dataset will be serialized next to the old one, using then given <cite>name</cite>.
+This function can work multithreaded.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>process_fn</strong> (<em>function</em>) – The function to be applied on the inidividual items</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Name of the new processed dataset</p></li>
+<li><p><strong>num_workers</strong> (<em>int &gt; 0</em>) – Number of threads used for processing</p></li>
+<li><p><strong>delete_old_from_disk</strong> (<em>bool</em>) – If True, the root directory of the old, unprocessed, dataset is removed from disk.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>TorchDataset with the new items. (no filter or preprocess_fn set)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 
