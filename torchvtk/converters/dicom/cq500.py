@@ -4,11 +4,12 @@ from argparse import ArgumentParser
 import numpy as np
 import torch
 import torch.multiprocessing as mp
-import dicom_numpy
 
-from .utils import hidden_errors, read_dicom_folder, num_slices_between
-from torchvtk.utils.volume_utils import normalize_hounsfield, normalize_voxel_scale, make_4d
+from .utils import hidden_errors, read_dicom_folder, num_slices_between, requires_dicom, requires_gdcm
+from torchvtk.utils import pool_map, normalize_hounsfield, normalize_voxel_scale, make_4d
 
+@requires_dicom
+@requires_gdcm
 def get_volume_gen(volume_dirs, apply_dcm_rescale=False, permute_c_contiguous=True):
     ''' Make a generator that loads volumes from a list of volume directories, `volume_dirs`.
     Returns: (volume: np.ndarray , voxel_scale: np.ndarray, volume_name: string) '''
@@ -30,7 +31,9 @@ def get_volume_gen(volume_dirs, apply_dcm_rescale=False, permute_c_contiguous=Tr
             yield vol, vox_scl, vol_name
     return vol_gen()
 
-def read_volume_dir(volume_dir, apply_dcm_rescale=False, permute_c_contiguous=True):
+@requires_dicom
+@requires_gdcm
+def read_volume_dir(vol_dir, apply_dcm_rescale=False, permute_c_contiguous=True):
     rescale = None if apply_dcm_rescale else False
     try:
         vol, dicom = read_dicom_folder(vol_dir, rescale)
@@ -60,10 +63,12 @@ def traverse_cq500_folders(path, min_slices=1, max_slices=float("inf")):
            filter(num_slices_between(min_slices, max_slices),  # extract subdir with most files in it (highest res volume)
            flatten(
            map(   lambda p: list(p.iterdir()),                 # get list of actual volume directorie
-           map(   lambda p: next(p.iterdir())/'Unknown Study', # cd into subfolders CQ500-CT-XX/Unknown Study/
-           filter(lambda p: p.is_dir(),                        # Get all dirs, no files
+           map(   lambda p: next(p.iterdir()), # cd into subfolders CQ500-CT-XX/Unknown Study/
+           filter(lambda p: p.is_dir() and p.name.startswith('CQ500'),                        # Get all dirs, no files
            path.iterdir()))))))                                # Iterate over path directory
 
+@requires_dicom
+@requires_gdcm
 def process_volumes(vol_dirs, save_path, dtype=torch.float16, num_workers=0, normalize_voxel_scl=False, normalize_intensities=True, print_info=False):
     ''' Processes volumes from a volume generator `vol_gen`, normalizes them, converts to PyTorch and saves to disk
     Args:
@@ -96,13 +101,10 @@ def process_volumes(vol_dirs, save_path, dtype=torch.float16, num_workers=0, nor
         if print_info: print(f'Saved Volume {vol_name} with shape {vol.shape} ({dtype}) (Vox Scale: {vox_scl}) to {file_path}')
 
     if not save_path.exists(): save_path.mkdir()
+    pool_map(_process_volume, vol_dirs)
 
-    if num_workers > 0:
-        with mp.Pool(num_workers) as p:
-            p.map(_process_volume, vol_dirs)
-    else:
-        for vol_dir in vol_dirs: _process_volume(vol_dir)
-
+@requires_dicom
+@requires_gdcm
 def cq500_to_torch(path, target_path, num_workers=0, min_slices=0, max_slices=float("inf")):
     vol_dirs = traverse_cq500_folders(path, min_slices, max_slices)
     process_volumes(vol_dirs, target_path, num_workers=num_workers)

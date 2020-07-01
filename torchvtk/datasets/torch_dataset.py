@@ -4,10 +4,10 @@ import torch.multiprocessing as mp
 from torch.utils.data import Dataset
 
 from pathlib import Path
-import shutil, json
+import shutil, os
 import torchvtk.datasets.urls as urls
 from torchvtk.datasets.download import download_all, extract_all
-from torchvtk.converters.dicom.cq500 import cq500_to_torch
+from torchvtk.converters.dicom import cq500_to_torch, test_has_gdcm
 
 class TorchDataset(Dataset):
     ''' A Dataset loading serialized PyTorch tensors from disk. '''
@@ -85,9 +85,10 @@ class TorchDataset(Dataset):
         path = Path(tvtk_ds_path).expanduser()
         path.mkdir(exist_ok=True)
         cq500path = path/'CQ500'
-        if cq500path.exists() and len(os.listdir(cq500path)) > 0:
+        if cq500path.exists() and len(list(filter(lambda n: n.endswith('.pt'), os.listdir(cq500path)))) > 0:
             return TorchDataset(cq500path, **kwargs)
         else:
+            test_has_gdcm()
             orig_path = path/'CQ500_orig'
             print(f'Downloading CQ500 dataset to {orig_path}...')
             files = download_all(urls.cq500, orig_path, num_workers=num_workers)
