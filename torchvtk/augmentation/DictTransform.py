@@ -9,12 +9,13 @@ from torch.nn import functional as f
 
 class DictTransform(object):
 
-    def __init__(self, device="cpu", apply_on=["vol", "mask"], dtype=torch.float32):
+    def __init__(self, device="cpu", apply_on=["vol", "mask"], dtype=torch.float32, batch_transform=False):
         super().__init__()
 
         self.device = device
         self.apply_on = apply_on
         self.dtype = dtype
+        self.batch_transform = batch_transform
 
     @abstractmethod
     def transform(self, data): pass
@@ -27,13 +28,24 @@ class DictTransform(object):
             if not torch.is_tensor(tmp):
                 tmp = torch.from_numpy(tmp)
 
+            # to GPU.
             if self.device == "cuda":
                 tmp = tmp.to(self.device)
 
             if self.dtype is torch.float16:
                 tmp = tmp.to(torch.float32)
 
-            tmp = self.transform(tmp)
+            if self.batch_transform is False:
+                tmp = self.transform(tmp)
+            else:
+                batch = []
+                for x in range(tmp.shape[0]):
+                    # get batch thing
+                    tmptensor = tmp[x, ...]
+                    # transform
+                    batch.append(self.transform(tmptensor))
+                # stack tensor back
+                tmp = torch.stack(batch, dim=0)
 
             if self.dtype is torch.float16:
                 tmp = tmp.to(torch.float16)
@@ -47,11 +59,11 @@ class DictTransform(object):
 
 class NoiseDictTransform(DictTransform):
 
-    def __init__(self, device, noise_variance=(0.001, 0.05), apply_on=["vol"], dtype=torch.float32):
+    def __init__(self, device, noise_variance=(0.001, 0.05), apply_on=["vol"], dtype=torch.float32, batch_transform=False):
 
         self.device = device
         self.noise_variance = noise_variance
-        DictTransform.__init__(self, self.device, apply_on=apply_on, dtype=dtype)
+        DictTransform.__init__(self, self.device, apply_on=apply_on, dtype=dtype, batch_transform=batch_transform)
 
     def transform(self, data):
         #todo allow for batch
@@ -65,7 +77,7 @@ class NoiseDictTransform(DictTransform):
 
 class BlurDictTransform(DictTransform):
 
-    def __init__(self, apply_on=["vol"], dtype=torch.float32, device= "cpu", channels=1, kernel_size=(3, 3, 3), sigma=1):
+    def __init__(self, apply_on=["vol"], dtype=torch.float32, device= "cpu", channels=1, kernel_size=(3, 3, 3), sigma=1, batch_transform=False):
         """
 
         :param device:
@@ -77,7 +89,7 @@ class BlurDictTransform(DictTransform):
         self.sigma = [sigma, sigma, sigma]
         self.kernel_size = kernel_size
         self.device = device
-        DictTransform.__init__(self, self.device, apply_on=apply_on, dtype=dtype)
+        DictTransform.__init__(self, self.device, apply_on=apply_on, dtype=dtype, batch_transform=batch_transform)
         # code from: https://discuss.pytorch.org/t/is-there-anyway-to-do-gaussian-filtering-for-an-image-2d-3d-in-pytorch/12351/10
         # initialize conv layer.
         kernel = 1
@@ -116,8 +128,8 @@ class BlurDictTransform(DictTransform):
 
 
 class CroppingTransform(DictTransform):
-    def __init__(self, apply_on=["vol"], dtype=torch.float32, device= "cpu", size=20, position=0):
-        DictTransform.__init__(self, device=device, apply_on=apply_on, dtype=dtype)
+    def __init__(self, apply_on=["vol"], dtype=torch.float32, device= "cpu", size=20, position=0, batch_transform=False):
+        DictTransform.__init__(self, device=device, apply_on=apply_on, dtype=dtype, batch_transform=batch_transform)
         self.size = size
         self.position = position
 
