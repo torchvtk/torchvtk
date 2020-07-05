@@ -6,8 +6,6 @@ import numpy as np
 import torch
 from torch.nn import functional as f
 
-from torchvtk.augmentation.rotation_helper import RotationHelper
-
 
 class DictTransform(object):
 
@@ -44,33 +42,6 @@ class DictTransform(object):
             tmp = tmp.to(self.device)
             # back on device?
             data[key] = tmp
-        return data
-
-
-class RotateDictTransform(DictTransform):
-
-    def __init__(self, device, degree=4, axis=0, apply_on=["vol"], fillcolor_vol=0, fillcolor_mask=0, dtype=torch.float32):
-        """
-            ,axis=0, fillcolor_vol=-1024, fillcolor_mask=0, degree=10
-        :param args:
-        :param axis:
-        :param fillcolor_vol:
-        :param fillcolor_mask:
-        :param degree:
-        """
-        # transform to args
-        DictTransform.__init__(self, device, apply_on=apply_on, dtype=dtype)
-        self.degree = degree
-        self.axis = axis
-        self.fillcolor_vol = fillcolor_vol
-        self.fillcolor_mask = fillcolor_mask
-        self.rotation_helper = RotationHelper(device)
-        self.rotation_matrix = None
-
-    def transform(self, data):
-        if self.rotation_matrix is None:
-            rotation_matrix = self.rotation_helper.get_rotation_matrix_random(1)
-        data = self.rotation_helper.rotate(data, rotation_matrix)
         return data
 
 
@@ -150,16 +121,10 @@ class CroppingTransform(DictTransform):
         self.size = size
         self.position = position
 
-
     def transform(self, data):
         data= self.get_center_crop(data, self.size)
         return data
 
-    def get_crop(self, t, min_i, max_i):
-        ''' Crops `t` in the last 3 dimensions for given 3D `min_i` and `max_i` like t[..., min_i[j]:max_i[j],..]'''
-        return t[..., min_i[0]:max_i[0], min_i[1]:max_i[1], min_i[2]:max_i[2]]
-
-    # fixme wrong dimensions get cropped
     def get_crop_around(self, data, mid, size):
         size = size // 2
         if mid[0] == 0:
