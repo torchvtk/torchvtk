@@ -1,7 +1,7 @@
 import math
 import random
 from abc import abstractmethod
-
+from torchvtk.utils.volume_utils import make_5d
 import numpy as np
 import torch
 from torch.nn import functional as F
@@ -117,8 +117,8 @@ class BlurDictTransform(DictTransform):
         self.conv = F.conv3d
 
     def transform(self, data):
-        sample = data.unsqueeze(0)
-        vol = self.conv(sample, weight=self.weight, groups=self.groups, padding=1)
+        vol = make_5d(data)
+        vol = self.conv(vol, weight=self.weight, groups=self.groups, padding=1)
         vol = vol.squeeze(0)
         return vol
 
