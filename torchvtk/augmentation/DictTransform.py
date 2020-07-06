@@ -16,7 +16,7 @@ class DictTransform(object):
 
     def __init__(self, device="cpu", apply_on=["vol", "mask"], dtype=torch.float32):
         """
-        :param device: The torch Code for the device on which the transformaion should be executed. Possiblities are ["cpu", "cuda"].
+        :param device: The torch Code for the device on which the transformation should be executed. Possiblities are ["cpu", "cuda"].
         :param apply_on: The keys of the volumes that should be transformed.
         :param dtype: The torch type in which the data are. Possibilities are [torch.float16, torch.float32].
         """
@@ -28,6 +28,7 @@ class DictTransform(object):
 
     @abstractmethod
     def transform(self, data):
+        """ Transformation Method, must be overwritten by every SubClass."""
         pass
 
     def __call__(self, data):
@@ -72,6 +73,7 @@ class NoiseDictTransform(DictTransform):
         DictTransform.__init__(self, **kwargs)
 
     def transform(self, data):
+        """Applies the Noise onto the images. Variance is controlled by the noise_variance parameter."""
         std = torch.rand(data.size(0) if data.ndim > 5 else 1, device=data.device, dtype=data.dtype)
         return data + torch.randn_like(data) * std
 
@@ -81,6 +83,7 @@ class BlurDictTransform(DictTransform):
 
     def __init__(self, channels=1, kernel_size=(3, 3, 3), sigma=1, **kwargs):
         """
+        Initializing the Blur Transformation.
         :param channels: Amount of channels of the input data.
         :param kernel_size: Size of the convolution kernel.
         :param sigma: Standard deviation.
@@ -117,6 +120,7 @@ class BlurDictTransform(DictTransform):
         self.conv = F.conv3d
 
     def transform(self, data):
+        """Applies the Blur using a 3D Convolution."""
         vol = make_5d(data)
         vol = self.conv(vol, weight=self.weight, groups=self.channels, padding=1)
         return vol
@@ -138,10 +142,12 @@ class CroppingTransform(DictTransform):
         self.position = position
 
     def transform(self, data):
+        "Applies the Center Crop."
         data = self.get_center_crop(data, self.size)
         return data
 
     def get_crop_around(self, data, mid, size):
+        """Helper method for the crop."""
         size = size // 2
         if mid[0] == 0:
             mid = mid.squeeze(0)
@@ -150,5 +156,6 @@ class CroppingTransform(DictTransform):
                mid[-1] - size:  mid[-1] + size]
 
     def get_center_crop(self, data, size):
+        """Helper method for the crop."""
         t = torch.Tensor([*data.shape]) // 2
         return self.get_crop_around(data, (torch.Tensor([*data.shape]) // 2).long(), size)
