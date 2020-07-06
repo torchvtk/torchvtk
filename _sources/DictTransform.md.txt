@@ -27,3 +27,21 @@ An example is presented in the following code snipped.
    :inherited-members:
    :show-inheritance:
 ```
+
+```eval_rst
+.. automodule:: torchvtk.augmentation
+.. autoclass:: CroppingTransform 
+   :members: 
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
+```
+
+```eval_rst
+.. automodule:: torchvtk.augmentation
+.. autoclass:: BlurDictTransform 
+   :members: 
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
+```

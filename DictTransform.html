@@ -210,6 +210,68 @@ An example is presented in the following code snipped.</p>
 
 </dd></dl>
 
+<span class="target" id="module-torchvtk.augmentation"></span><dl class="class">
+<dt id="torchvtk.augmentation.CroppingTransform">
+<em class="property">class </em><code class="sig-prename descclassname">torchvtk.augmentation.</code><code class="sig-name descname">CroppingTransform</code><span class="sig-paren">(</span><em class="sig-param">size=20</em>, <em class="sig-param">position=0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.augmentation.CroppingTransform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torchvtk.augmentation.DictTransform.DictTransform</span></code></p>
+<p>Transformation for the cropping of 4D or 5D Volumes.</p>
+<dl class="method">
+<dt id="torchvtk.augmentation.CroppingTransform.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">size=20</em>, <em class="sig-param">position=0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.augmentation.CroppingTransform.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>size</strong> – Size of the crop.</p></li>
+<li><p><strong>position</strong> – Middle point of the cropped region.</p></li>
+<li><p><strong>kwargs</strong> – Arguments for super class.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.augmentation.CroppingTransform.get_center_crop">
+<code class="sig-name descname">get_center_crop</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">size</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.augmentation.CroppingTransform.get_center_crop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.augmentation.CroppingTransform.get_crop_around">
+<code class="sig-name descname">get_crop_around</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">mid</em>, <em class="sig-param">size</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.augmentation.CroppingTransform.get_crop_around" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.augmentation.CroppingTransform.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.augmentation.CroppingTransform.transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-torchvtk.augmentation"></span><dl class="class">
+<dt id="torchvtk.augmentation.BlurDictTransform">
+<em class="property">class </em><code class="sig-prename descclassname">torchvtk.augmentation.</code><code class="sig-name descname">BlurDictTransform</code><span class="sig-paren">(</span><em class="sig-param">channels=1</em>, <em class="sig-param">kernel_size=(3</em>, <em class="sig-param">3</em>, <em class="sig-param">3)</em>, <em class="sig-param">sigma=1</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.augmentation.BlurDictTransform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torchvtk.augmentation.DictTransform.DictTransform</span></code></p>
+<p>Transformation for adding Blur to images.</p>
+<dl class="method">
+<dt id="torchvtk.augmentation.BlurDictTransform.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">channels=1</em>, <em class="sig-param">kernel_size=(3</em>, <em class="sig-param">3</em>, <em class="sig-param">3)</em>, <em class="sig-param">sigma=1</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.augmentation.BlurDictTransform.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>channels</strong> – Amount of channels of the input data.</p></li>
+<li><p><strong>kernel_size</strong> – Size of the convolution kernel.</p></li>
+<li><p><strong>sigma</strong> – Standard deviation.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.augmentation.BlurDictTransform.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.augmentation.BlurDictTransform.transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </div>
 
 
