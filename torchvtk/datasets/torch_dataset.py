@@ -79,7 +79,7 @@ class TorchDataset(Dataset):
         items = target_path.rglob('*.pt')
         assert len(list(items)) == len(self)
         if delete_old_from_disk: shutil.rmtree(self.path)
-        return TorchDataset(items)
+        return TorchDataset(target_path)
 
     def preload(self, device=torch.device('cpu')):
         self.data = [self[i] for i in range(len(self))]
