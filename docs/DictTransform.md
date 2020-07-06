@@ -14,7 +14,15 @@ An example is presented in the following code snipped.
 ```eval_rst
 .. automodule:: torchvtk.augmentation
 .. autoclass:: DictTransform 
-   :members: NoiseDictTransform
+   :members: 
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
+```
+```eval_rst
+.. automodule:: torchvtk.augmentation
+.. autoclass:: NoiseDictTransform 
+   :members: 
    :undoc-members:
    :inherited-members:
    :show-inheritance:
