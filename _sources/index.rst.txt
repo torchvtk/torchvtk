@@ -8,6 +8,7 @@ Welcome to torchvtk's documentation!
 
    TorchDataset.md
    TorchQueueDataset.md
+   DictTransform.md
 
 
 
