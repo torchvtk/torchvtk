@@ -82,6 +82,7 @@ class TorchDataset(Dataset):
                 if torch.is_tensor(v): it[k] = v.to(device)
         def new_get(i): return self.data[i]
         self.__getitem__ = new_get
+        return self
 
     @staticmethod
     def CQ500(tvtk_ds_path='~/.torchvtk/', num_workers=0, **kwargs):
