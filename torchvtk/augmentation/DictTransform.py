@@ -36,17 +36,17 @@ class DictTransform(object):
             if tmp.dtype is torch.float16:
                 tmp = tmp.to(torch.float32)
 
-            if self.batch_transform is False:
-                tmp = self.transform(tmp)
-            else:
-                batch = []
-                for x in range(tmp.shape[0]):
-                    # get batch thing
-                    tmptensor = tmp[x, ...]
+            # if self.batch_transform is False:
+            tmp = self.transform(tmp)
+            # else:
+            #     batch = []
+            #     for x in range(tmp.shape[0]):
+            #         get batch thing
+                    # tmptensor = tmp[x, ...]
                     # transform
-                    batch.append(self.transform(tmptensor))
+                    # batch.append(self.transform(tmptensor))
                 # stack tensor back
-                tmp = torch.stack(batch, dim=0)
+                # tmp = torch.stack(batch, dim=0)
 
             if self.dtype is torch.float16:
                 tmp = tmp.to(torch.float16)
@@ -66,9 +66,8 @@ class NoiseDictTransform(DictTransform):
         DictTransform.__init__(self, **kwargs)
 
     def transform(self, data):
-        std = torch.rand(data.size(0) if data.ndim > 4 else 1, device=data.device, dtype=data.dtype)
+        std = torch.rand(data.size(0) if data.ndim > 5 else 1, device=data.device, dtype=data.dtype)
         return data + torch.randn_like(data) * std
-        return sample
 
 
 class BlurDictTransform(DictTransform):
@@ -117,7 +116,6 @@ class BlurDictTransform(DictTransform):
     def transform(self, data):
         vol = make_5d(data)
         vol = self.conv(vol, weight=self.weight, groups=self.channels, padding=1)
-        vol = vol.squeeze(0)
         return vol
 
 
