@@ -14,7 +14,7 @@ class DictTransform(object):
 
     """
 
-    def __init__(self, device="cpu", apply_on=["vol", "mask"], dtype=torch.float32, batch_transform=False):
+    def __init__(self, device="cpu", apply_on=["vol", "mask"], dtype=torch.float32):
         """
         :param device: The torch Code for the device on which the transformaion should be executed. Possiblities are ["cpu", "cuda"].
         :param apply_on: The keys of the volumes that should be transformed.
@@ -25,7 +25,6 @@ class DictTransform(object):
         self.device = device
         self.apply_on = apply_on
         self.dtype = dtype
-        self.batch_transform = batch_transform
 
     @abstractmethod
     def transform(self, data):
