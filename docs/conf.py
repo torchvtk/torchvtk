@@ -17,8 +17,8 @@ sys.path.insert(0, os.path.abspath('../'))
 # -- Project information -----------------------------------------------------
 
 project = 'torchvtk'
-copyright = '2020, Dominik Engel, Marc Mezger'
-author = 'Dominik Engel, Marc Mezger'
+copyright = '2020, Dominik Engel, Marc Fabian Mezger'
+author = 'Dominik Engel, Marc Fabian Mezger'
 
 # The full version, including alpha/beta/rc tags
 release = 'v0.2.5'

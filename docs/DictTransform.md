@@ -13,7 +13,7 @@ This is the SuperClass for all of the Transformations.
 ```eval_rst
 .. automodule:: torchvtk.augmentation
 .. autoclass:: DictTransform
-   :members:
+   :members:  NoiseDictTransform
    :undoc-members:
    :inherited-members:
    :show-inheritance:
