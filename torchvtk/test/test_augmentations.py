@@ -12,6 +12,7 @@ filex = file.copy()
 
 filex["vol"] = torch.stack([filex["vol"], filex["vol"]], dim=0)
 view_batch(filex["vol"][0, ...], width=512, height=512)
+
 # Test Noise Transform.
 tfms = NoiseDictTransform(noise_variance=(0.01, 0.1), device="cpu", apply_on=["vol"], batch_transform=True)
 noise_cpu = tfms(filex).copy()
@@ -36,8 +37,7 @@ file["vol"] = file["vol"].to("cpu")
 
 # Cropping
 view_batch(file["vol"], width=512, height=512)
-tfms = CroppingTransform(device="cuda",  apply_on=["vol"], dtype=torch.float32)
+tfms = CroppingTransform(device="cuda", apply_on=["vol"], dtype=torch.float32)
 noise_cpu = tfms(file)
 noise_cpu["vol"] = noise_cpu["vol"].squeeze(0).squeeze(0)
 view_batch(noise_cpu["vol"], width=512, height=512)
-del tfms
