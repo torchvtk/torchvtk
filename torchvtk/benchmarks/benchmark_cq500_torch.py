@@ -4,7 +4,7 @@ from pathlib  import Path
 
 import torch
 
-from torchvtk.datasets.torch_dataset import TorchDataset
+from torchvtk.datasets import TorchDataset
 from torchvtk.benchmarks.benchmark_dataset import run_benchmark
 
 if __name__ == '__main__':

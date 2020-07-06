@@ -75,6 +75,11 @@ class TorchDataset(Dataset):
         if delete_old_from_disk: shutil.rmtree(self.path)
         return TorchDataset(items)
 
+    def preload(self, device=torch.device('cpu')):
+        self.data = torch.stack([self[i] for i in range(len(self))]).to(device)
+        def new_get(i): return self.data[i]
+        self.__getitem__ = new_get
+
     @staticmethod
     def CQ500(tvtk_ds_path='~/.torchvtk/', num_workers=0, **kwargs):
         ''' Get the QureAI CQ500 Dataset.

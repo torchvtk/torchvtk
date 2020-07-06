@@ -6,7 +6,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from torchvtk.utils.volume_utils import make_2d
+from torchvtk.utils import make_2d
 
 __all__ = ['homogenize_mat', 'homogenize_vec', 'get_proj_mat', 'get_view_mat', 'get_random_pos', 'VolumeRaycaster']
 
