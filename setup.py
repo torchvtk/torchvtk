@@ -9,14 +9,15 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     version="0.2.5",
+    license='MIT',
     packages=find_packages(),
     url='https://github.com/xeTaiz/torchvtk',
     author='Dominik Engel, Marc Mezger',
     install_requires=[
-        'torch', 'torchvision', 'numpy', 'matplotlib'
+        'torch', 'torchvision', 'numpy', 'matplotlib', 'psutil'
     ],
     dependency_links=[
-        'https://github.com/aliutkus/torchsearchsorted.git@master#egg=torchsearchsorted',
-        'https://github.com/aliutkus/torchinterp1d.git@master#egg=torchinterp1d'
+        'https://github.com/aliutkus/torchsearchsorted/tarball/master#egg=torchsearchsorted',
+        'https://github.com/aliutkus/torchinterp1d/tarball/master#egg=torchinterp1d'
     ]
 )

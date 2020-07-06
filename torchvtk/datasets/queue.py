@@ -8,7 +8,7 @@ from itertools import cycle
 from functools import partial
 import time, math, psutil, os
 
-from torchvtk.datasets.torch_dataset import TorchDataset
+from torchvtk.datasets import TorchDataset
 
 #%%
 def noop(a, *args, **kwargs): return a
