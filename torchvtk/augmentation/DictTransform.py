@@ -67,11 +67,8 @@ class NoiseDictTransform(DictTransform):
 
     def transform(self, data):
         #todo allow for batch
-        variance = random.uniform(self.noise_variance[0], self.noise_variance[1])
-        noise = np.random.normal(0.0, variance, size=data.shape)
-        noise = torch.from_numpy(noise)
-        noise = noise.to(self.device)
-        sample = torch.add(data, noise)
+        std = torch.rand(data.size(0) if data.ndim > 4 else 1, device=data.device, dtype=data.dtype)
+        return data +  torch.randn_like(data) * std
         return sample
 
 
