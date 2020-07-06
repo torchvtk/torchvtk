@@ -18,7 +18,8 @@ class DictTransform(object):
         self.batch_transform = batch_transform
 
     @abstractmethod
-    def transform(self, data): pass
+    def transform(self, data):
+        pass
 
     def __call__(self, data):
 
@@ -60,7 +61,6 @@ class DictTransform(object):
 class NoiseDictTransform(DictTransform):
 
     def __init__(self, noise_variance=(0.001, 0.05), **kwargs):
-
         self.device = kwargs["device"]
         self.noise_variance = noise_variance
         DictTransform.__init__(self, **kwargs)
@@ -112,13 +112,11 @@ class BlurDictTransform(DictTransform):
         # self.register_buffer('weight', kernel)
         kernel = kernel.to(self.device)
         self.weight = kernel
-        self.groups = self.channels
-
         self.conv = F.conv3d
 
     def transform(self, data):
         vol = make_5d(data)
-        vol = self.conv(vol, weight=self.weight, groups=self.groups, padding=1)
+        vol = self.conv(vol, weight=self.weight, groups=self.channels, padding=1)
         vol = vol.squeeze(0)
         return vol
 
@@ -130,14 +128,14 @@ class CroppingTransform(DictTransform):
         self.position = position
 
     def transform(self, data):
-        data= self.get_center_crop(data, self.size)
+        data = self.get_center_crop(data, self.size)
         return data
 
     def get_crop_around(self, data, mid, size):
         size = size // 2
         if mid[0] == 0:
             mid = mid.squeeze(0)
-        return data[...,mid[-3] - size:mid[-3] + size,
+        return data[..., mid[-3] - size:mid[-3] + size,
                mid[-2] - size:  mid[-2] + size,
                mid[-1] - size:  mid[-1] + size]
 
