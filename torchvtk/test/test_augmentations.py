@@ -15,7 +15,7 @@ def main():
     view_batch(file["vol"][0, ...], width=512, height=512)
 
     # Test Noise Transform.
-    tfms = NoiseDictTransform(noise_variance=(0.01, 0.1), device="cpu", apply_on=["vol"], batch_transform=True)
+    tfms = NoiseDictTransform(noise_variance=(0.01, 0.1), device="cpu", apply_on=["vol"])
     tmp = tfms(file)
     view_batch(tmp["vol"].squeeze(), width=512, height=512)
     del tfms, file
