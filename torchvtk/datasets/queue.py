@@ -120,7 +120,7 @@ class TorchQueueDataset(IterableDataset):
             idxs = torch.randperm(min(len(self.queue), self.q_maxlen))[:self.bs]
             samples = [self.sample_tfm(self.queue[i]) for i in idxs]
             if self.log_sampling:
-                for s in samples: self.sampling_dict[s['name']] += 1
+                for s in samples: self.sample_dict[s['name']] += 1
             if self.mode == 'onsample':
                 self.queue.pop()
                 self.sample_event.set()
