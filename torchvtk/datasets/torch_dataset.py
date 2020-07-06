@@ -8,6 +8,7 @@ import shutil, os
 import torchvtk.datasets.urls as urls
 from torchvtk.datasets.download import download_all, extract_all
 from torchvtk.converters.dicom import cq500_to_torch, test_has_gdcm
+from torchvtk.utils import pool_map
 
 class TorchDataset(Dataset):
     def __init__(self, ds_files, filter_fn=None, preprocess_fn=None):
@@ -62,13 +63,10 @@ class TorchDataset(Dataset):
         def work_fn(i):
             fn = self.items[i]
             tfn = target_path/fn.name
-            torch.save(torch.load(fn), tfn)
 
-        if num_workers > 0:
-            with mp.Pool(num_workers) as p:
-                p.map(work_fn, [i for i in range(len(self))])
-        else:
-            for i in range(len(self)): work_fn(i)
+            torch.save(process_fn(torch.load(fn)), tfn)
+
+        pool_map(work_fn, [i for i in range(len(self))], num_workers=num_workers)
 
         items = target_path.rglob('*.pt')
         assert len(items) == len(self)
