@@ -1,11 +1,13 @@
 #%%
 import torch
+import torch.nn.functional as F
 import numpy as np
 import matplotlib.pyplot as plt
 import time
 
 from torchvtk.rendering.raycast import *
 from torchvtk.utils.tf_utils    import apply_tf_torch, read_inviwo_tf
+from torchvtk.datasets          import TorchDataset
 
 # TODO: Add tests whether results with different dtypes (maybe devices) are similar.
 # TODO: Also maybe save reference image to reproduce in tests
@@ -14,11 +16,18 @@ if __name__ == '__main__':
 #%%
     dtype  = torch.float32
     device = torch.device('cpu')
+
+    ds = TorchDataset.CQ500('/run/media/dome/Data/data/torchvtk')
+    data = ds[42]
+    print(data.keys())
+    v = data['vol'][None].to(dtype)
+    v = F.interpolate(v[None], size=(128,128,128), mode='trilinear').squeeze(0)
+
     tf     = read_inviwo_tf('data/boron.itf')
-    v = np.load('data/boron.npy')
-    v = torch.from_numpy(v.astype(np.float32)) / 2**16
-    # v = v.permute(2,1,0).contiguous()
-    v = apply_tf_torch(v[None, None], tf)
+    # v = np.load('data/boron.npy')
+    # v = torch.from_numpy(v.astype(np.float32))[None] / 2**16
+    v = apply_tf_torch(v, tf)
+    print(v.shape)
     # v = v[None,None].expand(1, 4, -1, -1, -1)
     rand_pos = get_random_pos(1, 100)
     rand_pos = torch.tensor([-8.36, 14.6, 14.6])[None]           # From inviwo comparison
@@ -33,10 +42,10 @@ if __name__ == '__main__':
     print('View Matrix:\n', view_mat)
     print('Proj Matrix:\n', proj_mat)
     # Render
-    vr = VolumeRaycaster(device=device, dtype=dtype, ray_samples=256, density_factor=128, resolution=(240,240))
+    vr = VolumeRaycaster(ray_samples=256, density_factor=128, resolution=(240,240))
     v = v.to(dtype).to(device)
     t0 = time.time()
-    im = vr.forward(v, tfm=None)
+    im = vr.forward(v[None], tfm=None)
     im = im.squeeze().permute(1,2,0).cpu().numpy().astype(np.float32)
     print('Time elapsed:', time.time() - t0)
     plt.imshow(im)
