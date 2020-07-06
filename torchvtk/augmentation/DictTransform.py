@@ -36,17 +36,7 @@ class DictTransform(object):
             if tmp.dtype is torch.float16:
                 tmp = tmp.to(torch.float32)
 
-            # if self.batch_transform is False:
             tmp = self.transform(tmp)
-            # else:
-            #     batch = []
-            #     for x in range(tmp.shape[0]):
-            #         get batch thing
-                    # tmptensor = tmp[x, ...]
-                    # transform
-                    # batch.append(self.transform(tmptensor))
-                # stack tensor back
-                # tmp = torch.stack(batch, dim=0)
 
             if self.dtype is torch.float16:
                 tmp = tmp.to(torch.float16)
