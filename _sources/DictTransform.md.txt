@@ -1,6 +1,7 @@
-## DictTransform
+## Transformations
 
-This is the SuperClass for all of the Transformations.
+For Transformations it is necessary to call the Subclasses of the DictTransform Super Class.
+An example is presented in the following code snipped.
 
 ```python
     tfms = NoiseDictTransform(noise_variance=(0.01, 0.1), device="cpu", apply_on=["vol"])
@@ -12,7 +13,7 @@ This is the SuperClass for all of the Transformations.
 
 ```eval_rst
 .. automodule:: torchvtk.augmentation
-.. autoclass:: DictTransform
+.. autoclass:: DictTransform, NoiseDictTransform
    :members:
    :undoc-members:
    :inherited-members:

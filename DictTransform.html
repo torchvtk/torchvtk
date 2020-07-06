@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>DictTransform &mdash; torchvtk v0.2.5 documentation</title>
+  <title>Transformations &mdash; torchvtk v0.2.5 documentation</title>
   
 
   
@@ -85,7 +85,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="TorchDataset.html">TorchDataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="TorchQueueDataset.html">TorchQueueDataset</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">DictTransform</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Transformations</a></li>
 </ul>
 
             
@@ -132,7 +132,7 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>DictTransform</li>
+      <li>Transformations</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -151,40 +151,15 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="dicttransform">
-<h1>DictTransform<a class="headerlink" href="#dicttransform" title="Permalink to this headline">¶</a></h1>
-<p>This is the SuperClass for all of the Transformations.</p>
+  <div class="section" id="transformations">
+<h1>Transformations<a class="headerlink" href="#transformations" title="Permalink to this headline">¶</a></h1>
+<p>For Transformations it is necessary to call the Subclasses of the DictTransform Super Class.
+An example is presented in the following code snipped.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="n">tfms</span> <span class="o">=</span> <span class="n">NoiseDictTransform</span><span class="p">(</span><span class="n">noise_variance</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="n">apply_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;vol&quot;</span><span class="p">])</span>
     <span class="n">tmp</span> <span class="o">=</span> <span class="n">tfms</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
 </pre></div>
 </div>
-<span class="target" id="module-torchvtk.augmentation"></span><dl class="class">
-<dt id="torchvtk.augmentation.DictTransform">
-<em class="property">class </em><code class="sig-prename descclassname">torchvtk.augmentation.</code><code class="sig-name descname">DictTransform</code><span class="sig-paren">(</span><em class="sig-param">device='cpu', apply_on=['vol', 'mask'], dtype=torch.float32, batch_transform=False</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.augmentation.DictTransform" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Super Class for the Transforms.</p>
-<dl class="method">
-<dt id="torchvtk.augmentation.DictTransform.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">device='cpu', apply_on=['vol', 'mask'], dtype=torch.float32, batch_transform=False</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.augmentation.DictTransform.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>device</strong> – The torch Code for the device on which the transformaion should be executed. Possiblities are [“cpu”, “cuda”].</p></li>
-<li><p><strong>apply_on</strong> – The keys of the volumes that should be transformed.</p></li>
-<li><p><strong>dtype</strong> – The torch type in which the data are. Possibilities are [torch.float16, torch.float32].</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="torchvtk.augmentation.DictTransform.transform">
-<em class="property">abstract </em><code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.augmentation.DictTransform.transform" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-</div>
+<span class="target" id="module-torchvtk.augmentation"></span></div>
 
 
            </div>
