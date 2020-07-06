@@ -13,8 +13,8 @@ An example is presented in the following code snipped.
 
 ```eval_rst
 .. automodule:: torchvtk.augmentation
-.. autoclass:: DictTransform, NoiseDictTransform
-   :members:
+.. autoclass:: DictTransform 
+   :members: NoiseDictTransform
    :undoc-members:
    :inherited-members:
    :show-inheritance:
