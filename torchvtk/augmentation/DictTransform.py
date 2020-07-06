@@ -8,8 +8,21 @@ from torch.nn import functional as F
 
 
 class DictTransform(object):
+    """
+    Super Class for the Transforms.
+
+
+    """
 
     def __init__(self, device="cpu", apply_on=["vol", "mask"], dtype=torch.float32, batch_transform=False):
+        """
+
+
+        :param device:
+        :param apply_on:
+        :param dtype:
+        :param batch_transform:
+        """
         super().__init__()
 
         self.device = device
@@ -49,8 +62,16 @@ class DictTransform(object):
 
 
 class NoiseDictTransform(DictTransform):
+    """
+    Transformations for adding noise to images.
+    """
 
     def __init__(self, noise_variance=(0.001, 0.05), **kwargs):
+        """
+
+        :param noise_variance: The variance of the noise added to the  image.
+        :param kwargs: Arguments of the super class.
+        """
         self.device = kwargs["device"]
         self.noise_variance = noise_variance
         DictTransform.__init__(self, **kwargs)
@@ -61,14 +82,13 @@ class NoiseDictTransform(DictTransform):
 
 
 class BlurDictTransform(DictTransform):
+    """Transformation for adding Blur to images."""
 
     def __init__(self, channels=1, kernel_size=(3, 3, 3), sigma=1, **kwargs):
         """
-
-        :param device:
-        :param channels:
-        :param kernel_size:
-        :param sigma:
+        :param channels: Amount of channels of the input data.
+        :param kernel_size: Size of the convolution kernel.
+        :param sigma: Standard deviation.
         """
         self.channels = channels
         self.sigma = [sigma, sigma, sigma]
@@ -97,8 +117,6 @@ class BlurDictTransform(DictTransform):
         kernel = kernel.view(1, 1, *kernel.size())
         kernel = kernel.repeat(self.channels, *[1] * (kernel.dim() - 1))
 
-        # todo check if that method of assigning works
-        # self.register_buffer('weight', kernel)
         kernel = kernel.to(self.device)
         self.weight = kernel
         self.conv = F.conv3d
@@ -110,7 +128,16 @@ class BlurDictTransform(DictTransform):
 
 
 class CroppingTransform(DictTransform):
+    """
+    Transformation for the cropping of 4D or 5D Volumes.
+    """
+
     def __init__(self, size=20, position=0, **kwargs):
+        """
+        :param size: Size of the crop.
+        :param position: Middle point of the cropped region.
+        :param kwargs: Arguments for super class.
+        """
         DictTransform.__init__(self, **kwargs)
         self.size = size
         self.position = position
