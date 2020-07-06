@@ -144,8 +144,7 @@ class CroppingTransform(DictTransform):
 
     def transform(self, data):
         "Applies the Center Crop."
-        data = self.get_center_crop(data, self.size)
-        return data
+        return self.get_center_crop(data, self.size)
 
     def get_crop_around(self, data, mid, size):
         """Helper method for the crop."""
