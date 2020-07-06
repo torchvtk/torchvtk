@@ -76,7 +76,10 @@ class TorchDataset(Dataset):
         return TorchDataset(items)
 
     def preload(self, device=torch.device('cpu')):
-        self.data = torch.stack([self[i] for i in range(len(self))]).to(device)
+        self.data = [self[i] for i in range(len(self))]
+        for it in self.data:
+            for k, v in it.items():
+                if torch.is_tensor(v): it[k] = v.to(device)
         def new_get(i): return self.data[i]
         self.__getitem__ = new_get
 
