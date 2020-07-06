@@ -13,7 +13,7 @@ filex = file.copy()
 filex["vol"] = torch.stack([filex["vol"], filex["vol"]], dim=0)
 view_batch(filex["vol"][0, ...], width=512, height=512)
 # Test Noise Transform.
-tfms = NoiseDictTransform(device="cpu", apply_on=["vol"], noise_variance=(0.01, 0.1), batch_transform=True)
+tfms = NoiseDictTransform(noise_variance=(0.01, 0.1), device="cpu", apply_on=["vol"], batch_transform=True)
 noise_cpu = tfms(filex).copy()
 view_batch(noise_cpu["vol"][0, ...], width=512, height=512)
 view_batch(noise_cpu["vol"][1, ...], width=512, height=512)
