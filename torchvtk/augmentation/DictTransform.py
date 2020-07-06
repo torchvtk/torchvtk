@@ -122,7 +122,8 @@ class BlurDictTransform(DictTransform):
     def transform(self, data):
         """Applies the Blur using a 3D Convolution."""
         vol = make_5d(data)
-        vol = self.conv(vol, weight=self.weight, groups=self.channels, padding=1)
+        vol = F.pad(make_5d(data), (self.pad, )*6, mode='replicate')
+        return self.conv(vol, weight=self.weight, groups=self.channels, padding=0)
         return vol
 
 
