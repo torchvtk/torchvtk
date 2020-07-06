@@ -7,6 +7,7 @@ import numpy as np
 from itertools import cycle
 from functools import partial
 import time, math, psutil, os
+from collections import defaultdict
 
 from torchvtk.datasets import TorchDataset
 
@@ -52,7 +53,7 @@ def load_onsample(ds, queue, q_maxlen, sample_event, tfm=noop):
 
 class TorchQueueDataset(IterableDataset):
     def __init__(self, torch_ds, epoch_len=1000, mode='onsample', fill_interval=None, num_workers=1, q_maxlen=None, ram_use=0.75,
-        wait_fill=True, sample_tfm=noop, batch_tfm=noop, bs=1, collate_fn=dict_collate_fn):
+        wait_fill=True, sample_tfm=noop, batch_tfm=noop, bs=1, collate_fn=dict_collate_fn, log_sampling=False):
         '''
         Args:
             torch_ds (TorchDataset): A TorchDataset to be used for queueing
@@ -73,6 +74,8 @@ class TorchQueueDataset(IterableDataset):
         self.bs = bs
         self.collate_fn = collate_fn
         self.epoch_len = epoch_len
+        self.log_sampling = log_sampling
+        self.sample_dict = defaultdict(int)
         # Split dataset into num_workers sub-datasets
         self.items = list(map(list, np.array_split(torch_ds.items, num_workers)))
         self.datasets = [TorchDataset(items, preprocess_fn=torch_ds.preprocess_fn) for items in self.items]
@@ -116,6 +119,8 @@ class TorchQueueDataset(IterableDataset):
         while True:
             idxs = torch.randperm(min(len(self.queue), self.q_maxlen))[:self.bs]
             samples = [self.sample_tfm(self.queue[i]) for i in idxs]
+            if self.log_sampling:
+                for s in samples: self.sample_dict[s['name']] += 1
             if self.mode == 'onsample':
                 self.queue.pop()
                 self.sample_event.set()

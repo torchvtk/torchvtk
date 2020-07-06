@@ -8,6 +8,18 @@ import shutil, os
 import torchvtk.datasets.urls as urls
 from torchvtk.datasets.download import download_all, extract_all
 from torchvtk.converters.dicom import cq500_to_torch, test_has_gdcm
+from torchvtk.utils import pool_map
+
+class DatasetWork:
+    def __init__(self, items, target_path, process_fn):
+        self.items = items
+        self.target_path = target_path
+        self.process_fn = process_fn
+    def work_fn(self, i):
+        fn = self.items[i]
+        tfn = self.target_path/fn.name
+
+        torch.save(self.process_fn(torch.load(fn)), tfn)
 
 class TorchDataset(Dataset):
     def __init__(self, ds_files, filter_fn=None, preprocess_fn=None):
@@ -58,20 +70,14 @@ class TorchDataset(Dataset):
             TorchDataset with the new items. (no filter or preprocess_fn set)
         '''
         target_path = self.path.parent/name
+        target_path.mkdir()
         print(f'Preprocessing TorchDataset ({self.path}) to {target_path}...')
-        def work_fn(i):
-            fn = self.items[i]
-            tfn = target_path/fn.name
-            torch.save(torch.load(fn), tfn)
 
-        if num_workers > 0:
-            with mp.Pool(num_workers) as p:
-                p.map(work_fn, [i for i in range(len(self))])
-        else:
-            for i in range(len(self)): work_fn(i)
+        work = DatasetWork(self.items, target_path, process_fn)
+        pool_map(work.work_fn, [i for i in range(len(self))], num_workers=num_workers)
 
         items = target_path.rglob('*.pt')
-        assert len(items) == len(self)
+        assert len(list(items)) == len(self)
         if delete_old_from_disk: shutil.rmtree(self.path)
         return TorchDataset(items)
 
@@ -82,6 +88,7 @@ class TorchDataset(Dataset):
                 if torch.is_tensor(v): it[k] = v.to(device)
         def new_get(i): return self.data[i]
         self.__getitem__ = new_get
+        return self
 
     @staticmethod
     def CQ500(tvtk_ds_path='~/.torchvtk/', num_workers=0, **kwargs):
