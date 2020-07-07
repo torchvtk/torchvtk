@@ -131,6 +131,12 @@ class TorchQueueDataset(IterableDataset):
 
     def __iter__(self): return iter(self.batch_generator())
 
+    def __repr__(self):
+        nl = "\n"
+        nw = len(self.workers)
+        return f'torchvtk.datasets.TorchQueueDataset (Queue Length {self.qsize}){nl}{nw} Workers fetching {self.mode} from {nw} Datasets like:{nl}{str(self.datasets[0])}'
+
+    def __str__(self): return repr(self)
     def wait_fill_queue(self, fill_atleast=None, timeout=30, polling_interval=0.25):
         ''' Waits untill the queue is filled (`fill_atleast`=None) or until filled with at least `fill_atleast`. Timeouts.
         Args:

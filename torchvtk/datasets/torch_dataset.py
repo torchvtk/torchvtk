@@ -2,9 +2,10 @@
 import torch
 import torch.multiprocessing as mp
 from torch.utils.data import Dataset
+import numpy as np
 
 from pathlib import Path
-import shutil, os
+import shutil, os, pprint
 import torchvtk.datasets.urls as urls
 from torchvtk.datasets.download import download_all, extract_all
 from torchvtk.converters.dicom import cq500_to_torch, test_has_gdcm
@@ -90,6 +91,26 @@ class TorchDataset(Dataset):
         self.__getitem__ = new_get
         return self
 
+    def __repr__(self):
+        it = self[0]
+        if isinstance(it, dict):
+            def _format_object(t):
+                if   torch.is_tensor(t):
+                    return f'torch.Tensor {t.shape} of type {t.dtype} on {t.device}'
+                elif isinstance(t, np.ndarray):
+                    return f'numpy.array {t.shape} of type {t.dtype}'
+                else:
+                    return str(t)
+            info = pprint.pformat({ k: _format_object(v) for k,v in it.items() })
+        elif isinstance(it, (list, tuple)):
+            info = f'{type(it)} of '
+            info += str(list(map(_format_object, it)))
+        else:
+            info = it
+        nl = "\n"
+        return f'torchvtk.datasets.TorchDataset ({len(self)} items){nl}From {self.path}{nl}Sample:{nl}{info}'''
+
+    def __str__(self): return repr(self)
     @staticmethod
     def CQ500(tvtk_ds_path='~/.torchvtk/', num_workers=0, **kwargs):
         ''' Get the QureAI CQ500 Dataset.
