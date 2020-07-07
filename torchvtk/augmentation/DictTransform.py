@@ -68,14 +68,15 @@ class NoiseDictTransform(DictTransform):
         :param noise_variance: The variance of the noise added to the  image.
         :param kwargs: Arguments of the super class.
         """
-        self.device = kwargs["device"]
         self.noise_variance = noise_variance
         DictTransform.__init__(self, **kwargs)
 
     def transform(self, data):
         """Applies the Noise onto the images. Variance is controlled by the noise_variance parameter."""
         std = torch.rand(data.size(0) if data.ndim > 5 else 1, device=data.device, dtype=data.dtype)
-        return data + torch.randn_like(data) * std
+        min, max = data.min(), data.max()
+        data = data + torch.randn_like(data) * std
+        return torch.clamp(data, min, max)
 
 
 class BlurDictTransform(DictTransform):
@@ -118,13 +119,12 @@ class BlurDictTransform(DictTransform):
         kernel = kernel.to(self.device)
         self.weight = kernel
         self.conv = F.conv3d
+        self.pad = kernel_size[0] // 2
 
     def transform(self, data):
         """Applies the Blur using a 3D Convolution."""
-        vol = make_5d(data)
-        vol = F.pad(make_5d(data), (self.pad, )*6, mode='replicate')
+        vol = F.pad(make_5d(data), (self.pad , )*6, mode='replicate')
         return self.conv(vol, weight=self.weight, groups=self.channels, padding=0)
-        return vol
 
 
 class CroppingTransform(DictTransform):
