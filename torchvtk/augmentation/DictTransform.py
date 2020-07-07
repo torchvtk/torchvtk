@@ -62,20 +62,24 @@ class NoiseDictTransform(DictTransform):
     Transformations for adding noise to images.
     """
 
-    def __init__(self, noise_variance=(0.001, 0.05), **kwargs):
+    def __init__(self, noise_variance=(0.001, 0.05), mean=0, **kwargs):
         """
 
         :param noise_variance: The variance of the noise added to the  image.
+        :param mean: The mean of the noise.
         :param kwargs: Arguments of the super class.
         """
         self.noise_variance = noise_variance
+        self.device = kwargs["device"]
+        self.mean = mean
         DictTransform.__init__(self, **kwargs)
 
     def transform(self, data):
         """Applies the Noise onto the images. Variance is controlled by the noise_variance parameter."""
-        std = torch.rand(data.size(0) if data.ndim > 5 else 1, device=data.device, dtype=data.dtype)
         min, max = data.min(), data.max()
-        data = data + torch.randn_like(data) * std
+        std = torch.FloatTensor(1).uniform_(*self.noise_variance).item()
+        noise = torch.FloatTensor(*data.shape).normal_(mean=self.mean, std=std).to(self.device)
+        data += noise
         return torch.clamp(data, min, max)
 
 
@@ -97,8 +101,6 @@ class BlurDictTransform(DictTransform):
         # code from: https://discuss.pytorch.org/t/is-there-anyway-to-do-gaussian-filtering-for-an-image-2d-3d-in-pytorch/12351/10
         # initialize conv layer.
         kernel = 1
-        # todo add dynamic padding for higher kerner_size
-        #
         self.meshgrids = torch.meshgrid(
             [
                 torch.arange(size, dtype=torch.float32)
@@ -123,7 +125,7 @@ class BlurDictTransform(DictTransform):
 
     def transform(self, data):
         """Applies the Blur using a 3D Convolution."""
-        vol = F.pad(make_5d(data), (self.pad , )*6, mode='replicate')
+        vol = F.pad(make_5d(data), (self.pad,) * 6, mode='replicate')
         return self.conv(vol, weight=self.weight, groups=self.channels, padding=0)
 
 
