@@ -49,7 +49,7 @@ class NoiseDictTransform(DictTransform):
     Transformations for adding noise to images.
     """
 
-    def __init__(self, std_deviation=0.001, mean=0, **kwargs):
+    def __init__(self, std_deviation=0.01, mean=0, **kwargs):
         """
 
         :param std_deviation: The variance of the noise added to the  image.
