@@ -35,9 +35,8 @@ class DictTransform(object):
 
         for key in self.apply_on:
             tmp = data[key]
-            isinstance(tmp, np.ndarray): # Convert from NumPy
+            if isinstance(tmp, np.ndarray): # Convert from NumPy
                 tmp = torch.from_numpy(tmp)   
-                
             if torch.is_tensor(tmp): # If tmp is tensor, control type and device
                 data[key] = self.transform(tmp.to(self.dtype).to(self.device))
             else: 
@@ -50,7 +49,7 @@ class NoiseDictTransform(DictTransform):
     Transformations for adding noise to images.
     """
 
-    def __init__(self, noise_variance=(0.001, 0.05), mean=0, **kwargs):
+    def __init__(self, noise_variance=0.001, mean=0, **kwargs):
         """
 
         :param noise_variance: The variance of the noise added to the  image.
@@ -65,8 +64,8 @@ class NoiseDictTransform(DictTransform):
     def transform(self, data):
         """Applies the Noise onto the images. Variance is controlled by the noise_variance parameter."""
         min, max = data.min(), data.max()
-        std = torch.FloatTensor(1).uniform_(*self.noise_variance).item()
-        noise = torch.FloatTensor(*data.shape).normal_(mean=self.mean, std=std).to(self.device)
+        noise = torch.rand_like(data, device=self.device, dtype=self.dtype)
+        noise += noise.normal_(mean=self.mean, std=self.noise_variance)
         data += noise
         return torch.clamp(data, min, max)
 
