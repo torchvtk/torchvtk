@@ -49,14 +49,14 @@ class NoiseDictTransform(DictTransform):
     Transformations for adding noise to images.
     """
 
-    def __init__(self, noise_variance=0.001, mean=0, **kwargs):
+    def __init__(self, std_deviation=0.001, mean=0, **kwargs):
         """
 
-        :param noise_variance: The variance of the noise added to the  image.
+        :param std_deviation: The variance of the noise added to the  image.
         :param mean: The mean of the noise.
         :param kwargs: Arguments of the super class.
         """
-        self.noise_variance = noise_variance
+        self.std_deviation = std_deviation
         self.device = kwargs["device"]
         self.mean = mean
         DictTransform.__init__(self, **kwargs)
@@ -64,9 +64,7 @@ class NoiseDictTransform(DictTransform):
     def transform(self, data):
         """Applies the Noise onto the images. Variance is controlled by the noise_variance parameter."""
         min, max = data.min(), data.max()
-        noise = torch.rand_like(data, device=self.device, dtype=self.dtype)
-        noise += noise.normal_(mean=self.mean, std=self.noise_variance)
-        data += noise
+        data=data + torch.randn_like(data) * self.std_deviation + self.mean
         return torch.clamp(data, min, max)
 
 
