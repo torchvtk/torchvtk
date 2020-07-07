@@ -170,7 +170,7 @@ An example is presented in the following code snipped.</p>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>device</strong> – The torch Code for the device on which the transformaion should be executed. Possiblities are [“cpu”, “cuda”].</p></li>
+<li><p><strong>device</strong> – The torch Code for the device on which the transformation should be executed. Possiblities are [“cpu”, “cuda”].</p></li>
 <li><p><strong>apply_on</strong> – The keys of the volumes that should be transformed.</p></li>
 <li><p><strong>dtype</strong> – The torch type in which the data are. Possibilities are [torch.float16, torch.float32].</p></li>
 </ul>
@@ -181,22 +181,24 @@ An example is presented in the following code snipped.</p>
 <dl class="method">
 <dt id="torchvtk.augmentation.DictTransform.transform">
 <em class="property">abstract </em><code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.augmentation.DictTransform.transform" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Transformation Method, must be overwritten by every SubClass.</p>
+</dd></dl>
 
 </dd></dl>
 
 <span class="target" id="module-torchvtk.augmentation"></span><dl class="class">
 <dt id="torchvtk.augmentation.NoiseDictTransform">
-<em class="property">class </em><code class="sig-prename descclassname">torchvtk.augmentation.</code><code class="sig-name descname">NoiseDictTransform</code><span class="sig-paren">(</span><em class="sig-param">noise_variance=(0.001</em>, <em class="sig-param">0.05)</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.augmentation.NoiseDictTransform" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torchvtk.augmentation.</code><code class="sig-name descname">NoiseDictTransform</code><span class="sig-paren">(</span><em class="sig-param">std_deviation=0.01</em>, <em class="sig-param">mean=0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.augmentation.NoiseDictTransform" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torchvtk.augmentation.DictTransform.DictTransform</span></code></p>
 <p>Transformations for adding noise to images.</p>
 <dl class="method">
 <dt id="torchvtk.augmentation.NoiseDictTransform.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">noise_variance=(0.001</em>, <em class="sig-param">0.05)</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.augmentation.NoiseDictTransform.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">std_deviation=0.01</em>, <em class="sig-param">mean=0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.augmentation.NoiseDictTransform.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>noise_variance</strong> – The variance of the noise added to the  image.</p></li>
+<li><p><strong>std_deviation</strong> – The variance of the noise added to the  image.</p></li>
+<li><p><strong>mean</strong> – The mean of the noise.</p></li>
 <li><p><strong>kwargs</strong> – Arguments of the super class.</p></li>
 </ul>
 </dd>
@@ -206,7 +208,8 @@ An example is presented in the following code snipped.</p>
 <dl class="method">
 <dt id="torchvtk.augmentation.NoiseDictTransform.transform">
 <code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.augmentation.NoiseDictTransform.transform" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Applies the Noise onto the images. Variance is controlled by the noise_variance parameter.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -232,17 +235,20 @@ An example is presented in the following code snipped.</p>
 <dl class="method">
 <dt id="torchvtk.augmentation.CroppingTransform.get_center_crop">
 <code class="sig-name descname">get_center_crop</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">size</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.augmentation.CroppingTransform.get_center_crop" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Helper method for the crop.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="torchvtk.augmentation.CroppingTransform.get_crop_around">
 <code class="sig-name descname">get_crop_around</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">mid</em>, <em class="sig-param">size</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.augmentation.CroppingTransform.get_crop_around" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Helper method for the crop.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="torchvtk.augmentation.CroppingTransform.transform">
 <code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.augmentation.CroppingTransform.transform" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Applies the Center Crop.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -254,21 +260,17 @@ An example is presented in the following code snipped.</p>
 <dl class="method">
 <dt id="torchvtk.augmentation.BlurDictTransform.__init__">
 <code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">channels=1</em>, <em class="sig-param">kernel_size=(3</em>, <em class="sig-param">3</em>, <em class="sig-param">3)</em>, <em class="sig-param">sigma=1</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.augmentation.BlurDictTransform.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>channels</strong> – Amount of channels of the input data.</p></li>
-<li><p><strong>kernel_size</strong> – Size of the convolution kernel.</p></li>
-<li><p><strong>sigma</strong> – Standard deviation.</p></li>
-</ul>
-</dd>
-</dl>
+<dd><p>Initializing the Blur Transformation.
+:param channels: Amount of channels of the input data.
+:param kernel_size: Size of the convolution kernel.
+:param sigma: Standard deviation.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="torchvtk.augmentation.BlurDictTransform.transform">
 <code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.augmentation.BlurDictTransform.transform" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Applies the Blur using a 3D Convolution.</p>
+</dd></dl>
 
 </dd></dl>
 
