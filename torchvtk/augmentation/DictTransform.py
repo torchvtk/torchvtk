@@ -1,5 +1,4 @@
 import math
-import random
 from abc import abstractmethod
 from torchvtk.utils.volume_utils import make_5d
 import numpy as np
@@ -35,11 +34,11 @@ class DictTransform(object):
 
         for key in self.apply_on:
             tmp = data[key]
-            if isinstance(tmp, np.ndarray): # Convert from NumPy
-                tmp = torch.from_numpy(tmp)   
-            if torch.is_tensor(tmp): # If tmp is tensor, control type and device
+            if isinstance(tmp, np.ndarray):  # Convert from NumPy
+                tmp = torch.from_numpy(tmp)
+            if torch.is_tensor(tmp):  # If tmp is tensor, control type and device
                 data[key] = self.transform(tmp.to(self.dtype).to(self.device))
-            else: 
+            else:
                 data[key] = self.transform(tmp)
         return data
 
@@ -51,7 +50,6 @@ class NoiseDictTransform(DictTransform):
 
     def __init__(self, std_deviation=0.01, mean=0, **kwargs):
         """
-
         :param std_deviation: The variance of the noise added to the  image.
         :param mean: The mean of the noise.
         :param kwargs: Arguments of the super class.
@@ -64,7 +62,7 @@ class NoiseDictTransform(DictTransform):
     def transform(self, data):
         """Applies the Noise onto the images. Variance is controlled by the noise_variance parameter."""
         min, max = data.min(), data.max()
-        data=data + torch.randn_like(data) * self.std_deviation + self.mean
+        data = data + torch.randn_like(data) * self.std_deviation + self.mean
         return torch.clamp(data, min, max)
 
 
