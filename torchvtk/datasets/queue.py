@@ -6,7 +6,7 @@ import numpy as np
 
 from itertools import cycle
 from functools import partial
-import time, math, psutil, os
+import time, math, psutil, os, numbers
 from collections import defaultdict
 
 from torchvtk.datasets import TorchDataset
@@ -53,7 +53,8 @@ def load_onsample(ds, queue, q_maxlen, sample_event, tfm=noop):
 
 class TorchQueueDataset(IterableDataset):
     def __init__(self, torch_ds, epoch_len=1000, mode='onsample', fill_interval=None, num_workers=1, q_maxlen=None, ram_use=0.75,
-        wait_fill=True, sample_tfm=noop, batch_tfm=noop, bs=1, collate_fn=dict_collate_fn, log_sampling=False):
+        wait_fill=True, sample_tfm=noop, batch_tfm=noop, bs=1, collate_fn=dict_collate_fn, log_sampling=False,
+        avg_item_size=None):
         '''
         Args:
             torch_ds (TorchDataset): A TorchDataset to be used for queueing
@@ -70,8 +71,10 @@ class TorchQueueDataset(IterableDataset):
             batch_tfm (Transform, function):  Transforms to be applied on batches of items
             bs (int): Batch Size
             collate_fn (function): Collate Function to merge items to batches. Default assumes dictionaries (like from TorchDataset) and stacks all tensors, while collecting non-tensors in a list
+            avg_item_size (float, torch.Tensor): Example tensor or size in MB
         '''
         self.bs = bs
+        self.avg_item_size = avg_item_size
         self.collate_fn = collate_fn
         self.epoch_len = epoch_len
         self.log_sampling = log_sampling
@@ -153,8 +156,15 @@ class TorchQueueDataset(IterableDataset):
         if ram_use <= 1.0:
               mem_budget = psutil.virtual_memory().available * ram_use / 1e6
         else: mem_budget = ram_use
-        file_szs = torch.tensor(list(map(lambda p: p.stat().st_size, file_list))) / 1e6
-        avg_sz = file_szs.mean().item()
+        if self.avg_item_size is not None:
+            if torch.is_tensor(self.avg_item_size):
+                avg_sz = self.avg_item_size.element_size() * self.avg_item_size.nelement() / 1e6
+            elif isinstance(self.avg_item_size, numbers.Number):
+                avg_sz = self.avg_item_size
+            else: raise Exception(f'Invalid average item size given: {self.avg_item_size}')
+        else:
+            file_szs = torch.tensor(list(map(lambda p: p.stat().st_size, file_list))) / 1e6
+            avg_sz = file_szs.mean().item()
         qlen = math.floor(mem_budget / avg_sz)
         print(f'''Automatic Queue Length for average Item size {avg_sz:.1f}MB:
 Suggested Queue Length: {qlen}, which would take on average {qlen * avg_sz:.1f}MB memory (Budget: {mem_budget:.1f}MB).''')
