@@ -35,25 +35,13 @@ class DictTransform(object):
 
         for key in self.apply_on:
             tmp = data[key]
-
-            if not torch.is_tensor(tmp):
-                tmp = torch.from_numpy(tmp)
-
-            # to GPU.
-            if self.device == "cuda":
-                tmp = tmp.to(self.device)
-
-            if tmp.dtype is torch.float16:
-                tmp = tmp.to(torch.float32)
-
-            tmp = self.transform(tmp)
-
-            if self.dtype is torch.float16:
-                tmp = tmp.to(torch.float16)
-            elif self.dtype is not torch.float16 or torch.float32:
-                tmp = tmp.to(torch.float32)
-            tmp = tmp.to(self.device)
-            data[key] = tmp
+            isinstance(tmp, np.ndarray): # Convert from NumPy
+                tmp = torch.from_numpy(tmp)   
+                
+            if torch.is_tensor(tmp): # If tmp is tensor, control type and device
+                data[key] = self.transform(tmp.to(self.dtype).to(self.device))
+            else: 
+                data[key] = self.transform(tmp)
         return data
 
 
