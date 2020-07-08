@@ -30,23 +30,26 @@ def _share_mem(d):
     for t in d.values():
         if torch.is_tensor(t): t.share_memory_()
 
-def load_always(ds, queue, q_maxlen, tfm=noop):
+def load_always(ds, queue, q_maxlen, lock, tfm=noop):
     ''' Worker job used to fill queue async as fast as possible. '''
     while True:
         idxs = torch.randperm(len(ds))
         for i in idxs:
             d = tfm(ds[i])
             _share_mem(d)
+            lock.acquire()
             queue.insert(0, d)
-            if len(queue) >= q_maxlen: queue.pop()
+            if len(queue) > q_maxlen: queue.pop()
+            lock.release()
 
-def load_onsample(ds, queue, q_maxlen, sample_event, tfm=noop):
+def load_onsample(ds, queue, q_maxlen, lock, sample_event, tfm=noop):
     ''' Worker job used to fill queue on sampling. '''
     while True:
         idxs = torch.randperm(len(ds))
         for i in idxs:
             d = tfm(ds[i])
             _share_mem(d)
+            lock.acquire()
             sample_event.wait()
             if len(queue) >= q_maxlen-1: sample_event.clear()
             queue.insert(0, d)
@@ -86,20 +89,19 @@ class TorchQueueDataset(IterableDataset):
         self.batch_tfm  = batch_tfm
         self.q_maxlen = q_maxlen if q_maxlen is not None else self._get_queue_sz(ram_use, file_list=torch_ds.items)
         self.manager = mp.Manager() # Manager for shared resources
+        self.queue   = self.manager.list() # Shared list of tensors
+        self.lock = mp.Lock()
         self.mode = mode # Set worker functions for dataloading mode
         if   mode == 'onsample': # Pops and adds a new item when sampled
+            worker_fn = load_onsample
             self.sample_event = mp.Event()
-            self.sample_event.set()
-            worker_fn = partial(load_onsample, sample_event=self.sample_event)
-        elif mode == 'always': # Pops and adds new items as fast das the dataloaders can
-            worker_fn = partial(load_always)
+            args = (self.queue, self.q_maxlen, self.lock, self.sample_event)
+        elif mode == 'always':   # Pops and adds new items as fast das the dataloaders can
+            worker_fn = load_always
+            args = (self.queue, self.q_maxlen, self.lock)
         else: raise Exception(f'Invalid queue filling mode: {mode}')
-        self.queue   = self.manager.list() # Shared list of tensors
-        self.workers = [ mp.Process( # Start worker processes
-            target = worker_fn,
-            args   = (ds, self.queue, self.q_maxlen), # Dataset, Queue, Queue Size
-            daemon = True
-        ) for ds in self.datasets]
+        self.workers = [mp.Process(target=worker_fn, args=(ds,)+args, daemon=True) for ds in self.datasets]
+
         # Start Jobs & possibly Wait
         for w in self.workers: w.start()
         if int(wait_fill) > 0:
@@ -119,6 +121,7 @@ class TorchQueueDataset(IterableDataset):
         This makes use of the object attributes bs (batch size) and the collate function
         Returns: Generator that samples randomly samples batches from the queue.
         '''
+        assert self.qsize >= self.bs, "Queue is not full enough to sample a single batch!"
         while True:
             idxs = torch.randperm(min(len(self.queue), self.q_maxlen))[:self.bs]
             samples = [self.sample_tfm(self.queue[i]) for i in idxs]
