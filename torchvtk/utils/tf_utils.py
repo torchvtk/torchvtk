@@ -23,7 +23,7 @@ def tex_from_pts(tf_pts, resolution=4096):
     if isinstance(tf_pts, np.ndarray):
         tf_pts = torch.from_numpy(tf_pts)
     if torch.is_tensor(tf_pts):
-        return apply_tf_torch(torch.linspace(0.0, 1.0, resolution)[None,None], tf_pts)
+        return apply_tf_torch(torch.linspace(0.0, 1.0, resolution), tf_pts)
 
 def apply_tf_tex_torch(vol, tf_tex):
     ''' Applies a (batch of) transfer function textures `tf_tex` to a (batch of) volume `vol`

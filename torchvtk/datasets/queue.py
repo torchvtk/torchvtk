@@ -6,6 +6,7 @@ import numpy as np
 
 from itertools import cycle
 from functools import partial
+from pathlib   import Path
 import time, math, psutil, os, numbers
 from collections import defaultdict
 
@@ -56,11 +57,11 @@ def load_onsample(ds, queue, q_maxlen, lock, sample_event, tfm=noop):
 
 class TorchQueueDataset(IterableDataset):
     def __init__(self, torch_ds, epoch_len=1000, mode='onsample', fill_interval=None, num_workers=1, q_maxlen=None, ram_use=0.75,
-        wait_fill=True, sample_tfm=noop, batch_tfm=noop, bs=1, collate_fn=dict_collate_fn, log_sampling=False,
-        avg_item_size=None):
+        wait_fill=True, wait_fill_timeout=60, sample_tfm=noop, batch_tfm=noop, bs=1, collate_fn=dict_collate_fn, log_sampling=False,
+        avg_item_size=None, preprocess_fn=None, filter_fn=None):
         '''
         Args:
-            torch_ds (TorchDataset): A TorchDataset to be used for queueing
+            torch_ds (TorchDataset, str,Path): A TorchDataset to be used for queueing or path to the dataset on disk
             mode (string): Queue filling mode.
                 - 'onsample' refills the queue after it got sampled
                 - 'always' keeps refilling the queue as fast as possible
@@ -70,8 +71,11 @@ class TorchQueueDataset(IterableDataset):
             q_maxlen (int): Set queue size. Overrides `ram_use`
             ram_use (float): Fraction of available system memory to use for queue or memory budget in MB (>1.0). Default is 75%
             wait_fill (int, bool): Boolean whether queue should be filled on init or Int to fill the queue at least with a certain amount of items
+            wait_fill_timeout (int,float): Time in seconds until wait_fill timeouts. Default is 60s
             sample_tfm (Transform, function): Applicable transform (receiving and producing a dict) that is applied upon sampling from the queue
             batch_tfm (Transform, function):  Transforms to be applied on batches of items
+            preprocess_fn (function): Override preprocess_fn from given torch_ds
+            filter_fn (function): Filters filenames to load, like TorchDataset. Only used if `torch_ds` is a path to a dataset.
             bs (int): Batch Size
             collate_fn (function): Collate Function to merge items to batches. Default assumes dictionaries (like from TorchDataset) and stacks all tensors, while collecting non-tensors in a list
             avg_item_size (float, torch.Tensor): Example tensor or size in MB
@@ -83,18 +87,24 @@ class TorchQueueDataset(IterableDataset):
         self.log_sampling = log_sampling
         self.sample_dict = defaultdict(int)
         # Split dataset into num_workers sub-datasets
-        self.items = list(map(list, np.array_split(torch_ds.items, num_workers)))
-        self.datasets = [TorchDataset(items, preprocess_fn=torch_ds.preprocess_fn) for items in self.items]
+        if isinstance(torch_ds, TorchDataset):
+            self.items = list(map(list, np.array_split(torch_ds.items, num_workers)))
+            if preprocess_fn is None: preprocess_fn = torch_ds.preprocess_fn
+        else:
+            fns = Path(torch_ds).rglob('*.pt')
+            if filter_fn is not None: fns = filter(filter_fn, fns)
+            self.items = list(map(list, np.array_split(list(fns), num_workers)))
+        self.datasets = [TorchDataset(items, preprocess_fn=preprocess_fn) for items in self.items]
         self.sample_tfm = sample_tfm
         self.batch_tfm  = batch_tfm
-        self.q_maxlen = q_maxlen if q_maxlen is not None else self._get_queue_sz(ram_use, file_list=torch_ds.items)
+        self.q_maxlen = q_maxlen if q_maxlen is not None else self._get_queue_sz(ram_use, file_list=self.items[0])
         self.manager = mp.Manager() # Manager for shared resources
         self.queue   = self.manager.list() # Shared list of tensors
-        self.lock = mp.Lock()
+        self.lock    = self.manager.Lock()
         self.mode = mode # Set worker functions for dataloading mode
         if   mode == 'onsample': # Pops and adds a new item when sampled
             worker_fn = load_onsample
-            self.sample_event = mp.Event()
+            self.sample_event = self.manager.Event()
             args = (self.queue, self.q_maxlen, self.lock, self.sample_event)
         elif mode == 'always':   # Pops and adds new items as fast das the dataloaders can
             worker_fn = load_always
@@ -106,7 +116,7 @@ class TorchQueueDataset(IterableDataset):
         for w in self.workers: w.start()
         if int(wait_fill) > 0:
             wait_for = min(self.q_maxlen, wait_fill) if isinstance(wait_fill, int) else self.q_maxlen
-            self.wait_fill_queue(fill_atleast=wait_for)
+            self.wait_fill_queue(fill_atleast=wait_for, timeout=wait_fill_timeout)
 
     @property
     def qsize(self): return len(self.queue)
@@ -137,10 +147,10 @@ class TorchQueueDataset(IterableDataset):
     def __repr__(self):
         nl = "\n"
         nw = len(self.workers)
-        return f'torchvtk.datasets.TorchQueueDataset (Queue Length {self.qsize}){nl}{nw} Workers fetching {self.mode} from {nw} Datasets like:{nl}{str(self.datasets[0])}'
+        return f'torchvtk.datasets.TorchQueueDataset (Queue Length {self.qsize}/{self.q_maxlen}){nl}{nw} Workers fetching {self.mode} from {nw} Datasets like:{nl}{str(self.datasets[0])}'
 
     def __str__(self): return repr(self)
-    def wait_fill_queue(self, fill_atleast=None, timeout=30, polling_interval=0.25):
+    def wait_fill_queue(self, fill_atleast=None, timeout=60, polling_interval=0.25):
         ''' Waits untill the queue is filled (`fill_atleast`=None) or until filled with at least `fill_atleast`. Timeouts.
         Args:
             fill_atleast (int): Waits until queue is at least filled with so many items.
@@ -166,8 +176,10 @@ class TorchQueueDataset(IterableDataset):
               mem_budget = psutil.virtual_memory().available * ram_use / 1e6
         else: mem_budget = ram_use
         if self.avg_item_size is not None:
+            print(self.avg_item_size)
             if torch.is_tensor(self.avg_item_size):
                 avg_sz = self.avg_item_size.element_size() * self.avg_item_size.nelement() / 1e6
+                print(avg_sz)
             elif isinstance(self.avg_item_size, numbers.Number):
                 avg_sz = self.avg_item_size
             else: raise Exception(f'Invalid average item size given: {self.avg_item_size}')
