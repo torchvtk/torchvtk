@@ -127,9 +127,12 @@ class CroppingTransform(DictTransform):
         self.size = size
         self.position = position
         if self.position != 0:
-            assert (size[0]//2 <= position[0])
-            assert (size[1]//2 <= position[1])
-            assert (size[2]//2 <= position[2])
+            try:
+                assert (size[0]//2 <= position[0])
+                assert (size[1]//2 <= position[1])
+                assert (size[2]//2 <= position[2])
+            except ValueError:
+                print("The size is larger than the image allows on that center position.")
 
 
     def transform(self, data):
