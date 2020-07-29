@@ -59,6 +59,12 @@ class DictTransform(object):
 
 class Lambda(DictTransform):
     def __init__(self, func, apply_on, **kwargs):
+        ''' Applies a given function, wrapped in a `DictTransform`
+
+        Args:
+            func (function): The function to be executed
+            apply_on (list of str): Dictionary keys to apply this function to in the sense of a `DictTransform`
+        '''
         super().__init__(apply_on=apply_on, **kwargs)
         self.tfm = func
 
@@ -91,6 +97,12 @@ class Composite:
 
 class Resize(DictTransform):
     def __init__(self, size, mode='trilinear', **kwargs):
+        ''' Resizes volumes to a given size or by a given factor
+
+        Args:
+            size (3-tuple/list or float): The new spatial dimensions in a tuple or a factor as scalar
+            mode (str, optional): Resampling mode. See PyTorch's `torch.nn.functional.interpolate`. Defaults to 'trilinear'.
+        '''
         super().__init__(**kwargs)
         if isinstance(size, (list, tuple)):
             self.is_factor = False
