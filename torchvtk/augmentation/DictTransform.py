@@ -126,6 +126,11 @@ class CroppingTransform(DictTransform):
         DictTransform.__init__(self, **kwargs)
         self.size = size
         self.position = position
+        if self.position != 0:
+            assert (size[0] <= position[0])
+            assert (size[1] <= position[1])
+            assert (size[2] <= position[2])
+
 
     def transform(self, data):
         "Applies the Center Crop."
@@ -133,14 +138,18 @@ class CroppingTransform(DictTransform):
 
     def get_crop_around(self, data, mid, size):
         """Helper method for the crop."""
-        size = size // 2
+        size = (size[0] // 2, size[1] // 2, size[2] // 2)
         if mid[0] == 0:
             mid = mid.squeeze(0)
-        return data[..., mid[-3] - size:mid[-3] + size,
-               mid[-2] - size:  mid[-2] + size,
-               mid[-1] - size:  mid[-1] + size]
+        return data[..., mid[-3] - size[0]:mid[-3] + size[0],
+               mid[-2] - size[1]:  mid[-2] + size[1],
+               mid[-1] - size[2]:  mid[-1] + size[2]]
 
     def get_center_crop(self, data, size):
         """Helper method for the crop."""
-        t = torch.Tensor([*data.shape]) // 2
-        return self.get_crop_around(data, (torch.Tensor([*data.shape]) // 2).long(), size)
+        if self.position == 0:
+            return self.get_crop_around(data, (torch.Tensor([*data.shape]) // 2).long(), size)
+
+
+        else:
+            return self.get_crop_around(data, self.position, size)
