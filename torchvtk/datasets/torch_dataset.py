@@ -82,12 +82,15 @@ class TorchDataset(Dataset):
         if delete_old_from_disk: shutil.rmtree(self.path)
         return TorchDataset(target_path)
 
-    def preload(self, device=torch.device('cpu')):
+    def preload(self, device=torch.device('cpu'), num_workers=0):
         self.data = [self[i] for i in range(len(self))]
-        for it in self.data:
+        def _preload(it):
             for k, v in it.items():
                 if torch.is_tensor(v): it[k] = v.to(device)
-        def new_get(i): return self.data[i]
+        pool_map(_preload, self.data, num_workers=num_workers)
+        def new_get(i):
+            print('Retrieving from cache: ', i)
+            return self.data[i]
         self.__getitem__ = new_get
         return self
 
