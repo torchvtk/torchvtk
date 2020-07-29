@@ -65,13 +65,27 @@ class Lambda(DictTransform):
     def transform(self, data): return self.tfm(data)
 
 class Composite:
-    def __init__(self, *tfms):
-        self.tfms = tfms
+    def __init__(self, *tfms, apply_all_on=None):
+        ''' Composites multiple transforms together
+        Args:
+            tfms (Callable, DictTransform): `DictTransform`s or just callable objects that can handle the incoming dict data
+            apply_all_on (List of str): Overrides the `apply_on` dictionary masks of the given transforms. (Only applies to `DictTransform`s)
+        '''
+        self.tfms = [*tfms]
+        if apply_all_on is not None:
+            assert isinstance(apply_all_on, (list, tuple)) and isinstance(apply_all_on[0], str)
+            for tfm in self.tfms:
+                assert hasattr(tfm, '__call__')
+                if isinstance(tfm, DictTransform):
+                    tfm.apply_on = apply_all_on
 
     def __call__(self, data):
         for tfm in self.tfms:
             data = tfm(data)
         return data
+
+    def __get__(self, i):
+        return self.tfms[i]
 
 
 
