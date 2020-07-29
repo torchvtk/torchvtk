@@ -1,4 +1,4 @@
-## Transformations
+## Transforms
 
 For Transformations it is necessary to call the Subclasses of `DictTransform`.
 An example is presented in the following code snipped.

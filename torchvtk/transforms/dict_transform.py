@@ -64,6 +64,7 @@ class Lambda(DictTransform):
         Args:
             func (function): The function to be executed
             apply_on (list of str): Dictionary keys to apply this function to in the sense of a `DictTransform`
+            kwargs: Arguments for `DictTransform`
         '''
         super().__init__(apply_on=apply_on, **kwargs)
         self.tfm = func
@@ -102,6 +103,7 @@ class Resize(DictTransform):
         Args:
             size (3-tuple/list or float): The new spatial dimensions in a tuple or a factor as scalar
             mode (str, optional): Resampling mode. See PyTorch's `torch.nn.functional.interpolate`. Defaults to 'trilinear'.
+            kwargs: Arguments for `DictTransform`
         '''
         super().__init__(**kwargs)
         if isinstance(size, (list, tuple)):
@@ -128,7 +130,7 @@ class GaussianNoise(DictTransform):
         """
         :param std_deviation: The variance of the noise added to the  image.
         :param mean: The mean of the noise.
-        :param kwargs: Arguments of the super class.
+        :param kwargs: Arguments for `DictTransform`.
         """
         self.std_deviation = std_deviation
         self.device = kwargs["device"]
@@ -151,6 +153,7 @@ class GaussianBlur(DictTransform):
         :param channels: Amount of channels of the input data.
         :param kernel_size: Size of the convolution kernel.
         :param sigma: Standard deviation.
+        :param kwargs: Arguments for `DictTransform`
         """
         self.channels = channels
         self.sigma = [sigma, sigma, sigma]
@@ -197,7 +200,7 @@ class Crop(DictTransform):
         """
         :param size: Size of the crop.
         :param position: Middle point of the cropped region.
-        :param kwargs: Arguments for super class.
+        :param kwargs: Arguments for `DictTransform`.
         """
         DictTransform.__init__(self, **kwargs)
         self.size = size
@@ -240,6 +243,7 @@ class RandPermute(DictTransform):
                 The default is  [ (0, 1, 2), (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0) ].
                 `permutations` must be a list or tuple of items that are compatible with torch.permute. Assume 0 to be the first spatial dimension, we account for a possible batch and channel dimension.
                 The permutation will then be chosen at random from the given list/tuple.
+            kwargs: Arguments for `DictTransform`
         '''
         super().__init__(**kwargs)
         if permutations is None:
@@ -267,7 +271,7 @@ class RandFlip(DictTransform):
         Args:
             flip_probability (float): Probability of a dimension being flipped. Default 0.5.
             dims (list of 3 ints): Dimensions that may be flipped are denoted with a 1, otherwise 0. [1,0,1] would randomly flip a volumes depth and width dimension, while never flipping its height dimension
-            kwargs: Keyword args for `DictTransform`
+            kwargs: Arguments for `DictTransform`
         '''
         super().__init__(**kwargs)
         self.prob = flip_probability
