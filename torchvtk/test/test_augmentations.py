@@ -47,7 +47,7 @@ def main():
 
     # Cropping CPU.
     file = load_file()
-    tfms = CroppingTransform(device="cpu", apply_on=["vol", "mask"], dtype=torch.float32, size=(33, 128,128), position=(33, 64,64))
+    tfms = CroppingTransform(device="cpu", apply_on=["vol", "mask"], dtype=torch.float32, size=(32, 128,128), position=(32, 64,64))
     tmp = tfms(file)
     view_batch(tmp["vol"].squeeze(), tmp["mask"].squeeze(), width=512, height=512)
     del tfms, file

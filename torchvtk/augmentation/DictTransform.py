@@ -150,6 +150,5 @@ class CroppingTransform(DictTransform):
         if self.position == 0:
             return self.get_crop_around(data, (torch.Tensor([*data.shape]) // 2).long(), size)
 
-
         else:
             return self.get_crop_around(data, self.position, size)
