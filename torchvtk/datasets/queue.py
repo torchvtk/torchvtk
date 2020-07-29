@@ -139,7 +139,7 @@ class TorchQueueDataset(IterableDataset):
             samples = [self.sample_tfm(self.queue[i]) for i in idxs]
             if self.log_sampling:
                 for s in samples: self.sample_dict[s['name']] += 1
-            if self.mode == 'onsample':
+            if self.mode == 'onsample' and self.qsize >= self.q_maxlen:
                 self.queue.pop()
                 self.sample_event.set()
             yield self.batch_tfm(self.collate_fn(samples))
