@@ -64,7 +64,7 @@ class LambdaDictTransform(DictTransform):
 
     def transform(self, data): return self.tfm(data)
 
-class CompositeTransform:
+class Composite:
     def __init__(self, *tfms):
         self.tfms = tfms
 
