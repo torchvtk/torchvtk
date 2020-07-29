@@ -5,11 +5,16 @@ from torch.utils.data import Dataset
 import numpy as np
 
 from pathlib import Path
+from functools import partial
 import shutil, os, pprint
 import torchvtk.datasets.urls as urls
 from torchvtk.datasets.download import download_all, extract_all
 from torchvtk.converters.dicom import cq500_to_torch, test_has_gdcm
 from torchvtk.utils import pool_map
+
+def _preload_dict_tensors(it, device=torch.device('cpu')):
+    for k, v in it.items():
+        if torch.is_tensor(v): it[k] = v.to(device)
 
 class DatasetWork:
     def __init__(self, items, target_path, process_fn):
@@ -84,10 +89,7 @@ class TorchDataset(Dataset):
 
     def preload(self, device=torch.device('cpu'), num_workers=0):
         self.data = [self[i] for i in range(len(self))]
-        def _preload(it):
-            for k, v in it.items():
-                if torch.is_tensor(v): it[k] = v.to(device)
-        pool_map(_preload, self.data, num_workers=num_workers)
+        pool_map(partial(_preload_dict_tensors, device=device), self.data, num_workers=num_workers)
         def new_get(i):
             print('Retrieving from cache: ', i)
             return self.data[i]

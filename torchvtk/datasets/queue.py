@@ -51,9 +51,10 @@ def load_onsample(ds, queue, q_maxlen, lock, sample_event, tfm=noop):
             d = tfm(ds[i])
             _share_mem(d)
             lock.acquire()
-            sample_event.wait()
-            if len(queue) >= q_maxlen-1: sample_event.clear()
-            queue.insert(0, d)
+            if sample_event.wait():
+                if len(queue) >= q_maxlen-1: sample_event.clear()
+                queue.insert(0, d)
+            lock.release()
 
 class TorchQueueDataset(IterableDataset):
     def __init__(self, torch_ds, epoch_len=1000, mode='onsample', fill_interval=None, num_workers=1, q_maxlen=None, ram_use=0.75,
@@ -113,6 +114,7 @@ class TorchQueueDataset(IterableDataset):
         self.workers = [mp.Process(target=worker_fn, args=(ds,)+args, daemon=True) for ds in self.datasets]
 
         # Start Jobs & possibly Wait
+        if self.mode == 'onsample': self.sample_event.set()
         for w in self.workers: w.start()
         if int(wait_fill) > 0:
             wait_for = min(self.q_maxlen, wait_fill) if isinstance(wait_fill, int) else self.q_maxlen
