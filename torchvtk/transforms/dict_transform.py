@@ -57,7 +57,7 @@ class DictTransform(object):
 #### Transforms ##############################################################
 ####################
 
-class LambdaDictTransform(DictTransform):
+class Lambda(DictTransform):
     def __init__(self, func, apply_on, **kwargs):
         super().__init__(apply_on=apply_on, **kwargs)
         self.tfm = func
