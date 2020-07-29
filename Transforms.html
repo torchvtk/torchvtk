@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Transformations &mdash; torchvtk v0.2.5 documentation</title>
+  <title>Transforms &mdash; torchvtk v0.2.5 documentation</title>
   
 
   
@@ -85,7 +85,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="TorchDataset.html">TorchDataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="TorchQueueDataset.html">TorchQueueDataset</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Transformations</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Transforms</a></li>
 </ul>
 
             
@@ -132,7 +132,7 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Transformations</li>
+      <li>Transforms</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -151,8 +151,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="transformations">
-<h1>Transformations<a class="headerlink" href="#transformations" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="transforms">
+<h1>Transforms<a class="headerlink" href="#transforms" title="Permalink to this headline">¶</a></h1>
 <p>For Transformations it is necessary to call the Subclasses of <code class="docutils literal notranslate"><span class="pre">DictTransform</span></code>.
 An example is presented in the following code snipped.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="kn">from</span> <span class="nn">torchvtk.transforms</span> <span class="kn">import</span> <span class="n">Composite</span><span class="p">,</span> <span class="n">RandFlip</span><span class="p">,</span> <span class="n">Resize</span>
@@ -226,6 +226,7 @@ An example is presented in the following code snipped.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>func</strong> (<em>function</em>) – The function to be executed</p></li>
 <li><p><strong>apply_on</strong> (<em>list of str</em>) – Dictionary keys to apply this function to in the sense of a <cite>DictTransform</cite></p></li>
+<li><p><strong>kwargs</strong> – Arguments for <cite>DictTransform</cite></p></li>
 </ul>
 </dd>
 </dl>
@@ -252,7 +253,7 @@ An example is presented in the following code snipped.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>size</strong> – Size of the crop.</p></li>
 <li><p><strong>position</strong> – Middle point of the cropped region.</p></li>
-<li><p><strong>kwargs</strong> – Arguments for super class.</p></li>
+<li><p><strong>kwargs</strong> – Arguments for <cite>DictTransform</cite>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -291,6 +292,7 @@ An example is presented in the following code snipped.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>size</strong> (<em>3-tuple/list</em><em> or </em><em>float</em>) – The new spatial dimensions in a tuple or a factor as scalar</p></li>
 <li><p><strong>mode</strong> (<em>str</em><em>, </em><em>optional</em>) – Resampling mode. See PyTorch’s <cite>torch.nn.functional.interpolate</cite>. Defaults to ‘trilinear’.</p></li>
+<li><p><strong>kwargs</strong> – Arguments for <cite>DictTransform</cite></p></li>
 </ul>
 </dd>
 </dl>
@@ -317,7 +319,7 @@ An example is presented in the following code snipped.</p>
 :type flip_probability: float
 :param dims: Dimensions that may be flipped are denoted with a 1, otherwise 0. [1,0,1] would randomly flip a volumes depth and width dimension, while never flipping its height dimension
 :type dims: list of 3 ints
-:param kwargs: Keyword args for <cite>DictTransform</cite></p>
+:param kwargs: Arguments for <cite>DictTransform</cite></p>
 </dd></dl>
 
 <dl class="method">
@@ -344,6 +346,9 @@ An example is presented in the following code snipped.</p>
 The permutation will then be chosen at random from the given list/tuple.</p>
 </div></blockquote>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>kwargs</strong> – Arguments for <cite>DictTransform</cite></p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -366,7 +371,8 @@ The permutation will then be chosen at random from the given list/tuple.</p>
 <dd><p>Initializing the Blur Transformation.
 :param channels: Amount of channels of the input data.
 :param kernel_size: Size of the convolution kernel.
-:param sigma: Standard deviation.</p>
+:param sigma: Standard deviation.
+:param kwargs: Arguments for <cite>DictTransform</cite></p>
 </dd></dl>
 
 <dl class="method">
@@ -390,7 +396,7 @@ The permutation will then be chosen at random from the given list/tuple.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>std_deviation</strong> – The variance of the noise added to the  image.</p></li>
 <li><p><strong>mean</strong> – The mean of the noise.</p></li>
-<li><p><strong>kwargs</strong> – Arguments of the super class.</p></li>
+<li><p><strong>kwargs</strong> – Arguments for <cite>DictTransform</cite>.</p></li>
 </ul>
 </dd>
 </dl>
