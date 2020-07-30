@@ -133,7 +133,6 @@ class GaussianNoise(DictTransform):
         :param kwargs: Arguments for `DictTransform`.
         """
         self.std_deviation = std_deviation
-        self.device = kwargs["device"]
         self.mean = mean
         DictTransform.__init__(self, **kwargs)
 
