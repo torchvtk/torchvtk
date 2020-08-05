@@ -25,20 +25,23 @@ An example is presented in the following code snipped.
 
     ds = TorchDataset(path_to_ds, preprocess_fn=tfms) # Use the transforms upon loading with a TorchDataset
 ```
+#### Compositing
 We can Composite `DictTransform`s, as well as normal functions, assuming they all operate on `dict`s and return the modified dictionary. All subclasses of `DictTransform`, which are all classes in `torchvtk.transforms`, can be given the parameters of `DictTransform` through the `**kwargs` in their respective `__init__`s. That means you can specify for each transform on which items in the dictionary they should be applied (e.g. `apply_on=['vol']`), as well as a preferred `torch.dtype` and `torch.device` for the transform.
 
 Note that setting the `apply_on` paramter of `Composite` (as in the example), applies to all transforms that have not specified `apply_on` themselves. The `dtype` and `device` parameters work similar.
 
+#### DictTransform arguments
 Further note that by default the transformations are applied to all keys that have a `torch.Tensor` as value. Beware of other Tensors in your data that you do not wan't to modify! You should usually define `apply_on` for all your transforms somehow, be it specific or through `Composite`. As for the `dtype` and `device`, the transform is executed on using the type and device that the data comes in. Setting a type or device at the beginning of a `Composite` can thus determine the type or device until the next transform specifies another.
 
+#### Mixing with non-DictTransforms
 In this example, the `_basic_func` is executed first and simply gets the whole dictionary in and must return the modified one. Here a new key `'newkey'` is added. `_basic_add` is a standard function that knows nothing of dicts and we can wrap it using `Lambda` to make use of `apply_on` etc.
 As you can see we apply `_basic_add` only to `'newkey'`. All the other transforms in the Composite are applied to `'vol'`, since the `Composite` sets it for all transforms that did not specify `apply_on`.
 
 ### API
 #### DictTransform
 ```eval_rst
-.. automodule:: torchvtk.transforms
-.. autoclass:: DictTransform
+.. autoclass:: torchvtk.transforms::DictTransform
+   :noindex:
    :members:
    :undoc-members:
    :inherited-members:
@@ -46,8 +49,8 @@ As you can see we apply `_basic_add` only to `'newkey'`. All the other transform
 
 #### Composite
 ```eval_rst
-.. automodule:: torchvtk.transforms
-.. autoclass:: Composite
+.. autoclass:: torchvtk.transforms::Composite
+   :noindex:
    :members:
    :undoc-members:
    :inherited-members:
@@ -56,8 +59,8 @@ As you can see we apply `_basic_add` only to `'newkey'`. All the other transform
 
 #### Lambda
 ```eval_rst
-.. automodule:: torchvtk.transforms
-.. autoclass:: Lambda
+.. autoclass:: torchvtk.transforms::Lambda
+   :noindex:
    :members:
    :undoc-members:
    :inherited-members:
@@ -66,8 +69,8 @@ As you can see we apply `_basic_add` only to `'newkey'`. All the other transform
 
 #### Crop
 ```eval_rst
-.. automodule:: torchvtk.transforms
-.. autoclass:: Crop
+.. autoclass:: torchvtk.transforms::Crop
+   :noindex:
    :members:
    :undoc-members:
    :inherited-members:
@@ -76,8 +79,8 @@ As you can see we apply `_basic_add` only to `'newkey'`. All the other transform
 
 #### Resize
 ```eval_rst
-.. automodule:: torchvtk.transforms
-.. autoclass:: Resize
+.. autoclass:: torchvtk.transforms::Resize
+   :noindex:
    :members:
    :undoc-members:
    :inherited-members:
@@ -86,8 +89,8 @@ As you can see we apply `_basic_add` only to `'newkey'`. All the other transform
 
 #### RandFlip
 ```eval_rst
-.. automodule:: torchvtk.transforms
-.. autoclass:: RandFlip
+.. autoclass:: torchvtk.transforms::RandFlip
+   :noindex:
    :members:
    :undoc-members:
    :inherited-members:
@@ -96,8 +99,8 @@ As you can see we apply `_basic_add` only to `'newkey'`. All the other transform
 
 #### RandPermute
 ```eval_rst
-.. automodule:: torchvtk.transforms
-.. autoclass:: RandPermute
+.. autoclass:: torchvtk.transforms::RandPermute
+   :noindex:
    :members:
    :undoc-members:
    :inherited-members:
@@ -106,8 +109,8 @@ As you can see we apply `_basic_add` only to `'newkey'`. All the other transform
 
 #### GaussianBlur
 ```eval_rst
-.. automodule:: torchvtk.transforms
-.. autoclass:: GaussianBlur
+.. autoclass:: torchvtk.transforms::GaussianBlur
+   :noindex:
    :members:
    :undoc-members:
    :inherited-members:
@@ -116,8 +119,8 @@ As you can see we apply `_basic_add` only to `'newkey'`. All the other transform
 
 #### GaussianNoise
 ```eval_rst
-.. automodule:: torchvtk.transforms
-.. autoclass:: GaussianNoise
+.. autoclass:: torchvtk.transforms::GaussianNoise
+   :noindex:
    :members:
    :undoc-members:
    :inherited-members:

@@ -29,12 +29,13 @@ class DatasetWork:
 
 class TorchDataset(Dataset):
     def __init__(self, ds_files, filter_fn=None, preprocess_fn=None):
-        ''' A dataset that uses serialized PyTorch Tensors
+        ''' A dataset that uses serialized PyTorch Tensors.
 
         Args:
-            ds_files (str, Path (Dict), List of Path (Files)): Path to the TorchDataset directory (containing *.pt) or list of paths pointing to .pt files
+            ds_files (str, Path (Dict), List of Path (Files)): Path to the TorchDataset directory (containing `*.pt`) or list of paths pointing to .pt files
             filter_fn (function): Function that filters the found items. Input is filepath
-            preprocess_fn (function): Function to process the loaded dirctionary. '''
+            preprocess_fn (function): Function to process the loaded dirctionary.
+        '''
         super().__init__()
         self.preprocess_fn = preprocess_fn
         if  isinstance(ds_files, (str, Path)):
@@ -73,7 +74,7 @@ class TorchDataset(Dataset):
             delete_old_from_disk (bool): If True, the root directory of the old, unprocessed, dataset is removed from disk.
 
         Returns:
-            TorchDataset with the new items. (no filter or preprocess_fn set)
+            TorchDataset: TorchDataset with the new items. (no filter or preprocess_fn set)
         '''
         target_path = self.path.parent/name
         target_path.mkdir()
@@ -135,10 +136,10 @@ class TorchDataset(Dataset):
         Args:
             tvtk_ds_path(str, Path): Path where your torchvtk datasets shall be saved.
             num_workers (int): Number of processes used for downloading, extracting, converting
-            **kwargs: Keyword arguments to pass on to TorchDataset.__init__()
+            kwargs: Keyword arguments to pass on to TorchDataset.__init__()
 
         Returns:
-            TorchDataset containing CQ500.
+            TorchDataset: TorchDataset containing CQ500.
         '''
         path = Path(tvtk_ds_path).expanduser()
         path.mkdir(exist_ok=True)

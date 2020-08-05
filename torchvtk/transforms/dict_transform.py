@@ -84,6 +84,7 @@ class Lambda(DictTransform):
 class Composite(DictTransform):
     def __init__(self, *tfms, apply_on=None, device=None, dtype=None):
         ''' Composites multiple transforms together
+
         Args:
             tfms (Callable, DictTransform): `DictTransform`s or just callable objects that can handle the incoming dict data
             apply_on (List of str): Overrides the `apply_on` dictionary masks of the given transforms. (Only applies to `DictTransform`s)
@@ -136,15 +137,13 @@ class Resize(DictTransform):
 
 
 class GaussianNoise(DictTransform):
-    """
-    Transformations for adding noise to images.
-    """
-
     def __init__(self, std_deviation=0.01, mean=0, **kwargs):
-        """
-        :param std_deviation: The variance of the noise added to the  image.
-        :param mean: The mean of the noise.
-        :param kwargs: Arguments for `DictTransform`.
+        """ Adds Gaussian noise to tensors
+
+        Args:
+            std_deviation (float, tensor): The variance of the noise
+            mean (float, tensor): The mean of the noise.
+            kwargs: Arguments for `DictTransform`.
         """
         self.std_deviation = std_deviation
         self.mean = mean
@@ -158,15 +157,14 @@ class GaussianNoise(DictTransform):
 
 
 class GaussianBlur(DictTransform):
-    """Transformation for adding Blur to images."""
-
     def __init__(self, channels=1, kernel_size=(3, 3, 3), sigma=1, **kwargs):
-        """
-        Initializing the Blur Transformation.
-        :param channels: Amount of channels of the input data.
-        :param kernel_size: Size of the convolution kernel.
-        :param sigma: Standard deviation.
-        :param kwargs: Arguments for `DictTransform`
+        """ Blurs tensors using a Gaussian filter
+
+        Args:
+            channels (int): Amount of channels of the input data.
+            kernel_size (list of int): Size of the convolution kernel.
+            sigma (float): Standard deviation.
+            kwargs: Arguments for `DictTransform`
         """
         self.channels = channels
         self.sigma = [sigma, sigma, sigma]
@@ -205,15 +203,11 @@ class GaussianBlur(DictTransform):
 
 
 class Crop(DictTransform):
-    """
-    Transformation for the cropping of 4D or 5D Volumes.
-    """
-
     def __init__(self, size=(20,20,20), position=0, **kwargs):
-        """
-        :param size: Size of the crop.
-        :param position: Middle point of the cropped region.
-        :param kwargs: Arguments for `DictTransform`.
+        """ Crops a tensor
+            size (3-tuple of int): Size of the crop.
+            position (3-tuple of int): Middle point of the cropped region.
+            kwargs: Arguments for `DictTransform`.
         """
         DictTransform.__init__(self, **kwargs)
         self.size = size
@@ -251,11 +245,9 @@ class RandPermute(DictTransform):
     ''' Chooses one of the 8 random permutations for the volume axes '''
     def __init__(self, permutations=None, **kwargs):
         ''' Randomly choose one of the given permutations.
+
         Args:
-            permutations (list of 3-tuples): Overrides the list of possible permutations to choose from.
-                The default is  [ (0, 1, 2), (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0) ].
-                `permutations` must be a list or tuple of items that are compatible with torch.permute. Assume 0 to be the first spatial dimension, we account for a possible batch and channel dimension.
-                The permutation will then be chosen at random from the given list/tuple.
+            permutations (list of 3-tuples): Overrides the list of possible permutations to choose from. The default is  [ (0, 1, 2), (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0) ]. `permutations` must be a list or tuple of items that are compatible with torch.permute. Assume 0 to be the first spatial dimension, we account for a possible batch and channel dimension. The permutation will then be chosen at random from the given list/tuple.
             kwargs: Arguments for `DictTransform`
         '''
         super().__init__(**kwargs)
@@ -281,6 +273,7 @@ class RandFlip(DictTransform):
     ''' Flips dimensions with a given probability. (Random event occurs for each dimension)'''
     def __init__(self, flip_probability=0.5, dims=[1,1,1], **kwargs):
         ''' Flips dimensions of a tensor with a given `flip_probability`.
+
         Args:
             flip_probability (float): Probability of a dimension being flipped. Default 0.5.
             dims (list of 3 ints): Dimensions that may be flipped are denoted with a 1, otherwise 0. [1,0,1] would randomly flip a volumes depth and width dimension, while never flipping its height dimension

@@ -117,6 +117,7 @@ def get_random_pos(bs=1, distance=(1,5)):
 class VolumeRaycaster(nn.Module):
     def __init__(self, density_factor=100, ray_samples=512, resolution=(640,480)):
         ''' Initializes differentiable raycasting layer
+
         Args:
             density_factor (float): scales the overall density
             ray_samples (int): Number of samples along the rays
@@ -135,6 +136,7 @@ class VolumeRaycaster(nn.Module):
         self.samples = self.get_coord_grid(Z, H, W)
 
     def get_coord_grid(self, z, y, x):
+        ''' Computes the samples given linspaces of the correct sizes for each spatial dimension. '''
         z, y, x = torch.meshgrid(z, y, x)
         return torch.stack([x, y, z], dim=-1)
 
@@ -175,11 +177,13 @@ class VolumeRaycaster(nn.Module):
 
     def forward(self, vol, tfm=None, output_alpha=False):
         ''' Renders a volume (using given transforms) using raycasting.
+
         Args:
             vol (Tensor): Batch of volumes to render. Shape (BS, C, D, H, W)
             tfm (Tensor or function): Either a (BS, 4, 4) transformation matrix or a function
                 that transforms sample coordinates of shape `ray_samples, height, width, 4`.
             output_alpha (bool): Whether to output RGBA instead of RGB. Default is False
+
         Returns:
             Batch of projected images of shape (BS, 3, H, W) with RGB (and optionally Alpha) channels
         '''

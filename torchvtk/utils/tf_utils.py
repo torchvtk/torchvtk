@@ -27,9 +27,11 @@ def tex_from_pts(tf_pts, resolution=4096):
 
 def apply_tf_tex_torch(vol, tf_tex):
     ''' Applies a (batch of) transfer function textures `tf_tex` to a (batch of) volume `vol`
+
     Args:
         vol (torch.Tensor): ([N,] 1, D, H, W) volume with intensity values
         tf_tex (torch.Tensor): ([N,] C, R) transfer function texture with C channels and resolution R
+
     Returns:
         The preclassified volume of shape ([N,] C, D, H, W)
     '''
@@ -43,11 +45,12 @@ def apply_tf_tex_torch(vol, tf_tex):
     return Interp1d()(x_flat, tf_flat, vol_flat).reshape(out_shape).to(vol.dtype)
 
 def apply_tf_torch(x, tf_pts):
-    ''' Applies the TF described by points `tf_pts` (N x [0,1]^C+1 with x pos and C channels) to `x`
-    The operation always computes on torch.float32. The output is cast to `x.dtype`
+    ''' Applies the TF described by points `tf_pts` (N x [0,1]^C+1 with x pos and C channels) to `x`. The operation always computes on torch.float32. The output is cast to `x.dtype`
+
     Args:
         x (torch.Tensor): The intensity values to apply the TF on. Assumed shape is ([N,] 1, ...) (optionally with batch size N, must match length of tf_pts list)
         tf_pts (torch.Tensor, List of such): Tensor of shape (N, (1+C)) containing N points consisting of x coordinate and mapped features (e.g. RGBO)
+
     Returns:
         torch.Tensor: Tensor with TF applied of shape (N, C, ...) with batch size N (same as `x`) and number of channels C (same as `tf_pts`)
     '''
@@ -70,11 +73,24 @@ def apply_tf_torch(x, tf_pts):
                 ).reshape(x_out_shap).to(x.dtype).contiguous() # Interp on flattened volume, reshape
 
 class TransferFunctionApplication(torch.nn.Module):
-    def __init__(self, resolution, as_pts=False):
+    def __init__(self, as_pts=False):
+        ''' A torch.nn.Module that applies a transfer function differentiably
+
+        Args:
+            as_pts (bool): Wether the given TF will be in point form (True) or 1D texture (False).
+        '''
         super().__init__()
-        self.resolution = resolution
         self.as_pts     = as_pts
 
     def forward(self, x, tf):
+        ''' Applies the transfer function `tf` to the volume `x`
+
+        Args:
+            x (torch.Tensor): Tensor depicting a volume with intensity values (N, 1, D, H, W)
+            tf (torch.Tensor, list of such): If `as_pts` a list of Tensors (NumPoints, Channels) is expected with len(list) == batch_size. If False a torch.Tensor (N, Channels, TF_resolution).
+
+        Returns:
+            (torch.Tensor): Tensor with the TF applied. New shape (N, Channels, D, H, W)
+        '''
         if self.as_pts: return apply_tf_torch(x, tf)
         else:           return apply_tf_tex_torch(x, tf)

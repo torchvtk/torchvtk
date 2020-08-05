@@ -83,11 +83,18 @@ The `dict_collate_fn` from `torchvtk.datasets` is the default collate function f
 Lastly, note how `TorchQueueDataset.get_dataloader()` is called in the last line. This gives you an actual `torch.utils.data.DataLoader` if you need one for use with other frameworks. We disable the batching for this `DataLoader`, since our Queue already takes care of that. You can specify `DataLoader` arguments through the `**kwargs`, however the `batch_size` and `collate_fn` are fixed for this reason. Please make changes to those function in the Queue! Also note that, while you can set the `DataLoader`'s `num_workers>0`, we do not recommend this, since the use of multiple processes actually introduced more overhead than it would save on time through multiprocessing. Furthermore, settings `pin_memory=True` should not do anything, since all tensors in the Queue are already put in shared memory.
 
 ### API
+#### TorchQueueDataset
 ```eval_rst
-.. automodule:: torchvtk.datasets
-.. autoclass:: TorchQueueDataset
+.. autoclass:: torchvtk.datasets::TorchQueueDataset
+    :noindex:
     :members:
     :undoc-members:
     :inherited-members:
     :show-inheritance:
+```
+
+#### dict_collate_fn
+```eval_rst
+.. autofunction:: torchvtk.datasets::dict_collate_fn
+    :noindex:
 ```

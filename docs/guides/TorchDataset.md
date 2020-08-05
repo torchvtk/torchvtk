@@ -62,8 +62,8 @@ The `preprocess_fn` parameter takes any callable object and is expected to take 
 
 ### API
 ```eval_rst
-.. automodule:: torchvtk.datasets
-.. autoclass:: TorchDataset
+.. autoclass:: torchvtk.datasets::TorchDataset
+   :noindex:
    :members:
    :undoc-members:
    :inherited-members:

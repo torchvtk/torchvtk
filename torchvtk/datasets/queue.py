@@ -15,10 +15,23 @@ from torchvtk.datasets import TorchDataset
 #%%
 def noop(a, *args, **kwargs): return a
 
-def dict_collate_fn(items, key_filter_fn=None, stack_tensors=True):
+def dict_collate_fn(items, key_filter=None, stack_tensors=True):
+    ''' Collate function for dictionary data
+
+    Args:
+        items (list): List of individual items for a Dataset
+        key_filter (list of str or callable, optional): A list of keys to filter the dict data. Defaults to None.
+        stack_tensors (bool, optional): Wether to stack dict entries of type torch.Tensors. Disable if you have unstackable tensors. They will be stacked as a list. Defaults to True.
+
+    Returns:
+        dict: One Dictionary with tensors stacked
+    '''
     keys = items[0].keys()
-    if key_filter_fn is not None:
-        keys = filter(key_filter_fn, keys)
+    if isinstance(key_filter, (list,tuple)):
+        keys = key_filter
+    elif hasattr(key_filter, __call__):
+        keys = filter(key_filter, keys)
+
     batch = {}
     for k in keys:
         vals = [it[k] for it in items]
@@ -57,20 +70,20 @@ def load_onsample(ds, queue, q_maxlen, lock, sample_event, tfm=noop):
             lock.release()
 
 class TorchQueueDataset(IterableDataset):
-    def __init__(self, torch_ds, epoch_len=1000, mode='onsample', fill_interval=None, num_workers=1, q_maxlen=None, ram_use=0.75,
+    def __init__(self, torch_ds, epoch_len=1000, mode='onsample', num_workers=1, q_maxlen=None, ram_use=0.5,
         wait_fill=True, wait_fill_timeout=60, sample_tfm=noop, batch_tfm=noop, bs=1, collate_fn=dict_collate_fn, log_sampling=False,
         avg_item_size=None, preprocess_fn=None, filter_fn=None):
-        '''
+        ''' An iterable-style dataset that caches items in a queue in memory.
+
         Args:
             torch_ds (TorchDataset, str,Path): A TorchDataset to be used for queueing or path to the dataset on disk
             mode (string): Queue filling mode.
                 - 'onsample' refills the queue after it got sampled
                 - 'always' keeps refilling the queue as fast as possible
-                - 'interval' refills the queue regularly. Set fill_interval
-            fill_interval (float): Time intervals in seconds between queue fillings
             num_workers (int): Number of threads loading in data
             q_maxlen (int): Set queue size. Overrides `ram_use`
             ram_use (float): Fraction of available system memory to use for queue or memory budget in MB (>1.0). Default is 75%
+            avg_item_size (float, torch.Tensor): Example tensor or size in MB
             wait_fill (int, bool): Boolean whether queue should be filled on init or Int to fill the queue at least with a certain amount of items
             wait_fill_timeout (int,float): Time in seconds until wait_fill timeouts. Default is 60s
             sample_tfm (Transform, function): Applicable transform (receiving and producing a dict) that is applied upon sampling from the queue
@@ -79,7 +92,6 @@ class TorchQueueDataset(IterableDataset):
             filter_fn (function): Filters filenames to load, like TorchDataset. Only used if `torch_ds` is a path to a dataset.
             bs (int): Batch Size
             collate_fn (function): Collate Function to merge items to batches. Default assumes dictionaries (like from TorchDataset) and stacks all tensors, while collecting non-tensors in a list
-            avg_item_size (float, torch.Tensor): Example tensor or size in MB
         '''
         self.bs = bs
         self.avg_item_size = avg_item_size
@@ -128,13 +140,16 @@ class TorchQueueDataset(IterableDataset):
     def __len__(self): return self.epoch_len
 
     def get_dataloader(self, **kwargs):
-        ''' Returns a dataloader that uses the batched sampling of the queue with appropriate collate_fn and batch_size. '''
+        '''
+        Returns:
+            torch.utils.data.DataLoader: A dataloader that uses the batched sampling of the queue with appropriate collate_fn and batch_size. '''
         return DataLoader(self, batch_size=1, collate_fn=lambda it: it[0], **kwargs)
 
     def batch_generator(self):
-        ''' Generator for sampling the queue.
-        This makes use of the object attributes bs (batch size) and the collate function
-        Returns: Generator that samples randomly samples batches from the queue.
+        ''' Generator for sampling the queue. This makes use of the object attributes bs (batch size) and the collate function
+
+        Returns:
+            Generator that samples randomly samples batches from the queue.
         '''
         assert self.qsize >= self.bs, "Queue is not full enough to sample a single batch!"
         while True:
@@ -157,6 +172,7 @@ class TorchQueueDataset(IterableDataset):
     def __str__(self): return repr(self)
     def wait_fill_queue(self, fill_atleast=None, timeout=60, polling_interval=0.25):
         ''' Waits untill the queue is filled (`fill_atleast`=None) or until filled with at least `fill_atleast`. Timeouts.
+
         Args:
             fill_atleast (int): Waits until queue is at least filled with so many items.
             timeout (Number): Time in seconds before this method terminates regardless of the queue size
@@ -172,10 +188,13 @@ class TorchQueueDataset(IterableDataset):
 
     def _get_queue_sz(self, ram_use, file_list):
         ''' Determines a queue size from available system memory.
+
         Args:
             ram_use (float): Percentage of available system memory to use or memory budget in MB
             file_list ([Path]): List of paths. Is used to determine average item size.
-        Returns: Suggested queue length
+
+        Returns:
+            int: Suggested queue length
         '''
         if ram_use <= 1.0:
               mem_budget = psutil.virtual_memory().available * ram_use / 1e6
