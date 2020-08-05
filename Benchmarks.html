@@ -173,13 +173,48 @@
 <p>Here we compare data loading speeds using a <code class="docutils literal notranslate"><span class="pre">TorchDataset</span></code> against HDF5 loading with different compressions.</p>
 <div class="section" id="cq500-summary-on-xetaiz-s-pc-ryzen-3700x-old-slow-hdd">
 <h2>CQ500 Summary on &#64;xeTaiz’s PC (Ryzen 3700X, old slow HDD)<a class="headerlink" href="#cq500-summary-on-xetaiz-s-pc-ryzen-3700x-old-slow-hdd" title="Permalink to this headline">¶</a></h2>
-<p>| Dataset Type | Average Time | Max Time | Total Time |
-|————–|————–|———-|————|
-| Torch        |   0.71s      |   1.95s  |  278.9s    |
-| HDF5 Reopen  |   5.76s      |   13.5s  |  2276.3s   |
-| HDF5 OpenOnce|   5.75s      |   13.0s  |  2271.3s   |
-| HDF5 LZF     |   11.90s     |  47.04s  |  4698.6s   |
-| HDF5 GZIP    |   22.34s     | 98.55s   |  8823.2s   |</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 29%" />
+<col style="width: 27%" />
+<col style="width: 20%" />
+<col style="width: 24%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Dataset Type</p></th>
+<th class="head"><p>Average Time</p></th>
+<th class="head"><p>Max Time</p></th>
+<th class="head"><p>Total Time</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>TorchDataset</p></td>
+<td><p>0.71s</p></td>
+<td><p>1.95s</p></td>
+<td><p>278.9s</p></td>
+</tr>
+<tr class="row-odd"><td><p>HDF5 Reopen</p></td>
+<td><p>5.76s</p></td>
+<td><p>13.5s</p></td>
+<td><p>2276.3s</p></td>
+</tr>
+<tr class="row-even"><td><p>HDF5 OpenOnce</p></td>
+<td><p>5.75s</p></td>
+<td><p>13.0s</p></td>
+<td><p>2271.3s</p></td>
+</tr>
+<tr class="row-odd"><td><p>HDF5 LZF</p></td>
+<td><p>11.90s</p></td>
+<td><p>47.04s</p></td>
+<td><p>4698.6s</p></td>
+</tr>
+<tr class="row-even"><td><p>HDF5 GZIP</p></td>
+<td><p>22.34s</p></td>
+<td><p>98.55s</p></td>
+<td><p>8823.2s</p></td>
+</tr>
+</tbody>
+</table>
 <div class="section" id="cq500-torchdataset-395-examples">
 <h3>CQ500 TorchDataset 395 examples<a class="headerlink" href="#cq500-torchdataset-395-examples" title="Permalink to this headline">¶</a></h3>
 <p><img alt="CQ500 Results on Domes PC" src="_images/cq500_torch.png" />
