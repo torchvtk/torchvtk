@@ -31,6 +31,9 @@ Note that setting the `apply_on` paramter of `Composite` (as in the example), ap
 
 Further note that by default the transformations are applied to all keys that have a `torch.Tensor` as value. Beware of other Tensors in your data that you do not wan't to modify! You should usually define `apply_on` for all your transforms somehow, be it specific or through `Composite`. As for the `dtype` and `device`, the transform is executed on using the type and device that the data comes in. Setting a type or device at the beginning of a `Composite` can thus determine the type or device until the next transform specifies another.
 
+In this example, the `_basic_func` is executed first and simply gets the whole dictionary in and must return the modified one. Here a new key `'newkey'` is added. `_basic_add` is a standard function that knows nothing of dicts and we can wrap it using `Lambda` to make use of `apply_on` etc.
+As you can see we apply `_basic_add` only to `'newkey'`. All the other transforms in the Composite are applied to `'vol'`, since the `Composite` sets it for all transforms that did not specify `apply_on`.
+
 ### API
 #### DictTransform
 ```eval_rst
