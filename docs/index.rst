@@ -18,6 +18,7 @@ Welcome to torchvtk's documentation!
    GitHub <https://github.com/xeTaiz/torchvtk>
    guides/Benchmarks.md
    guides/Troubleshooting.md
+   guides/Contributing.md
 
 .. toctree::
    :maxdepth: 2
