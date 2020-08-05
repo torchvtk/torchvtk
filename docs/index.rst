@@ -15,6 +15,7 @@ Welcome to torchvtk's documentation!
    :maxdepth: 1
    :caption: More Information:
 
+   GitHub <https://github.com/xeTaiz/torchvtk>
    guides/Benchmarks.md
    guides/Troubleshooting.md
 

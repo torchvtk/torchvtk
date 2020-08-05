@@ -88,7 +88,7 @@ class Composite(DictTransform):
         Args:
             tfms (Callable, DictTransform): `DictTransform`s or just callable objects that can handle the incoming dict data
             apply_on (List of str): Overrides the `apply_on` dictionary masks of the given transforms. (Only applies to `DictTransform`s)
-            device (torch.device, str): torch.device, 'cpu' or 'cuda'. This overrides the device for all `DictTransform`s.
+            device (torch.device, str): torch.device, `'cpu'` or `'cuda'`. This overrides the device for all `DictTransform`s.
             dtype (torch.dtype): Overrides the dtype for all `DictTransform`s this composites.
         '''
         super().__init__()
