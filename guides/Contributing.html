@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Troubleshooting &mdash; torchvtk 0.3.4 documentation</title>
+  <title>Contributing &mdash; torchvtk 0.3.4 documentation</title>
   
 
   
@@ -36,8 +36,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Contributing" href="Contributing.html" />
-    <link rel="prev" title="Benchmarks" href="Benchmarks.html" /> 
+    <link rel="next" title="torchvtk.datasets" href="../api/torchvtk.datasets.html" />
+    <link rel="prev" title="Troubleshooting" href="Troubleshooting.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -93,12 +93,8 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference external" href="https://github.com/xeTaiz/torchvtk">GitHub</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Benchmarks.html">Benchmarks</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Troubleshooting</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#known-issues">Known Issues</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#frequently-asked-questions">Frequently Asked Questions</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="Contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Contributing</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API</span></p>
 <ul>
@@ -152,13 +148,13 @@
     
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Troubleshooting</li>
+      <li>Contributing</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/guides/Troubleshooting.md.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/guides/Contributing.md.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -171,19 +167,10 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="troubleshooting">
-<h1>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="known-issues">
-<h2>Known Issues<a class="headerlink" href="#known-issues" title="Permalink to this headline">¶</a></h2>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">TorchQueueDataset</span></code>’s multiprocessing does not work correctly if other multiprocessing related functions are called before initializing the Queue. This currently also prevents us from using two Queues simultaneously.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">TorchQueueDataset</span></code> will likely not work correctly with Distributed Training. Could not test yet.</p></li>
-</ul>
-</div>
-<div class="section" id="frequently-asked-questions">
-<h2>Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permalink to this headline">¶</a></h2>
-<p>Go ask us some questions on <a class="reference external" href="https://github.com/xeTaiz/torchvtk">GitHub</a>!</p>
-</div>
+  <div class="section" id="contributing">
+<h1>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h1>
+<p>This project is still very small, however we are gladly accepting contributions of all kinds. However it might be in both your and our interest, if you start by <a class="reference external" href="https://github.com/xeTaiz/torchvtk/issues/new">writing an issue</a> first, then we can discuss together how this could best be realized.</p>
+<p>If more people are interested in contributing, we will figure out some appropriate guidelines :)</p>
 </div>
 
 
@@ -194,10 +181,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="Contributing.html" class="btn btn-neutral float-right" title="Contributing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../api/torchvtk.datasets.html" class="btn btn-neutral float-right" title="torchvtk.datasets" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="Benchmarks.html" class="btn btn-neutral float-left" title="Benchmarks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="Troubleshooting.html" class="btn btn-neutral float-left" title="Troubleshooting" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
