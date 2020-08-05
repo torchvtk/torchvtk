@@ -1,8 +1,6 @@
 ## TorchQueueDataset
 
-This Dataset holds a queue of items in memory. Being an iterable-style dataset set, it samples batches from the available queue upon demand. The queue is filled using background threads and has different filling modes.
-Depending on how fast you can actually load your data compared to running your network, you might want to advance the queue by one item upon sampling (if your SSD/hard drives are fast enough). In this case use `mode="onsample"`. If you find that data loading is your bottleneck, try to make the queue as big as possible and use `mode="always"`. This will just keep pushing new items to your queue as fast as possible, removing old ones. If your network is generally faster, this is the desired way to get the most uniform sampling frequencies for all your items.
-
+This Dataset holds a queue of items in memory. Being an iterable-style dataset set, it samples batches from the available queue upon demand.
 
 ### How it works
 The queue holds a fixed amount (`queue.qsize` <= `queue.q_maxlen`) of items in memory.
@@ -39,7 +37,8 @@ You can apply transforms at multiple stages of the Queue process:
 You can use all `torchvtk.transforms` or any callable objects that operate on dicts, as defined by `TorchDataset`.
 
 #### Queue Sampling
-
+The queue is filled using background processes and has different filling modes.
+Depending on how fast you can actually load your data compared to running your network, you might want to advance the queue by one item upon sampling (if your SSD/hard drives are fast enough). In this case use `mode="onsample"`. If you find that data loading is your bottleneck, try to make the queue as big as possible and use `mode="always"`. This will just keep pushing new items to your queue as fast as possible, removing old ones. If your network is generally faster, this is the desired way to get the most uniform sampling frequencies for all your items.
 
 ### Advanced Example
 This continues on the [TorchDataset Example](TorchDataset.html#more-involved-example).
@@ -83,6 +82,7 @@ The `dict_collate_fn` from `torchvtk.datasets` is the default collate function f
 
 Lastly, note how `TorchQueueDataset.get_dataloader()` is called in the last line. This gives you an actual `torch.utils.data.DataLoader` if you need one for use with other frameworks. We disable the batching for this `DataLoader`, since our Queue already takes care of that. You can specify `DataLoader` arguments through the `**kwargs`, however the `batch_size` and `collate_fn` are fixed for this reason. Please make changes to those function in the Queue! Also note that, while you can set the `DataLoader`'s `num_workers>0`, we do not recommend this, since the use of multiple processes actually introduced more overhead than it would save on time through multiprocessing. Furthermore, settings `pin_memory=True` should not do anything, since all tensors in the Queue are already put in shared memory.
 
+### API
 ```eval_rst
 .. automodule:: torchvtk.datasets
 .. autoclass:: TorchQueueDataset
