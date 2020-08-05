@@ -121,7 +121,9 @@ class TorchQueueDataset(IterableDataset):
             self.wait_fill_queue(fill_atleast=wait_for, timeout=wait_fill_timeout)
 
     @property
-    def qsize(self): ''' Current Queue length ''' return len(self.queue)
+    def qsize(self):
+        ''' Current Queue length '''
+        return len(self.queue)
 
     def __len__(self): return self.epoch_len
 
