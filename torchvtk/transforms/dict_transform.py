@@ -10,21 +10,29 @@ from torch.nn import functional as F
 ####  BASE CLASS #############################################################
 #####################
 
-class DictTransform(object):
+class DictTransform:
     """
     Super Class for the Transforms.
-
-
     """
 
-    def __init__(self, device="cpu", apply_on=["vol", "mask"], dtype=torch.float32):
+    def __init__(self, device=None, apply_on=None, dtype=None):
         """
-        :param device: The torch Code for the device on which the transformation should be executed. Possiblities are ["cpu", "cuda"].
-        :param apply_on: The keys of the volumes that should be transformed.
-        :param dtype: The torch type in which the data are. Possibilities are [torch.float16, torch.float32].
+        :param apply_on: The keys of the item dictionaries on which the transform should be applied. Defaults to applying to all torch.Tensors
+        :param device: The torch.device on which the transformation should be executed. Also valid: "cpu", "cuda". Defaults to using whatever comes.
+        :param dtype: The torch.dtype to which the data should be converted before the transform. Defaults to using whatever comes..
         """
-        super().__init__()
-
+        if device is not None:
+            assert (isinstance(device, torch.device)
+                 or device in ['cpu', 'cuda']
+                 or device.startswith('cuda:'))
+        if apply_on is not None:
+            assert isinstance(apply_on, (list, tuple, str))
+            if isinstance(apply_on, (list, tuple)):
+                assert len(apply_on) > 0 and isinstance(apply_on[0], str)
+            else:
+                apply_on = [apply_on]
+        if dtype is not None:
+            assert isinstance(dtype, torch.dtype)
         self.device = device
         self.apply_on = apply_on
         self.dtype = dtype
@@ -36,7 +44,10 @@ class DictTransform(object):
 
     def __call__(self, data):
         if isinstance(data, dict):
-            for key in self.apply_on:
+            if self.apply_on is None:
+                keys, _ = zip(*filter(lambda tup: torch.is_tensor(tup[1]), data.items()))
+            else: keys = self.apply_on
+            for key in keys:
                 tmp = data[key]
                 if isinstance(tmp, np.ndarray):  # Convert from NumPy
                     tmp = torch.from_numpy(tmp)
@@ -58,33 +69,36 @@ class DictTransform(object):
 ####################
 
 class Lambda(DictTransform):
-    def __init__(self, func, apply_on, **kwargs):
+    def __init__(self, func, **kwargs):
         ''' Applies a given function, wrapped in a `DictTransform`
 
         Args:
             func (function): The function to be executed
-            apply_on (list of str): Dictionary keys to apply this function to in the sense of a `DictTransform`
             kwargs: Arguments for `DictTransform`
         '''
-        super().__init__(apply_on=apply_on, **kwargs)
+        super().__init__(**kwargs)
         self.tfm = func
 
     def transform(self, data): return self.tfm(data)
 
-class Composite:
-    def __init__(self, *tfms, apply_all_on=None):
+class Composite(DictTransform):
+    def __init__(self, *tfms, apply_on=None, device=None, dtype=None):
         ''' Composites multiple transforms together
         Args:
             tfms (Callable, DictTransform): `DictTransform`s or just callable objects that can handle the incoming dict data
-            apply_all_on (List of str): Overrides the `apply_on` dictionary masks of the given transforms. (Only applies to `DictTransform`s)
+            apply_on (List of str): Overrides the `apply_on` dictionary masks of the given transforms. (Only applies to `DictTransform`s)
+            device (torch.device, str): torch.device, 'cpu' or 'cuda'. This overrides the device for all `DictTransform`s.
+            dtype (torch.dtype): Overrides the dtype for all `DictTransform`s this composites.
         '''
+        super().__init__()
         self.tfms = [*tfms]
-        if apply_all_on is not None:
-            assert isinstance(apply_all_on, (list, tuple)) and isinstance(apply_all_on[0], str)
+        if self.apply_on is not None:
             for tfm in self.tfms:
                 assert hasattr(tfm, '__call__')
                 if isinstance(tfm, DictTransform):
-                    tfm.apply_on = apply_all_on
+                    if apply_on is None: tfm.apply_on = apply_on
+                    if device   is None: tfm.device   = device
+                    if dtype    is None: tfm.dtype    = dtype
 
     def __call__(self, data):
         for tfm in self.tfms:

@@ -12,7 +12,7 @@ Welcome to torchvtk's documentation!
    Transforms.md
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 0
    :caption: More Information:
 
    Benchmarks.md
