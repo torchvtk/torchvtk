@@ -6,11 +6,13 @@ Welcome to torchvtk's documentation!
    :maxdepth: 2
    :caption: Documentation:
 
-   GettingsStarted.md
+   GettingStarted.md
    TorchDataset.md
    TorchQueueDataset.md
    Transforms.md
 
+.. toctree::
+   :maxdepth: 1
    :caption: More Information:
    Benchmarks.md
    Troubleshooting.md
