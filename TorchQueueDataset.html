@@ -85,8 +85,20 @@
               <p class="caption"><span class="caption-text">Documentation:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="TorchDataset.html">TorchDataset</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">TorchQueueDataset</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">TorchQueueDataset</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-it-works">How it works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#basic-example">Basic Example</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#queue-memory-usage">Queue Memory Usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#transforms">Transforms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#queue-sampling">Queue Sampling</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#advanced-example">Advanced Example</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="Transforms.html">Transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Benchmarks.html">Benchmarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Troubleshooting.html">Troubleshooting</a></li>
 </ul>
 
             
@@ -156,8 +168,84 @@
 <h1>TorchQueueDataset<a class="headerlink" href="#torchqueuedataset" title="Permalink to this headline">¶</a></h1>
 <p>This Dataset holds a queue of items in memory. Being an iterable-style dataset set, it samples batches from the available queue upon demand. The queue is filled using background threads and has different filling modes.
 Depending on how fast you can actually load your data compared to running your network, you might want to advance the queue by one item upon sampling (if your SSD/hard drives are fast enough). In this case use <code class="docutils literal notranslate"><span class="pre">mode=&quot;onsample&quot;</span></code>. If you find that data loading is your bottleneck, try to make the queue as big as possible and use <code class="docutils literal notranslate"><span class="pre">mode=&quot;always&quot;</span></code>. This will just keep pushing new items to your queue as fast as possible, removing old ones. If your network is generally faster, this is the desired way to get the most uniform sampling frequencies for all your items.</p>
-<p>Here is a sampling frequency histogram using <code class="docutils literal notranslate"><span class="pre">mode='onsample'</span></code> for 80k samplings of the CQ500 dataset (320 items) on a machine with slow network HDD storage. For this particular setup we increased our training speed from <code class="docutils literal notranslate"><span class="pre">~5s/it</span></code> to <code class="docutils literal notranslate"><span class="pre">2it/s</span></code> through the use of the queue (10x), while keeping the sampling mostly uniform.
+<div class="section" id="how-it-works">
+<h2>How it works<a class="headerlink" href="#how-it-works" title="Permalink to this headline">¶</a></h2>
+<p>The queue holds a fixed amount (<code class="docutils literal notranslate"><span class="pre">queue.qsize</span></code> &lt;= <code class="docutils literal notranslate"><span class="pre">queue.q_maxlen</span></code>) of items in memory.
+When sampling the queue, a batch of a given batch size (<code class="docutils literal notranslate"><span class="pre">bs</span></code>) is sampled randomly from all available items in the queue. Sampling the queue, advances the items by 1 (for <code class="docutils literal notranslate"><span class="pre">mode='onsample'</span></code>), which means that the first item in the queue is popped and a new one is added.
+Note that sampling a certain item A from the queue does not necessarily result in A being popped next. Sampling always occurs uniformly from all items in memory and queue advancements only removes the oldest item, not the sampled one.</p>
+<p>This behavior can arguably result in non-uniform sampling of items, as well as clustering samplings of items temporally, which could lead to forgetting long-unseen samples. Be aware of this trade-off.</p>
+<p>To demonstrate at least the uniformity of our sampling, here is a sampling frequency histogram using <code class="docutils literal notranslate"><span class="pre">mode='onsample'</span></code> for 80k samplings of the CQ500 dataset (320 items) on a machine with slow network HDD storage. For this particular setup we increased our training speed from <code class="docutils literal notranslate"><span class="pre">~5s/it</span></code> to <code class="docutils literal notranslate"><span class="pre">2it/s</span></code> through the use of the queue (10x), while keeping the sampling mostly uniform.
 <img alt="Sampling Frequency Histogram" src="_images/queue_sampling_frequency.png" /></p>
+</div>
+<div class="section" id="basic-example">
+<h2>Basic Example<a class="headerlink" href="#basic-example" title="Permalink to this headline">¶</a></h2>
+<p>Here we show how to use <code class="docutils literal notranslate"><span class="pre">TorchQueueDataet</span></code> based on an existing <code class="docutils literal notranslate"><span class="pre">TorchDataset</span></code> (Check out <a class="reference external" href="TorchDataset.html">TorchDataset</a>).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torchvtk.datasets</span> <span class="kn">import</span> <span class="n">TorchDataset</span><span class="p">,</span> <span class="n">TorchQueueDataset</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">TorchDataset</span><span class="o">.</span><span class="n">CQ500</span><span class="p">()</span>
+<span class="n">queue</span> <span class="o">=</span> <span class="n">TorchQueueDataset</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">dl</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">get_dataloader</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>A <code class="docutils literal notranslate"><span class="pre">TorchQueueDataset</span></code> can be initialized from a <code class="docutils literal notranslate"><span class="pre">TorchDataset</span></code>. By default the queue size is determined by loading a sample and determine how large the queue can be to fill half of your available system memory. The queue is then filled by <code class="docutils literal notranslate"><span class="pre">num_workers</span></code> processes until full and refills whenever the queue was sampled.</p>
+<div class="section" id="queue-memory-usage">
+<h3>Queue Memory Usage<a class="headerlink" href="#queue-memory-usage" title="Permalink to this headline">¶</a></h3>
+<p>You can override the length of the queue using the <code class="docutils literal notranslate"><span class="pre">q_maxlen</span></code> parameter (<code class="docutils literal notranslate"><span class="pre">int</span></code>) to set a size directly. Otherwise setting <code class="docutils literal notranslate"><span class="pre">ram_use</span></code> either sets a memory budget for your queue (for <code class="docutils literal notranslate"><span class="pre">ram_use</span> <span class="pre">&gt;</span> <span class="pre">1.0</span></code>) or a percentage of your available system memory (<code class="docutils literal notranslate"><span class="pre">ram_use</span> <span class="pre">&lt;</span> <span class="pre">1.0</span></code>). If you do special preprocessing upon loading that modifies your final item size, you can set <code class="docutils literal notranslate"><span class="pre">avg_item_size</span></code> to an average item size (in MB) or supply a <code class="docutils literal notranslate"><span class="pre">torch.tensor</span></code> which is used as a proxy for computing the memory budget.</p>
+<p>Setting <code class="docutils literal notranslate"><span class="pre">wait_fill</span></code> to either <code class="docutils literal notranslate"><span class="pre">True</span></code> or an <code class="docutils literal notranslate"><span class="pre">int</span></code> blocks the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> until the queue has reached the given <code class="docutils literal notranslate"><span class="pre">queue.qsize</span></code>, while blocking for a maximum of <code class="docutils literal notranslate"><span class="pre">wait_fill_timeout</span></code> seconds.</p>
+</div>
+<div class="section" id="transforms">
+<h3>Transforms<a class="headerlink" href="#transforms" title="Permalink to this headline">¶</a></h3>
+<p>You can apply transforms at multiple stages of the Queue process:</p>
+<ul class="simple">
+<li><p>Before adding the item to the queue: Use <code class="docutils literal notranslate"><span class="pre">TorchDataset.preprocess_fn</span></code>. You can also give a <code class="docutils literal notranslate"><span class="pre">preprocess_fn</span></code> to the <code class="docutils literal notranslate"><span class="pre">TorchQueueDataset.__init__</span></code>, which will override the one set in the given <code class="docutils literal notranslate"><span class="pre">TorchDataset</span></code>.</p></li>
+<li><p>At sampling from the queue, on a single item: Use <code class="docutils literal notranslate"><span class="pre">TorchQueueDataset.sample_tfm</span></code></p></li>
+<li><p>At sampling from the queue, on the whole batch: Use <code class="docutils literal notranslate"><span class="pre">TorchQueueDataset.batch_tfm</span></code></p></li>
+</ul>
+<p>You can use all <code class="docutils literal notranslate"><span class="pre">torchvtk.transforms</span></code> or any callable objects that operate on dicts, as defined by <code class="docutils literal notranslate"><span class="pre">TorchDataset</span></code>.</p>
+</div>
+<div class="section" id="queue-sampling">
+<h3>Queue Sampling<a class="headerlink" href="#queue-sampling" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="advanced-example">
+<h2>Advanced Example<a class="headerlink" href="#advanced-example" title="Permalink to this headline">¶</a></h2>
+<p>This continues on the <a class="reference external" href="TorchDataset.html#more-involved-example">TorchDataset Example</a>.
+This example uses most of the arguments of the Queue and shows how to make the <code class="docutils literal notranslate"><span class="pre">TorchQueueDataset</span></code> a proper dataloader.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">torchvtk.datasets</span> <span class="kn">import</span> <span class="n">TorchDataset</span><span class="p">,</span> <span class="n">TorchQueueDataset</span><span class="p">,</span> <span class="n">dict_collate_fn</span>
+<span class="kn">from</span> <span class="nn">torchvtk.transforms</span> <span class="kn">import</span> <span class="n">Composite</span><span class="p">,</span> <span class="n">GaussianNoise</span><span class="p">,</span> <span class="n">RandFlip</span><span class="p">,</span> <span class="n">RandPermute</span>
+
+<span class="n">tfms</span> <span class="o">=</span> <span class="n">Composite</span><span class="p">(</span>
+        <span class="n">RandPermute</span><span class="p">(),</span>
+        <span class="n">RandFlip</span><span class="p">(),</span>
+        <span class="n">GaussianNoise</span><span class="p">(),</span>
+        <span class="n">apply_all_on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;vol&#39;</span><span class="p">]</span>
+    <span class="p">)</span>
+<span class="n">train_ds</span> <span class="o">=</span> <span class="n">TorchDataset</span><span class="p">(</span><span class="s1">&#39;/run/hdd/torchvtk&#39;</span><span class="p">,</span>     <span class="c1"># Path to torchvtk folder</span>
+    <span class="n">preprocess_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>                          <span class="c1"># No transforms on load. Could be left out</span>
+    <span class="n">filter_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">[</span><span class="mi">9</span><span class="p">:</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">400</span><span class="p">)</span> <span class="c1"># Split</span>
+<span class="n">train_dl</span> <span class="o">=</span> <span class="n">TorchQueueDataset</span><span class="p">(</span><span class="n">train_ds</span><span class="p">,</span>
+    <span class="n">mode</span>      <span class="o">=</span> <span class="s1">&#39;always&#39;</span><span class="p">,</span>
+    <span class="n">ram_use</span>   <span class="o">=</span> <span class="mf">0.7</span><span class="p">,</span>      <span class="c1"># Use 70% of the available system RAM for the Queue</span>
+    <span class="n">wait_fill</span> <span class="o">=</span> <span class="mi">4</span><span class="o">*</span><span class="n">args</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="c1"># Wait until at least 4x batch_size items are loaded</span>
+    <span class="n">bs</span>        <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>   <span class="c1"># Automatically batch items</span>
+    <span class="n">num_workers</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>               <span class="c1"># Use 4 processes to load new items</span>
+    <span class="n">log_sampling</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>           <span class="c1"># This logs the frequency of the items</span>
+    <span class="n">avg_item_size</span><span class="o">=</span> <span class="mf">67.2</span><span class="p">,</span>           <span class="c1"># The item size in MB for 1x256^3 float16 volumes</span>
+    <span class="c1"># avg_item_size = torch.ones(1,256,256,256, dtype=torch.float16), would be similar</span>
+    <span class="n">sample_tfm</span><span class="o">=</span><span class="n">tfms</span><span class="p">,</span>               <span class="c1"># Apply tfms on each sample individually when sampling from q</span>
+    <span class="n">collate_fn</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">dict_collate_fn</span><span class="p">,</span>
+        <span class="n">key_filter</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;vol&#39;</span><span class="p">,</span> <span class="s1">&#39;tf_tex&#39;</span><span class="p">])</span> <span class="c1"># Use only those 2</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">get_dataloader</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>First we composite our desired augmentation. Here we apply some noise, randomly flip spatial dimensions and randomly permute spatial dimensions. The <code class="docutils literal notranslate"><span class="pre">apply_all_on=['vol']</span></code> overrides the <code class="docutils literal notranslate"><span class="pre">apply_on</span></code> argument of the individual transforms, since we want to apply all of them only to the volume.
+The training dataset is initialized as in the <a class="reference external" href="TorchDataset.html">TorchDataset Example</a>.
+For the queue we use <code class="docutils literal notranslate"><span class="pre">mode='always'</span></code>, because the data lies on a slow HDD and the loading is significantly slower than our network, so we load as fast as we can, while not slowing down the training. If the storage is not as bad, we could use <code class="docutils literal notranslate"><span class="pre">onsample</span></code> to stress the storage less.
+We choose to use 70% of the available system memory for the queue and start training after the queue is filled with 4 times the batch size. The queue is filled with 4 worker processes and the final max queue size is determined using the given <code class="docutils literal notranslate"><span class="pre">avg_item_size</span></code>. As demonstrated in the example, this parameter could also take a <code class="docutils literal notranslate"><span class="pre">torch.Tensor</span></code> to estimate the approximate memory used per item. If this is left out, the average file size used on disk is used.
+The queue automatically samples batches of <code class="docutils literal notranslate"><span class="pre">args.batch_size</span></code>, basically doing the job of a <code class="docutils literal notranslate"><span class="pre">torch.utils.data.DataLoader</span></code>. Since we only sample items from memory, using multiple processes will not be as beneficial and we need special dictionary collate functions.</p>
+<p>A collate function in PyTorch <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code>s takes care of converting a list of items (samples from a <code class="docutils literal notranslate"><span class="pre">Dataset</span></code>) to an actual batch, thus <code class="docutils literal notranslate"><span class="pre">torch.stack</span></code>ing the tensors.
+The <code class="docutils literal notranslate"><span class="pre">dict_collate_fn</span></code> from <code class="docutils literal notranslate"><span class="pre">torchvtk.datasets</span></code> is the default collate function for <code class="docutils literal notranslate"><span class="pre">TorchDataset</span></code> items, which are dictionaries. By default it calls <code class="docutils literal notranslate"><span class="pre">torch.stack</span></code> on all dictionary elements that are <code class="docutils literal notranslate"><span class="pre">torch.Tensor</span></code>s. As demonstrated in the example, we can set the <code class="docutils literal notranslate"><span class="pre">key_filter</span></code> argument to filter the final dictionary. This can be a list/tuple containing the desired keys or a function to get <code class="docutils literal notranslate"><span class="pre">keys</span> <span class="pre">=</span> <span class="pre">filter(key_filter,</span> <span class="pre">key)</span></code>. You can also disable the stacking if you have unstackable tensors, by setting <code class="docutils literal notranslate"><span class="pre">dict_collate_fn</span></code>’s <code class="docutils literal notranslate"><span class="pre">stack_tensors</span></code> argument to <code class="docutils literal notranslate"><span class="pre">False</span></code>. You will get a list of tensors instead (for all tensors that is).</p>
+<p>Lastly, note how <code class="docutils literal notranslate"><span class="pre">TorchQueueDataset.get_dataloader()</span></code> is called in the last line. This gives you an actual <code class="docutils literal notranslate"><span class="pre">torch.utils.data.DataLoader</span></code> if you need one for use with other frameworks. We disable the batching for this <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code>, since our Queue already takes care of that. You can specify <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code> arguments through the <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code>, however the <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> and <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code> are fixed for this reason. Please make changes to those function in the Queue! Also note that, while you can set the <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code>’s <code class="docutils literal notranslate"><span class="pre">num_workers&gt;0</span></code>, we do not recommend this, since the use of multiple processes actually introduced more overhead than it would save on time through multiprocessing. Furthermore, settings <code class="docutils literal notranslate"><span class="pre">pin_memory=True</span></code> should not do anything, since all tensors in the Queue are already put in shared memory.</p>
 <span class="target" id="module-torchvtk.datasets"></span><dl class="class">
 <dt id="torchvtk.datasets.TorchQueueDataset">
 <em class="property">class </em><code class="sig-prename descclassname">torchvtk.datasets.</code><code class="sig-name descname">TorchQueueDataset</code><span class="sig-paren">(</span><em class="sig-param">torch_ds</em>, <em class="sig-param">epoch_len=1000</em>, <em class="sig-param">mode='onsample'</em>, <em class="sig-param">fill_interval=None</em>, <em class="sig-param">num_workers=1</em>, <em class="sig-param">q_maxlen=None</em>, <em class="sig-param">ram_use=0.75</em>, <em class="sig-param">wait_fill=True</em>, <em class="sig-param">wait_fill_timeout=60</em>, <em class="sig-param">sample_tfm=&lt;function noop&gt;</em>, <em class="sig-param">batch_tfm=&lt;function noop&gt;</em>, <em class="sig-param">bs=1</em>, <em class="sig-param">collate_fn=&lt;function dict_collate_fn&gt;</em>, <em class="sig-param">log_sampling=False</em>, <em class="sig-param">avg_item_size=None</em>, <em class="sig-param">preprocess_fn=None</em>, <em class="sig-param">filter_fn=None</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.datasets.TorchQueueDataset" title="Permalink to this definition">¶</a></dt>
@@ -225,6 +313,7 @@ Returns: Generator that samples randomly samples batches from the queue.</p>
 
 </dd></dl>
 
+</div>
 </div>
 
 
