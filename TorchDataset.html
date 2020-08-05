@@ -88,6 +88,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">TorchDataset</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#basic-example">Basic Example</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#more-involved-example">More involved example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-torchvtk.datasets">API</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="TorchQueueDataset.html">TorchQueueDataset</a></li>
@@ -210,19 +211,22 @@ The following snippet shows how we can serialize a preprocessed version of the C
 </pre></div>
 </div>
 <p>Serializing large volume datasets at the resolution you will use for training (which is likely lower than the original) can be very beneficial for data loading times.</p>
-<p>Having serialized the volumes in low resolution, we can apply more preprocessing in the TorchDataset that is applied upon loading a sample. This is ideal for <code class="docutils literal notranslate"><span class="pre">torchvtk.transforms</span></code>. We further split our data into train and validation:</p>
+<p>Having serialized the volumes in low resolution, we can apply more preprocessing in the <code class="docutils literal notranslate"><span class="pre">TorchDataset</span></code> that is applied upon loading a sample. This is ideal for <code class="docutils literal notranslate"><span class="pre">torchvtk.transforms</span></code>. We further split our data into train and validation:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torchvtk.transforms</span> <span class="kn">import</span> <span class="n">GaussianNoise</span>
-<span class="n">train_ds</span> <span class="o">=</span> <span class="n">TorchDataset</span><span class="p">(</span><span class="s1">&#39;/mnt/hdd/torchvtk/CQ500_256&#39;</span><span class="p">,</span>
-   <span class="n">filter_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">[</span><span class="mi">9</span><span class="p">:</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">400</span><span class="p">,</span>
+
+<span class="n">train_ds</span> <span class="o">=</span> <span class="n">TorchDataset</span><span class="p">(</span><span class="s1">&#39;/mnt/hdd/torchvtk/CQ500_256&#39;</span><span class="p">,</span> <span class="n">filter_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">[</span><span class="mi">9</span><span class="p">:</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">400</span><span class="p">,</span>
    <span class="n">preprocess_fn</span><span class="o">=</span><span class="n">GaussianNoise</span><span class="p">(</span><span class="n">apply_on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;vol&#39;</span><span class="p">]))</span>
-<span class="n">valid_ds</span> <span class="o">=</span> <span class="n">TorchDataset</span><span class="p">(</span><span class="s1">&#39;/mnt/hdd/torchvtk/CQ500_256&#39;</span><span class="p">,</span>
-   <span class="n">filter_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">[</span><span class="mi">9</span><span class="p">:</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="mi">400</span><span class="p">)</span>
+
+<span class="n">valid_ds</span> <span class="o">=</span> <span class="n">TorchDataset</span><span class="p">(</span><span class="s1">&#39;/mnt/hdd/torchvtk/CQ500_256&#39;</span><span class="p">,</span> <span class="n">filter_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">[</span><span class="mi">9</span><span class="p">:</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="mi">400</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>We split our dataset into training and validation simply by using the <code class="docutils literal notranslate"><span class="pre">filter_fn</span></code> parameter which takes a function that filters out files from the dataset based on their filepath (<code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code>). Here the file’s name is trimmed to the number specifically for the CQ500 item.
 The <code class="docutils literal notranslate"><span class="pre">preprocess_fn</span></code> parameter takes any callable object and is expected to take a dictionary (as specified at the top of this article) and returns a modified dict.
 <code class="docutils literal notranslate"><span class="pre">torchvtk.transforms</span></code> fulfill these requirements and can easily specify to which keys in your data the operations shall be applied. Check out <a class="reference external" href="Transforms.html">Transforms</a>.</p>
-<span class="target" id="module-torchvtk.datasets"></span><dl class="class">
+</div>
+<div class="section" id="module-torchvtk.datasets">
+<span id="api"></span><h2>API<a class="headerlink" href="#module-torchvtk.datasets" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
 <dt id="torchvtk.datasets.TorchDataset">
 <em class="property">class </em><code class="sig-prename descclassname">torchvtk.datasets.</code><code class="sig-name descname">TorchDataset</code><span class="sig-paren">(</span><em class="sig-param">ds_files</em>, <em class="sig-param">filter_fn=None</em>, <em class="sig-param">preprocess_fn=None</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.datasets.TorchDataset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.utils.data.Dataset</span></code></p>

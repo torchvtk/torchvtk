@@ -47,20 +47,20 @@ ds = TorchDataset('/mnt/hdd/torchvtk/CQ500_256')
 
 Serializing large volume datasets at the resolution you will use for training (which is likely lower than the original) can be very beneficial for data loading times.
 
-Having serialized the volumes in low resolution, we can apply more preprocessing in the TorchDataset that is applied upon loading a sample. This is ideal for `torchvtk.transforms`. We further split our data into train and validation:
+Having serialized the volumes in low resolution, we can apply more preprocessing in the `TorchDataset` that is applied upon loading a sample. This is ideal for `torchvtk.transforms`. We further split our data into train and validation:
 ```python
 from torchvtk.transforms import GaussianNoise
-train_ds = TorchDataset('/mnt/hdd/torchvtk/CQ500_256',
-   filter_fn=lambda p: int(p.name[9:-3]) < 400,
+
+train_ds = TorchDataset('/mnt/hdd/torchvtk/CQ500_256', filter_fn=lambda p: int(p.name[9:-3]) < 400,
    preprocess_fn=GaussianNoise(apply_on=['vol']))
-valid_ds = TorchDataset('/mnt/hdd/torchvtk/CQ500_256',
-   filter_fn=lambda p: int(p.name[9:-3]) >= 400)
+
+valid_ds = TorchDataset('/mnt/hdd/torchvtk/CQ500_256', filter_fn=lambda p: int(p.name[9:-3]) >= 400)
 ```
 We split our dataset into training and validation simply by using the `filter_fn` parameter which takes a function that filters out files from the dataset based on their filepath (`pathlib.Path`). Here the file's name is trimmed to the number specifically for the CQ500 item.
 The `preprocess_fn` parameter takes any callable object and is expected to take a dictionary (as specified at the top of this article) and returns a modified dict.
 `torchvtk.transforms` fulfill these requirements and can easily specify to which keys in your data the operations shall be applied. Check out [Transforms](Transforms.html).
 
-
+### API
 ```eval_rst
 .. automodule:: torchvtk.datasets
 .. autoclass:: TorchDataset
