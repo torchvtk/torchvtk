@@ -1,0 +1,516 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>torchvtk.transforms &mdash; torchvtk v0.2.5 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="torchvtk.utils" href="torchvtk.utils.html" />
+    <link rel="prev" title="torchvtk.datasets" href="torchvtk.datasets.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> torchvtk
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/GettingStarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/TorchDataset.html">TorchDataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/TorchQueueDataset.html">TorchQueueDataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/Transforms.html">Transforms</a></li>
+</ul>
+<p class="caption"><span class="caption-text">More Information:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/Benchmarks.html">Benchmarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/Troubleshooting.html">Troubleshooting</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="torchvtk.datasets.html">torchvtk.datasets</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">torchvtk.transforms</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dicttransform">DictTransform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#composite">Composite</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#lambda">Lambda</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#crop">Crop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#resize">Resize</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#randflip">RandFlip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#randpermute">RandPermute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gaussianblur">GaussianBlur</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gaussiannoise">GaussianNoise</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="torchvtk.utils.html">torchvtk.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="torchvtk.rendering.html">torchvtk.rendering</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">torchvtk</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>torchvtk.transforms</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/torchvtk.transforms.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="torchvtk-transforms">
+<h1>torchvtk.transforms<a class="headerlink" href="#torchvtk-transforms" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="dicttransform">
+<h2>DictTransform<a class="headerlink" href="#dicttransform" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torchvtk.transforms.DictTransform">
+<em class="property">class </em><code class="sig-prename descclassname">torchvtk.transforms.</code><code class="sig-name descname">DictTransform</code><span class="sig-paren">(</span><em class="sig-param">device=None</em>, <em class="sig-param">apply_on=None</em>, <em class="sig-param">dtype=None</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.DictTransform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Super Class for the Transforms.</p>
+<dl class="method">
+<dt id="torchvtk.transforms.DictTransform.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">device=None</em>, <em class="sig-param">apply_on=None</em>, <em class="sig-param">dtype=None</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.DictTransform.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>apply_on</strong> – The keys of the item dictionaries on which the transform should be applied. Defaults to applying to all torch.Tensors</p></li>
+<li><p><strong>device</strong> – The torch.device on which the transformation should be executed. Also valid: “cpu”, “cuda”. Defaults to using whatever comes.</p></li>
+<li><p><strong>dtype</strong> – The torch.dtype to which the data should be converted before the transform. Defaults to using whatever comes..</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.transforms.DictTransform.transform">
+<em class="property">abstract </em><code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.DictTransform.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transformation Method, must be overwritten by every SubClass.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="composite">
+<h2>Composite<a class="headerlink" href="#composite" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torchvtk.transforms.Composite">
+<em class="property">class </em><code class="sig-prename descclassname">torchvtk.transforms.</code><code class="sig-name descname">Composite</code><span class="sig-paren">(</span><em class="sig-param">*tfms</em>, <em class="sig-param">apply_on=None</em>, <em class="sig-param">device=None</em>, <em class="sig-param">dtype=None</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.Composite" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torchvtk.transforms.dict_transform.DictTransform</span></code></p>
+<dl class="method">
+<dt id="torchvtk.transforms.Composite.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">*tfms</em>, <em class="sig-param">apply_on=None</em>, <em class="sig-param">device=None</em>, <em class="sig-param">dtype=None</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.Composite.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Composites multiple transforms together</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tfms</strong> (<em>Callable</em><em>, </em><a class="reference internal" href="#torchvtk.transforms.DictTransform" title="torchvtk.transforms.DictTransform"><em>DictTransform</em></a>) – <a href="#id1"><span class="problematic" id="id2">`</span></a>DictTransform`s or just callable objects that can handle the incoming dict data</p></li>
+<li><p><strong>apply_on</strong> (<em>List of str</em>) – Overrides the <cite>apply_on</cite> dictionary masks of the given transforms. (Only applies to <a href="#id3"><span class="problematic" id="id4">`</span></a>DictTransform`s)</p></li>
+<li><p><strong>device</strong> (<em>torch.device</em><em>, </em><em>str</em>) – torch.device, ‘cpu’ or ‘cuda’. This overrides the device for all <a href="#id5"><span class="problematic" id="id6">`</span></a>DictTransform`s.</p></li>
+<li><p><strong>dtype</strong> (<em>torch.dtype</em>) – Overrides the dtype for all <a href="#id7"><span class="problematic" id="id8">`</span></a>DictTransform`s this composites.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.transforms.Composite.transform">
+<em class="property">abstract </em><code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.Composite.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transformation Method, must be overwritten by every SubClass.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="lambda">
+<h2>Lambda<a class="headerlink" href="#lambda" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torchvtk.transforms.Lambda">
+<em class="property">class </em><code class="sig-prename descclassname">torchvtk.transforms.</code><code class="sig-name descname">Lambda</code><span class="sig-paren">(</span><em class="sig-param">func</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.Lambda" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torchvtk.transforms.dict_transform.DictTransform</span></code></p>
+<dl class="method">
+<dt id="torchvtk.transforms.Lambda.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">func</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.Lambda.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies a given function, wrapped in a <cite>DictTransform</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> (<em>function</em>) – The function to be executed</p></li>
+<li><p><strong>kwargs</strong> – Arguments for <cite>DictTransform</cite></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.transforms.Lambda.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.Lambda.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transformation Method, must be overwritten by every SubClass.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="crop">
+<h2>Crop<a class="headerlink" href="#crop" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torchvtk.transforms.Crop">
+<em class="property">class </em><code class="sig-prename descclassname">torchvtk.transforms.</code><code class="sig-name descname">Crop</code><span class="sig-paren">(</span><em class="sig-param">size=(20</em>, <em class="sig-param">20</em>, <em class="sig-param">20)</em>, <em class="sig-param">position=0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.Crop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torchvtk.transforms.dict_transform.DictTransform</span></code></p>
+<dl class="method">
+<dt id="torchvtk.transforms.Crop.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">size=(20</em>, <em class="sig-param">20</em>, <em class="sig-param">20)</em>, <em class="sig-param">position=0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.Crop.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Crops a tensor
+size (3-tuple of int): Size of the crop.
+position (3-tuple of int): Middle point of the cropped region.
+kwargs: Arguments for <cite>DictTransform</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.transforms.Crop.get_center_crop">
+<code class="sig-name descname">get_center_crop</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">size</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.Crop.get_center_crop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper method for the crop.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.transforms.Crop.get_crop_around">
+<code class="sig-name descname">get_crop_around</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">mid</em>, <em class="sig-param">size</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.Crop.get_crop_around" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper method for the crop.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.transforms.Crop.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.Crop.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the Center Crop.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="resize">
+<h2>Resize<a class="headerlink" href="#resize" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torchvtk.transforms.Resize">
+<em class="property">class </em><code class="sig-prename descclassname">torchvtk.transforms.</code><code class="sig-name descname">Resize</code><span class="sig-paren">(</span><em class="sig-param">size</em>, <em class="sig-param">mode='trilinear'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.Resize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torchvtk.transforms.dict_transform.DictTransform</span></code></p>
+<dl class="method">
+<dt id="torchvtk.transforms.Resize.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">size</em>, <em class="sig-param">mode='trilinear'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.Resize.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resizes volumes to a given size or by a given factor</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>size</strong> (<em>3-tuple/list</em><em> or </em><em>float</em>) – The new spatial dimensions in a tuple or a factor as scalar</p></li>
+<li><p><strong>mode</strong> (<em>str</em><em>, </em><em>optional</em>) – Resampling mode. See PyTorch’s <cite>torch.nn.functional.interpolate</cite>. Defaults to ‘trilinear’.</p></li>
+<li><p><strong>kwargs</strong> – Arguments for <cite>DictTransform</cite></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.transforms.Resize.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.Resize.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transformation Method, must be overwritten by every SubClass.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="randflip">
+<h2>RandFlip<a class="headerlink" href="#randflip" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torchvtk.transforms.RandFlip">
+<em class="property">class </em><code class="sig-prename descclassname">torchvtk.transforms.</code><code class="sig-name descname">RandFlip</code><span class="sig-paren">(</span><em class="sig-param">flip_probability=0.5, dims=[1, 1, 1], **kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.RandFlip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torchvtk.transforms.dict_transform.DictTransform</span></code></p>
+<p>Flips dimensions with a given probability. (Random event occurs for each dimension)</p>
+<dl class="method">
+<dt id="torchvtk.transforms.RandFlip.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">flip_probability=0.5, dims=[1, 1, 1], **kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.RandFlip.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flips dimensions of a tensor with a given <cite>flip_probability</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>flip_probability</strong> (<em>float</em>) – Probability of a dimension being flipped. Default 0.5.</p></li>
+<li><p><strong>dims</strong> (<em>list of 3 ints</em>) – Dimensions that may be flipped are denoted with a 1, otherwise 0. [1,0,1] would randomly flip a volumes depth and width dimension, while never flipping its height dimension</p></li>
+<li><p><strong>kwargs</strong> – Arguments for <cite>DictTransform</cite></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.transforms.RandFlip.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.RandFlip.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transformation Method, must be overwritten by every SubClass.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="randpermute">
+<h2>RandPermute<a class="headerlink" href="#randpermute" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torchvtk.transforms.RandPermute">
+<em class="property">class </em><code class="sig-prename descclassname">torchvtk.transforms.</code><code class="sig-name descname">RandPermute</code><span class="sig-paren">(</span><em class="sig-param">permutations=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.RandPermute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torchvtk.transforms.dict_transform.DictTransform</span></code></p>
+<p>Chooses one of the 8 random permutations for the volume axes</p>
+<dl class="method">
+<dt id="torchvtk.transforms.RandPermute.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">permutations=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.RandPermute.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Randomly choose one of the given permutations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>permutations</strong> (<em>list of 3-tuples</em>) – Overrides the list of possible permutations to choose from. The default is  [ (0, 1, 2), (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0) ]. <cite>permutations</cite> must be a list or tuple of items that are compatible with torch.permute. Assume 0 to be the first spatial dimension, we account for a possible batch and channel dimension. The permutation will then be chosen at random from the given list/tuple.</p></li>
+<li><p><strong>kwargs</strong> – Arguments for <cite>DictTransform</cite></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.transforms.RandPermute.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.RandPermute.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transformation Method, must be overwritten by every SubClass.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="gaussianblur">
+<h2>GaussianBlur<a class="headerlink" href="#gaussianblur" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torchvtk.transforms.GaussianBlur">
+<em class="property">class </em><code class="sig-prename descclassname">torchvtk.transforms.</code><code class="sig-name descname">GaussianBlur</code><span class="sig-paren">(</span><em class="sig-param">channels=1</em>, <em class="sig-param">kernel_size=(3</em>, <em class="sig-param">3</em>, <em class="sig-param">3)</em>, <em class="sig-param">sigma=1</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.GaussianBlur" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torchvtk.transforms.dict_transform.DictTransform</span></code></p>
+<dl class="method">
+<dt id="torchvtk.transforms.GaussianBlur.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">channels=1</em>, <em class="sig-param">kernel_size=(3</em>, <em class="sig-param">3</em>, <em class="sig-param">3)</em>, <em class="sig-param">sigma=1</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.GaussianBlur.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Blurs tensors using a Gaussian filter</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>channels</strong> (<em>int</em>) – Amount of channels of the input data.</p></li>
+<li><p><strong>kernel_size</strong> (<em>list of int</em>) – Size of the convolution kernel.</p></li>
+<li><p><strong>sigma</strong> (<em>float</em>) – Standard deviation.</p></li>
+<li><p><strong>kwargs</strong> – Arguments for <cite>DictTransform</cite></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.transforms.GaussianBlur.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.GaussianBlur.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the Blur using a 3D Convolution.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="gaussiannoise">
+<h2>GaussianNoise<a class="headerlink" href="#gaussiannoise" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torchvtk.transforms.GaussianNoise">
+<em class="property">class </em><code class="sig-prename descclassname">torchvtk.transforms.</code><code class="sig-name descname">GaussianNoise</code><span class="sig-paren">(</span><em class="sig-param">std_deviation=0.01</em>, <em class="sig-param">mean=0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.GaussianNoise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torchvtk.transforms.dict_transform.DictTransform</span></code></p>
+<dl class="method">
+<dt id="torchvtk.transforms.GaussianNoise.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">std_deviation=0.01</em>, <em class="sig-param">mean=0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.GaussianNoise.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds Gaussian noise to tensors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>std_deviation</strong> (<em>float</em><em>, </em><em>tensor</em>) – The variance of the noise</p></li>
+<li><p><strong>mean</strong> (<em>float</em><em>, </em><em>tensor</em>) – The mean of the noise.</p></li>
+<li><p><strong>kwargs</strong> – Arguments for <cite>DictTransform</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.transforms.GaussianNoise.transform">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.transforms.GaussianNoise.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the Noise onto the images. Variance is controlled by the noise_variance parameter.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="torchvtk.utils.html" class="btn btn-neutral float-right" title="torchvtk.utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="torchvtk.datasets.html" class="btn btn-neutral float-left" title="torchvtk.datasets" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Dominik Engel, Marc Fabian Mezger
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

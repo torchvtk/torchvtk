@@ -1,0 +1,432 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>torchvtk.datasets &mdash; torchvtk v0.2.5 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="torchvtk.transforms" href="torchvtk.transforms.html" />
+    <link rel="prev" title="Troubleshooting" href="../guides/Troubleshooting.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> torchvtk
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/GettingStarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/TorchDataset.html">TorchDataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/TorchQueueDataset.html">TorchQueueDataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/Transforms.html">Transforms</a></li>
+</ul>
+<p class="caption"><span class="caption-text">More Information:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/Benchmarks.html">Benchmarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/Troubleshooting.html">Troubleshooting</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">torchvtk.datasets</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#torchdataset">TorchDataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#torchqueuedataset">TorchQueueDataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dict-collate-fn">dict_collate_fn</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="torchvtk.transforms.html">torchvtk.transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="torchvtk.utils.html">torchvtk.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="torchvtk.rendering.html">torchvtk.rendering</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">torchvtk</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>torchvtk.datasets</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/torchvtk.datasets.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="torchvtk-datasets">
+<h1>torchvtk.datasets<a class="headerlink" href="#torchvtk-datasets" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="torchdataset">
+<h2>TorchDataset<a class="headerlink" href="#torchdataset" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torchvtk.datasets.TorchDataset">
+<em class="property">class </em><code class="sig-prename descclassname">torchvtk.datasets.</code><code class="sig-name descname">TorchDataset</code><span class="sig-paren">(</span><em class="sig-param">ds_files</em>, <em class="sig-param">filter_fn=None</em>, <em class="sig-param">preprocess_fn=None</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.datasets.TorchDataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.utils.data.Dataset</span></code></p>
+<dl class="method">
+<dt id="torchvtk.datasets.TorchDataset.CQ500">
+<em class="property">static </em><code class="sig-name descname">CQ500</code><span class="sig-paren">(</span><em class="sig-param">tvtk_ds_path='~/.torchvtk/'</em>, <em class="sig-param">num_workers=0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.datasets.TorchDataset.CQ500" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the QureAI CQ500 Dataset.
+Downloads, extracts and converts to TorchDataset if not locally available
+Find the dataset here: <a class="reference external" href="http://headctstudy.qure.ai/dataset">http://headctstudy.qure.ai/dataset</a>
+Credits to Chilamkurthy et al. <a class="reference external" href="https://arxiv.org/abs/1803.05854">https://arxiv.org/abs/1803.05854</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tvtk_ds_path</strong> (<em>str</em><em>, </em><em>Path</em>) – Path where your torchvtk datasets shall be saved.</p></li>
+<li><p><strong>num_workers</strong> (<em>int</em>) – Number of processes used for downloading, extracting, converting</p></li>
+<li><p><strong>kwargs</strong> – Keyword arguments to pass on to TorchDataset.__init__()</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>TorchDataset containing CQ500.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#torchvtk.datasets.TorchDataset" title="torchvtk.datasets.TorchDataset">TorchDataset</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.datasets.TorchDataset.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">ds_files</em>, <em class="sig-param">filter_fn=None</em>, <em class="sig-param">preprocess_fn=None</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.datasets.TorchDataset.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dataset that uses serialized PyTorch Tensors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ds_files</strong> (<em>str</em><em>, </em><em>Path</em><em> (</em><em>Dict</em><em>)</em><em>, </em><em>List of Path</em><em> (</em><em>Files</em><em>)</em>) – Path to the TorchDataset directory (containing <cite>*.pt</cite>) or list of paths pointing to .pt files</p></li>
+<li><p><strong>filter_fn</strong> (<em>function</em>) – Function that filters the found items. Input is filepath</p></li>
+<li><p><strong>preprocess_fn</strong> (<em>function</em>) – Function to process the loaded dirctionary.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.datasets.TorchDataset.cache_processed">
+<code class="sig-name descname">cache_processed</code><span class="sig-paren">(</span><em class="sig-param">process_fn</em>, <em class="sig-param">name</em>, <em class="sig-param">num_workers=0</em>, <em class="sig-param">delete_old_from_disk=False</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.datasets.TorchDataset.cache_processed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Processes the given TorchDataset and serializes it.
+Iterates through the dataset and applies the given <cite>process_fn</cite> to each item (which should be a dictionary).
+The resulting new dataset will be serialized next to the old one, using then given <cite>name</cite>.
+This function can work multithreaded.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>process_fn</strong> (<em>function</em>) – The function to be applied on the inidividual items</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Name of the new processed dataset</p></li>
+<li><p><strong>num_workers</strong> (<em>int &gt; 0</em>) – Number of threads used for processing</p></li>
+<li><p><strong>delete_old_from_disk</strong> (<em>bool</em>) – If True, the root directory of the old, unprocessed, dataset is removed from disk.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>TorchDataset with the new items. (no filter or preprocess_fn set)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#torchvtk.datasets.TorchDataset" title="torchvtk.datasets.TorchDataset">TorchDataset</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.datasets.TorchDataset.preload">
+<code class="sig-name descname">preload</code><span class="sig-paren">(</span><em class="sig-param">device=torch.device</em>, <em class="sig-param">num_workers=0</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.datasets.TorchDataset.preload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Preloads the dataset into memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>device</strong> (<em>torch.device</em><em>, </em><em>optional</em>) – Device to store the dataset on. Defaults to torch.device(‘cpu’).</p></li>
+<li><p><strong>num_workers</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of workers to load items into memory. Defaults to 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>New TorchDataset using the preloaded data.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#torchvtk.datasets.TorchDataset" title="torchvtk.datasets.TorchDataset">TorchDataset</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="torchqueuedataset">
+<h2>TorchQueueDataset<a class="headerlink" href="#torchqueuedataset" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torchvtk.datasets.TorchQueueDataset">
+<em class="property">class </em><code class="sig-prename descclassname">torchvtk.datasets.</code><code class="sig-name descname">TorchQueueDataset</code><span class="sig-paren">(</span><em class="sig-param">torch_ds</em>, <em class="sig-param">epoch_len=1000</em>, <em class="sig-param">mode='onsample'</em>, <em class="sig-param">num_workers=1</em>, <em class="sig-param">q_maxlen=None</em>, <em class="sig-param">ram_use=0.5</em>, <em class="sig-param">wait_fill=True</em>, <em class="sig-param">wait_fill_timeout=60</em>, <em class="sig-param">sample_tfm=&lt;function noop&gt;</em>, <em class="sig-param">batch_tfm=&lt;function noop&gt;</em>, <em class="sig-param">bs=1</em>, <em class="sig-param">collate_fn=&lt;function dict_collate_fn&gt;</em>, <em class="sig-param">log_sampling=False</em>, <em class="sig-param">avg_item_size=None</em>, <em class="sig-param">preprocess_fn=None</em>, <em class="sig-param">filter_fn=None</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.datasets.TorchQueueDataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.utils.data.IterableDataset</span></code></p>
+<dl class="method">
+<dt id="torchvtk.datasets.TorchQueueDataset.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">torch_ds</em>, <em class="sig-param">epoch_len=1000</em>, <em class="sig-param">mode='onsample'</em>, <em class="sig-param">num_workers=1</em>, <em class="sig-param">q_maxlen=None</em>, <em class="sig-param">ram_use=0.5</em>, <em class="sig-param">wait_fill=True</em>, <em class="sig-param">wait_fill_timeout=60</em>, <em class="sig-param">sample_tfm=&lt;function noop&gt;</em>, <em class="sig-param">batch_tfm=&lt;function noop&gt;</em>, <em class="sig-param">bs=1</em>, <em class="sig-param">collate_fn=&lt;function dict_collate_fn&gt;</em>, <em class="sig-param">log_sampling=False</em>, <em class="sig-param">avg_item_size=None</em>, <em class="sig-param">preprocess_fn=None</em>, <em class="sig-param">filter_fn=None</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.datasets.TorchQueueDataset.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>An iterable-style dataset that caches items in a queue in memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>torch_ds</strong> (<a class="reference internal" href="#torchvtk.datasets.TorchDataset" title="torchvtk.datasets.TorchDataset"><em>TorchDataset</em></a><em>, </em><em>str</em><em>,</em><em>Path</em>) – A TorchDataset to be used for queueing or path to the dataset on disk</p></li>
+<li><p><strong>mode</strong> (<em>string</em>) – Queue filling mode.
+- ‘onsample’ refills the queue after it got sampled
+- ‘always’ keeps refilling the queue as fast as possible</p></li>
+<li><p><strong>num_workers</strong> (<em>int</em>) – Number of threads loading in data</p></li>
+<li><p><strong>q_maxlen</strong> (<em>int</em>) – Set queue size. Overrides <cite>ram_use</cite></p></li>
+<li><p><strong>ram_use</strong> (<em>float</em>) – Fraction of available system memory to use for queue or memory budget in MB (&gt;1.0). Default is 75%</p></li>
+<li><p><strong>avg_item_size</strong> (<em>float</em><em>, </em><em>torch.Tensor</em>) – Example tensor or size in MB</p></li>
+<li><p><strong>wait_fill</strong> (<em>int</em><em>, </em><em>bool</em>) – Boolean whether queue should be filled on init or Int to fill the queue at least with a certain amount of items</p></li>
+<li><p><strong>wait_fill_timeout</strong> (<em>int</em><em>,</em><em>float</em>) – Time in seconds until wait_fill timeouts. Default is 60s</p></li>
+<li><p><strong>sample_tfm</strong> (<em>Transform</em><em>, </em><em>function</em>) – Applicable transform (receiving and producing a dict) that is applied upon sampling from the queue</p></li>
+<li><p><strong>batch_tfm</strong> (<em>Transform</em><em>, </em><em>function</em>) – Transforms to be applied on batches of items</p></li>
+<li><p><strong>preprocess_fn</strong> (<em>function</em>) – Override preprocess_fn from given torch_ds</p></li>
+<li><p><strong>filter_fn</strong> (<em>function</em>) – Filters filenames to load, like TorchDataset. Only used if <cite>torch_ds</cite> is a path to a dataset.</p></li>
+<li><p><strong>bs</strong> (<em>int</em>) – Batch Size</p></li>
+<li><p><strong>collate_fn</strong> (<em>function</em>) – Collate Function to merge items to batches. Default assumes dictionaries (like from TorchDataset) and stacks all tensors, while collecting non-tensors in a list</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.datasets.TorchQueueDataset.batch_generator">
+<code class="sig-name descname">batch_generator</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.datasets.TorchQueueDataset.batch_generator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generator for sampling the queue. This makes use of the object attributes bs (batch size) and the collate function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Generator that samples randomly samples batches from the queue.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.datasets.TorchQueueDataset.get_dataloader">
+<code class="sig-name descname">get_dataloader</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.datasets.TorchQueueDataset.get_dataloader" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A dataloader that uses the batched sampling of the queue with appropriate collate_fn and batch_size.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>torch.utils.data.DataLoader</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.datasets.TorchQueueDataset.qsize">
+<em class="property">property </em><code class="sig-name descname">qsize</code><a class="headerlink" href="#torchvtk.datasets.TorchQueueDataset.qsize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Current Queue length</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.datasets.TorchQueueDataset.wait_fill_queue">
+<code class="sig-name descname">wait_fill_queue</code><span class="sig-paren">(</span><em class="sig-param">fill_atleast=None</em>, <em class="sig-param">timeout=60</em>, <em class="sig-param">polling_interval=0.25</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.datasets.TorchQueueDataset.wait_fill_queue" title="Permalink to this definition">¶</a></dt>
+<dd><p>Waits untill the queue is filled (<cite>fill_atleast`=None) or until filled with at least `fill_atleast</cite>. Timeouts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fill_atleast</strong> (<em>int</em>) – Waits until queue is at least filled with so many items.</p></li>
+<li><p><strong>timeout</strong> (<em>Number</em>) – Time in seconds before this method terminates regardless of the queue size</p></li>
+<li><p><strong>polling_interval</strong> (<em>Number</em>) – Time in seconds how fast the queue size is polled while waiting.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="dict-collate-fn">
+<h2>dict_collate_fn<a class="headerlink" href="#dict-collate-fn" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="torchvtk.datasets.dict_collate_fn">
+<code class="sig-prename descclassname">torchvtk.datasets.</code><code class="sig-name descname">dict_collate_fn</code><span class="sig-paren">(</span><em class="sig-param">items</em>, <em class="sig-param">key_filter=None</em>, <em class="sig-param">stack_tensors=True</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.datasets.dict_collate_fn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collate function for dictionary data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>items</strong> (<em>list</em>) – List of individual items for a Dataset</p></li>
+<li><p><strong>key_filter</strong> (<em>list of str</em><em> or </em><em>callable</em><em>, </em><em>optional</em>) – A list of keys to filter the dict data. Defaults to None.</p></li>
+<li><p><strong>stack_tensors</strong> (<em>bool</em><em>, </em><em>optional</em>) – Wether to stack dict entries of type torch.Tensors. Disable if you have unstackable tensors. They will be stacked as a list. Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>One Dictionary with tensors stacked</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="torchvtk.transforms.html" class="btn btn-neutral float-right" title="torchvtk.transforms" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../guides/Troubleshooting.html" class="btn btn-neutral float-left" title="Troubleshooting" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Dominik Engel, Marc Fabian Mezger
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

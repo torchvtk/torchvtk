@@ -1,0 +1,450 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>torchvtk.utils &mdash; torchvtk v0.2.5 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="torchvtk.rendering" href="torchvtk.rendering.html" />
+    <link rel="prev" title="torchvtk.transforms" href="torchvtk.transforms.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> torchvtk
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/GettingStarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/TorchDataset.html">TorchDataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/TorchQueueDataset.html">TorchQueueDataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/Transforms.html">Transforms</a></li>
+</ul>
+<p class="caption"><span class="caption-text">More Information:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/Benchmarks.html">Benchmarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/Troubleshooting.html">Troubleshooting</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="torchvtk.datasets.html">torchvtk.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="torchvtk.transforms.html">torchvtk.transforms</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">torchvtk.utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#volume-utils">Volume Utils</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#make-nd">make_nd</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#normalize-hounsfield">normalize_hounsfield</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#normalize-voxel-scale">normalize_voxel_scale</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#transfer-function-utils">Transfer Function Utils</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#transferfunctionapplication">TransferFunctionApplication</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tex-from-pts">tex_from_pts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apply-tf-torch">apply_tf_torch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apply-tf-tex-torch">apply_tf_tex_torch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#random-tf-from-vol">random_tf_from_vol</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multiprocessing-utils">MultiProcessing Utils</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pool-map">pool_map</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pool-map-uo">pool_map_uo</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="torchvtk.rendering.html">torchvtk.rendering</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">torchvtk</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>torchvtk.utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/torchvtk.utils.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="torchvtk-utils">
+<h1>torchvtk.utils<a class="headerlink" href="#torchvtk-utils" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="volume-utils">
+<h2>Volume Utils<a class="headerlink" href="#volume-utils" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="make-nd">
+<h3>make_nd<a class="headerlink" href="#make-nd" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="torchvtk.utils.make_2d">
+<code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">make_2d</code><span class="sig-paren">(</span><em class="sig-param">t</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.make_2d" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="torchvtk.utils.make_3d">
+<code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">make_3d</code><span class="sig-paren">(</span><em class="sig-param">t</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.make_3d" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="torchvtk.utils.make_4d">
+<code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">make_4d</code><span class="sig-paren">(</span><em class="sig-param">t</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.make_4d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepends singleton dimensions to <cite>t</cite> until 4D</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="torchvtk.utils.make_5d">
+<code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">make_5d</code><span class="sig-paren">(</span><em class="sig-param">t</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.make_5d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepends singleton dimensions to <cite>t</cite> until 5D</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="torchvtk.utils.make_nd">
+<code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">make_nd</code><span class="sig-paren">(</span><em class="sig-param">t</em>, <em class="sig-param">n</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.make_nd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepends singleton dimensions to <cite>t</cite> until n-dimensional</p>
+</dd></dl>
+
+</div>
+<div class="section" id="normalize-hounsfield">
+<h3>normalize_hounsfield<a class="headerlink" href="#normalize-hounsfield" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="torchvtk.utils.normalize_hounsfield">
+<code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">normalize_hounsfield</code><span class="sig-paren">(</span><em class="sig-param">vol</em>, <em class="sig-param">dtype=None</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.normalize_hounsfield" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalizes <cite>vol</cite> by 4095 and clamps to [0,1]. <cite>dtype=None</cite> defaults to 32-bit float</p>
+</dd></dl>
+
+</div>
+<div class="section" id="normalize-voxel-scale">
+<h3>normalize_voxel_scale<a class="headerlink" href="#normalize-voxel-scale" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="torchvtk.utils.normalize_voxel_scale">
+<code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">normalize_voxel_scale</code><span class="sig-paren">(</span><em class="sig-param">vol</em>, <em class="sig-param">vox_scl</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.normalize_voxel_scale" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+<div class="section" id="transfer-function-utils">
+<h2>Transfer Function Utils<a class="headerlink" href="#transfer-function-utils" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="transferfunctionapplication">
+<h3>TransferFunctionApplication<a class="headerlink" href="#transferfunctionapplication" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="torchvtk.utils.TransferFunctionApplication">
+<em class="property">class </em><code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">TransferFunctionApplication</code><span class="sig-paren">(</span><em class="sig-param">as_pts=False</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.TransferFunctionApplication" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></p>
+<dl class="method">
+<dt id="torchvtk.utils.TransferFunctionApplication.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">as_pts=False</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.TransferFunctionApplication.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>A torch.nn.Module that applies a transfer function differentiably</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>as_pts</strong> (<em>bool</em>) – Wether the given TF will be in point form (True) or 1D texture (False).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchvtk.utils.TransferFunctionApplication.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">tf</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.TransferFunctionApplication.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the transfer function <cite>tf</cite> to the volume <cite>x</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – Tensor depicting a volume with intensity values (N, 1, D, H, W)</p></li>
+<li><p><strong>tf</strong> (<em>torch.Tensor</em><em>, </em><em>list of such</em>) – If <cite>as_pts</cite> a list of Tensors (NumPoints, Channels) is expected with len(list) == batch_size. If False a torch.Tensor (N, Channels, TF_resolution).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Tensor with the TF applied. New shape (N, Channels, D, H, W)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(torch.Tensor)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="tex-from-pts">
+<h3>tex_from_pts<a class="headerlink" href="#tex-from-pts" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="torchvtk.utils.tex_from_pts">
+<code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">tex_from_pts</code><span class="sig-paren">(</span><em class="sig-param">tf_pts</em>, <em class="sig-param">resolution=4096</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.tex_from_pts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interpolates <cite>tf_pts</cite> to generate a TF texture of shape (N, C, resolution) with C determined by the TF</p>
+</dd></dl>
+
+</div>
+<div class="section" id="apply-tf-torch">
+<h3>apply_tf_torch<a class="headerlink" href="#apply-tf-torch" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="torchvtk.utils.apply_tf_torch">
+<code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">apply_tf_torch</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">tf_pts</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.apply_tf_torch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the TF described by points <cite>tf_pts</cite> (N x [0,1]^C+1 with x pos and C channels) to <cite>x</cite>. The operation always computes on torch.float32. The output is cast to <cite>x.dtype</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – The intensity values to apply the TF on. Assumed shape is ([N,] 1, …) (optionally with batch size N, must match length of tf_pts list)</p></li>
+<li><p><strong>tf_pts</strong> (<em>torch.Tensor</em><em>, </em><em>List of such</em>) – Tensor of shape (N, (1+C)) containing N points consisting of x coordinate and mapped features (e.g. RGBO)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Tensor with TF applied of shape (N, C, …) with batch size N (same as <cite>x</cite>) and number of channels C (same as <cite>tf_pts</cite>)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="apply-tf-tex-torch">
+<h3>apply_tf_tex_torch<a class="headerlink" href="#apply-tf-tex-torch" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="torchvtk.utils.apply_tf_tex_torch">
+<code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">apply_tf_tex_torch</code><span class="sig-paren">(</span><em class="sig-param">vol</em>, <em class="sig-param">tf_tex</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.apply_tf_tex_torch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies a (batch of) transfer function textures <cite>tf_tex</cite> to a (batch of) volume <cite>vol</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vol</strong> (<em>torch.Tensor</em>) – ([N,] 1, D, H, W) volume with intensity values</p></li>
+<li><p><strong>tf_tex</strong> (<em>torch.Tensor</em>) – ([N,] C, R) transfer function texture with C channels and resolution R</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The preclassified volume of shape ([N,] C, D, H, W)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="random-tf-from-vol">
+<h3>random_tf_from_vol<a class="headerlink" href="#random-tf-from-vol" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="torchvtk.utils.random_tf_from_vol">
+<code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">random_tf_from_vol</code><span class="sig-paren">(</span><em class="sig-param">vol</em>, <em class="sig-param">max_num_peaks=5</em>, <em class="sig-param">height_range=(0.1</em>, <em class="sig-param">0.9)</em>, <em class="sig-param">width_range=(0.02</em>, <em class="sig-param">0.2)</em>, <em class="sig-param">bins=1000</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.random_tf_from_vol" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+<div class="section" id="multiprocessing-utils">
+<h2>MultiProcessing Utils<a class="headerlink" href="#multiprocessing-utils" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="pool-map">
+<h3>pool_map<a class="headerlink" href="#pool-map" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="torchvtk.utils.pool_map">
+<code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">pool_map</code><span class="sig-paren">(</span><em class="sig-param">fn</em>, <em class="sig-param">data</em>, <em class="sig-param">num_workers=0</em>, <em class="sig-param">dlen=None</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.pool_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multithreaded map function that displays a progress bar</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fn</strong> (<em>function</em>) – Function to be applied to the elements in <cite>data</cite></p></li>
+<li><p><strong>data</strong> (<em>iterable</em>) – Iterable on which the function <cite>fn</cite> is applied.</p></li>
+<li><p><strong>num_workers</strong> (<em>int</em>) – Number of threads to do the computation</p></li>
+<li><p><strong>dlen</strong> (<em>int</em>) – A way to supply the length of <cite>data</cite> separately (to display in progress bar)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of results [fn(data[0]), …. fn(data[-1])]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="pool-map-uo">
+<h3>pool_map_uo<a class="headerlink" href="#pool-map-uo" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="torchvtk.utils.pool_map_uo">
+<code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">pool_map_uo</code><span class="sig-paren">(</span><em class="sig-param">fn</em>, <em class="sig-param">data</em>, <em class="sig-param">num_workers=0</em>, <em class="sig-param">dlen=None</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.pool_map_uo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multithreaded unordered map function that displays a progress bar</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fn</strong> (<em>function</em>) – Function to be applied to the elements in <cite>data</cite></p></li>
+<li><p><strong>data</strong> (<em>iterable</em>) – Iterable on which the function <cite>fn</cite> is applied.</p></li>
+<li><p><strong>num_workers</strong> (<em>int</em>) – Number of threads to do the computation</p></li>
+<li><p><strong>dlen</strong> (<em>int</em>) – A way to supply the length of <cite>data</cite> separately (to display in progress bar)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of results [fn(data[0]), …. fn(data[-1])]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="torchvtk.rendering.html" class="btn btn-neutral float-right" title="torchvtk.rendering" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="torchvtk.transforms.html" class="btn btn-neutral float-left" title="torchvtk.transforms" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Dominik Engel, Marc Fabian Mezger
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
