@@ -12,7 +12,7 @@
 #
 import os, sys
 sys.path.insert(0, os.path.abspath('../'))
-
+from torchvtk import __version__
 
 # -- Project information -----------------------------------------------------
 
@@ -21,7 +21,7 @@ copyright = '2020, Dominik Engel, Marc Fabian Mezger'
 author = 'Dominik Engel, Marc Fabian Mezger'
 
 # The full version, including alpha/beta/rc tags
-release = 'v0.2.5'
+release = __version__
 
 
 # -- General configuration ---------------------------------------------------
