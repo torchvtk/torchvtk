@@ -121,11 +121,12 @@ class TorchQueueDataset(IterableDataset):
             self.wait_fill_queue(fill_atleast=wait_for, timeout=wait_fill_timeout)
 
     @property
-    def qsize(self): return len(self.queue)
+    def qsize(self): ''' Current Queue length ''' return len(self.queue)
 
     def __len__(self): return self.epoch_len
 
     def get_dataloader(self, **kwargs):
+        ''' Returns a dataloader that uses the batched sampling of the queue with appropriate collate_fn and batch_size. '''
         return DataLoader(self, batch_size=1, collate_fn=lambda it: it[0], **kwargs)
 
     def batch_generator(self):

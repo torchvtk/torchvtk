@@ -88,6 +88,15 @@ class TorchDataset(Dataset):
         return TorchDataset(target_path)
 
     def preload(self, device=torch.device('cpu'), num_workers=0):
+        ''' Preloads the dataset into memory.
+
+        Args:
+            device (torch.device, optional): Device to store the dataset on. Defaults to torch.device('cpu').
+            num_workers (int, optional): Number of workers to load items into memory. Defaults to 0.
+
+        Returns:
+            TorchDataset: New TorchDataset using the preloaded data.
+        '''
         self.data = [self[i] for i in range(len(self))]
         pool_map(partial(_preload_dict_tensors, device=device), self.data, num_workers=num_workers)
         def new_get(i):
