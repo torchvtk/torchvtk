@@ -2,14 +2,21 @@
 Here we compare data loading speeds using a `TorchDataset` against HDF5 loading with different compressions.
 
 ### CQ500 Summary on @xeTaiz's PC (Ryzen 3700X, old slow HDD)
-| Dataset Type | Average Time | Max Time | Total Time |
-|--------------|--------------|----------|------------|
-| Torch        |   0.71s      |   1.95s  |  278.9s    |
-| HDF5 Reopen  |   5.76s      |   13.5s  |  2276.3s   |
-| HDF5 OpenOnce|   5.75s      |   13.0s  |  2271.3s   |
-| HDF5 LZF     |   11.90s     |  47.04s  |  4698.6s   |
-| HDF5 GZIP    |   22.34s     | 98.55s   |  8823.2s   |
-
+```eval_rst
++---------------+--------------+----------+------------+
+| Dataset Type  | Average Time | Max Time | Total Time |
++===============+==============+==========+============+
+| TorchDataset  |    0.71s     |   1.95s  |   278.9s   |
++---------------+--------------+----------+------------+
+| HDF5 Reopen   |    5.76s     |   13.5s  |   2276.3s  |
++---------------+--------------+----------+------------+
+| HDF5 OpenOnce |    5.75s     |   13.0s  |   2271.3s  |
++---------------+--------------+----------+------------+
+| HDF5 LZF      |    11.90s    |   47.04s |   4698.6s  |
++---------------+--------------+----------+------------+
+| HDF5 GZIP     |    22.34s    |   98.55s |   8823.2s  |
++---------------+--------------+----------+------------+
+```
 
 #### CQ500 TorchDataset 395 examples
 ![CQ500 Results on Domes PC](images/benchmarks/cq500_torch.png)
