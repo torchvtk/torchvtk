@@ -293,6 +293,6 @@ class RandFlip(DictTransform):
         self.dims = torch.LongTensor(dims)
 
     def transform(self, x):
-        idxs = tuple((torch.nonzero(self.dims * torch.rand(3) < self.prob).view(-1) + x.ndim - 3).tolist())
+        idxs = tuple((torch.nonzero(self.dims * torch.rand(3) < self.prob, as_tuple=False).view(-1) + x.ndim - 3).tolist())
         if len(idxs) == 0: return x
         return torch.flip(x, idxs).contiguous()
