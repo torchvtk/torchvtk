@@ -42,6 +42,13 @@ class DictTransform:
         """ Transformation Method, must be overwritten by every SubClass."""
         pass
 
+    def override_apply_on(self, apply_on):
+        if self.apply_on is None:
+            if isinstance(apply_on, (list, tuple)) and isinstance(apply_on[0], str):
+                self.apply_on = apply_on
+            elif isinstance(apply_on, str):
+                self.apply_on = [apply_on]
+
     def __call__(self, data):
         if isinstance(data, dict):
             if self.apply_on is None:
@@ -93,13 +100,13 @@ class Composite(DictTransform):
         '''
         super().__init__()
         self.tfms = [*tfms]
-        if self.apply_on is not None:
+        if apply_on is not None:
             for tfm in self.tfms:
                 assert hasattr(tfm, '__call__')
                 if isinstance(tfm, DictTransform):
-                    if apply_on is None: tfm.apply_on = apply_on
-                    if device   is None: tfm.device   = device
-                    if dtype    is None: tfm.dtype    = dtype
+                    tfm.override_apply_on(apply_on)
+                    if tfm.device   is None: tfm.device   = device
+                    if tfm.dtype    is None: tfm.dtype    = dtype
 
     def __call__(self, data):
         for tfm in self.tfms:
