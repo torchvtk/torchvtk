@@ -52,14 +52,14 @@ tfms = Composite(
         RandPermute(),
         RandFlip(),
         GaussianNoise(),
-        apply_all_on=['vol']
+        apply_on=['vol']
     )
 train_ds = TorchDataset('/run/hdd/torchvtk',     # Path to torchvtk folder
     preprocess_fn=None,                          # No transforms on load. Could be left out
     filter_fn=lambda p: int(p.name[9:-3]) < 400) # Split
 train_dl = TorchQueueDataset(train_ds,
     mode      = 'always',
-    ram_use   = 0.7,      # Use 70% of the available system RAM for the Queue
+    ram_use   = 0.7,               # Use 70% of the available system RAM for the Queue
     wait_fill = 4*args.batch_size, # Wait until at least 4x batch_size items are loaded
     bs        = args.batch_size,   # Automatically batch items
     num_workers = 4,               # Use 4 processes to load new items
@@ -71,15 +71,22 @@ train_dl = TorchQueueDataset(train_ds,
         key_filter=['vol', 'tf_tex']) # Use only those 2
     ).get_dataloader()
 ```
-First we composite our desired augmentation. Here we apply some noise, randomly flip spatial dimensions and randomly permute spatial dimensions. The `apply_all_on=['vol']` overrides the `apply_on` argument of the individual transforms, since we want to apply all of them only to the volume.
+First we composite our desired augmentation. Here we apply some noise, randomly flip spatial dimensions and randomly permute spatial dimensions. The `apply_on=['vol']` overrides the `apply_on` argument of the individual transforms, since we want to apply all of them only to the volume.
 The training dataset is initialized as in the [TorchDataset Example](TorchDataset.html).
+
+#### Sampling Mode
 For the queue we use `mode='always'`, because the data lies on a slow HDD and the loading is significantly slower than our network, so we load as fast as we can, while not slowing down the training. If the storage is not as bad, we could use `onsample` to stress the storage less.
-We choose to use 70% of the available system memory for the queue and start training after the queue is filled with 4 times the batch size. The queue is filled with 4 worker processes and the final max queue size is determined using the given `avg_item_size`. As demonstrated in the example, this parameter could also take a `torch.Tensor` to estimate the approximate memory used per item. If this is left out, the average file size used on disk is used.
+We choose to use 70% of the available system memory for the queue and start training after the queue is filled with 4 times the batch size.
+
+#### Queue size
+The queue is filled with 4 worker processes and the final max queue size is determined using the given `avg_item_size`. As demonstrated in the example, this parameter could also take a `torch.Tensor` to estimate the approximate memory used per item. If this is left out, the average file size used on disk is used.
 The queue automatically samples batches of `args.batch_size`, basically doing the job of a `torch.utils.data.DataLoader`. Since we only sample items from memory, using multiple processes will not be as beneficial and we need special dictionary collate functions.
 
+#### Collate function
 A collate function in PyTorch `DataLoader`s takes care of converting a list of items (samples from a `Dataset`) to an actual batch, thus `torch.stack`ing the tensors.
 The `dict_collate_fn` from `torchvtk.datasets` is the default collate function for `TorchDataset` items, which are dictionaries. By default it calls `torch.stack` on all dictionary elements that are `torch.Tensor`s. As demonstrated in the example, we can set the `key_filter` argument to filter the final dictionary. This can be a list/tuple containing the desired keys or a function to get `keys = filter(key_filter, key)`. You can also disable the stacking if you have unstackable tensors, by setting `dict_collate_fn`'s `stack_tensors` argument to `False`. You will get a list of tensors instead (for all tensors that is).
 
+#### Getting a DataLoader
 Lastly, note how `TorchQueueDataset.get_dataloader()` is called in the last line. This gives you an actual `torch.utils.data.DataLoader` if you need one for use with other frameworks. We disable the batching for this `DataLoader`, since our Queue already takes care of that. You can specify `DataLoader` arguments through the `**kwargs`, however the `batch_size` and `collate_fn` are fixed for this reason. Please make changes to those function in the Queue! Also note that, while you can set the `DataLoader`'s `num_workers>0`, we do not recommend this, since the use of multiple processes actually introduced more overhead than it would save on time through multiprocessing. Furthermore, settings `pin_memory=True` should not do anything, since all tensors in the Queue are already put in shared memory.
 
 ### API
