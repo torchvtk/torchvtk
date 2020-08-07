@@ -101,25 +101,16 @@
 <li class="toctree-l1"><a class="reference internal" href="torchvtk.datasets.html">torchvtk.datasets</a></li>
 <li class="toctree-l1"><a class="reference internal" href="torchvtk.transforms.html">torchvtk.transforms</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">torchvtk.utils</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#volume-utils">Volume Utils</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#make-nd">make_nd</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#normalize-hounsfield">normalize_hounsfield</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#normalize-voxel-scale">normalize_voxel_scale</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#transfer-function-utils">Transfer Function Utils</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#transferfunctionapplication">TransferFunctionApplication</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#tex-from-pts">tex_from_pts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#apply-tf-torch">apply_tf_torch</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#apply-tf-tex-torch">apply_tf_tex_torch</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#random-tf-from-vol">random_tf_from_vol</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#multiprocessing-utils">MultiProcessing Utils</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#pool-map">pool_map</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#pool-map-uo">pool_map_uo</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#make-nd">make_nd</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#normalize-hounsfield">normalize_hounsfield</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#normalize-voxel-scale">normalize_voxel_scale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#transferfunctionapplication">TransferFunctionApplication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tex-from-pts">tex_from_pts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apply-tf-torch">apply_tf_torch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apply-tf-tex-torch">apply_tf_tex_torch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#random-tf-from-vol">random_tf_from_vol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pool-map">pool_map</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pool-map-uo">pool_map_uo</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="torchvtk.rendering.html">torchvtk.rendering</a></li>
@@ -190,10 +181,8 @@
             
   <div class="section" id="torchvtk-utils">
 <h1>torchvtk.utils<a class="headerlink" href="#torchvtk-utils" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="volume-utils">
-<h2>Volume Utils<a class="headerlink" href="#volume-utils" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="make-nd">
-<h3>make_nd<a class="headerlink" href="#make-nd" title="Permalink to this headline">¶</a></h3>
+<h2>make_nd<a class="headerlink" href="#make-nd" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="torchvtk.utils.make_2d">
 <code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">make_2d</code><span class="sig-paren">(</span><em class="sig-param">t</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.make_2d" title="Permalink to this definition">¶</a></dt>
@@ -224,7 +213,7 @@
 
 </div>
 <div class="section" id="normalize-hounsfield">
-<h3>normalize_hounsfield<a class="headerlink" href="#normalize-hounsfield" title="Permalink to this headline">¶</a></h3>
+<h2>normalize_hounsfield<a class="headerlink" href="#normalize-hounsfield" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="torchvtk.utils.normalize_hounsfield">
 <code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">normalize_hounsfield</code><span class="sig-paren">(</span><em class="sig-param">vol</em>, <em class="sig-param">dtype=None</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.normalize_hounsfield" title="Permalink to this definition">¶</a></dt>
@@ -233,18 +222,15 @@
 
 </div>
 <div class="section" id="normalize-voxel-scale">
-<h3>normalize_voxel_scale<a class="headerlink" href="#normalize-voxel-scale" title="Permalink to this headline">¶</a></h3>
+<h2>normalize_voxel_scale<a class="headerlink" href="#normalize-voxel-scale" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="torchvtk.utils.normalize_voxel_scale">
 <code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">normalize_voxel_scale</code><span class="sig-paren">(</span><em class="sig-param">vol</em>, <em class="sig-param">vox_scl</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.normalize_voxel_scale" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
-</div>
-<div class="section" id="transfer-function-utils">
-<h2>Transfer Function Utils<a class="headerlink" href="#transfer-function-utils" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="transferfunctionapplication">
-<h3>TransferFunctionApplication<a class="headerlink" href="#transferfunctionapplication" title="Permalink to this headline">¶</a></h3>
+<h2>TransferFunctionApplication<a class="headerlink" href="#transferfunctionapplication" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="torchvtk.utils.TransferFunctionApplication">
 <em class="property">class </em><code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">TransferFunctionApplication</code><span class="sig-paren">(</span><em class="sig-param">as_pts=False</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.TransferFunctionApplication" title="Permalink to this definition">¶</a></dt>
@@ -284,7 +270,7 @@
 
 </div>
 <div class="section" id="tex-from-pts">
-<h3>tex_from_pts<a class="headerlink" href="#tex-from-pts" title="Permalink to this headline">¶</a></h3>
+<h2>tex_from_pts<a class="headerlink" href="#tex-from-pts" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="torchvtk.utils.tex_from_pts">
 <code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">tex_from_pts</code><span class="sig-paren">(</span><em class="sig-param">tf_pts</em>, <em class="sig-param">resolution=4096</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.tex_from_pts" title="Permalink to this definition">¶</a></dt>
@@ -293,7 +279,7 @@
 
 </div>
 <div class="section" id="apply-tf-torch">
-<h3>apply_tf_torch<a class="headerlink" href="#apply-tf-torch" title="Permalink to this headline">¶</a></h3>
+<h2>apply_tf_torch<a class="headerlink" href="#apply-tf-torch" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="torchvtk.utils.apply_tf_torch">
 <code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">apply_tf_torch</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">tf_pts</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.apply_tf_torch" title="Permalink to this definition">¶</a></dt>
@@ -316,7 +302,7 @@
 
 </div>
 <div class="section" id="apply-tf-tex-torch">
-<h3>apply_tf_tex_torch<a class="headerlink" href="#apply-tf-tex-torch" title="Permalink to this headline">¶</a></h3>
+<h2>apply_tf_tex_torch<a class="headerlink" href="#apply-tf-tex-torch" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="torchvtk.utils.apply_tf_tex_torch">
 <code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">apply_tf_tex_torch</code><span class="sig-paren">(</span><em class="sig-param">vol</em>, <em class="sig-param">tf_tex</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.apply_tf_tex_torch" title="Permalink to this definition">¶</a></dt>
@@ -336,18 +322,15 @@
 
 </div>
 <div class="section" id="random-tf-from-vol">
-<h3>random_tf_from_vol<a class="headerlink" href="#random-tf-from-vol" title="Permalink to this headline">¶</a></h3>
+<h2>random_tf_from_vol<a class="headerlink" href="#random-tf-from-vol" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="torchvtk.utils.random_tf_from_vol">
 <code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">random_tf_from_vol</code><span class="sig-paren">(</span><em class="sig-param">vol</em>, <em class="sig-param">max_num_peaks=5</em>, <em class="sig-param">height_range=(0.1</em>, <em class="sig-param">0.9)</em>, <em class="sig-param">width_range=(0.02</em>, <em class="sig-param">0.2)</em>, <em class="sig-param">bins=1000</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.random_tf_from_vol" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
-</div>
-<div class="section" id="multiprocessing-utils">
-<h2>MultiProcessing Utils<a class="headerlink" href="#multiprocessing-utils" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="pool-map">
-<h3>pool_map<a class="headerlink" href="#pool-map" title="Permalink to this headline">¶</a></h3>
+<h2>pool_map<a class="headerlink" href="#pool-map" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="torchvtk.utils.pool_map">
 <code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">pool_map</code><span class="sig-paren">(</span><em class="sig-param">fn</em>, <em class="sig-param">data</em>, <em class="sig-param">num_workers=0</em>, <em class="sig-param">dlen=None</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.pool_map" title="Permalink to this definition">¶</a></dt>
@@ -369,7 +352,7 @@
 
 </div>
 <div class="section" id="pool-map-uo">
-<h3>pool_map_uo<a class="headerlink" href="#pool-map-uo" title="Permalink to this headline">¶</a></h3>
+<h2>pool_map_uo<a class="headerlink" href="#pool-map-uo" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="torchvtk.utils.pool_map_uo">
 <code class="sig-prename descclassname">torchvtk.utils.</code><code class="sig-name descname">pool_map_uo</code><span class="sig-paren">(</span><em class="sig-param">fn</em>, <em class="sig-param">data</em>, <em class="sig-param">num_workers=0</em>, <em class="sig-param">dlen=None</em><span class="sig-paren">)</span><a class="headerlink" href="#torchvtk.utils.pool_map_uo" title="Permalink to this definition">¶</a></dt>
@@ -389,7 +372,6 @@
 </dl>
 </dd></dl>
 
-</div>
 </div>
 </div>
 
