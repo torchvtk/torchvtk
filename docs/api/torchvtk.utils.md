@@ -1,6 +1,5 @@
 ## torchvtk.utils
 
-### Volume Utils
 #### make_nd
 ```eval_rst
 .. autofunction:: torchvtk.utils::make_2d
@@ -28,7 +27,6 @@
 .. autofunction:: torchvtk.utils::normalize_voxel_scale
 ```
 
-### Transfer Function Utils
 #### TransferFunctionApplication
 ```eval_rst
 .. autoclass:: torchvtk.utils::TransferFunctionApplication
@@ -57,7 +55,6 @@
 .. autofunction:: torchvtk.utils::random_tf_from_vol
 ```
 
-### MultiProcessing Utils
 #### pool_map
 ```eval_rst
 .. autofunction:: torchvtk.utils::pool_map
