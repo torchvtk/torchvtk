@@ -54,7 +54,7 @@ tfms = Composite(
         GaussianNoise(),
         apply_on=['vol']
     )
-train_ds = TorchDataset('/run/hdd/torchvtk',     # Path to torchvtk folder
+train_ds = TorchDataset('/mnt/hdd/torchvtk',     # Path to torchvtk folder
     preprocess_fn=None,                          # No transforms on load. Could be left out
     filter_fn=lambda p: int(p.name[9:-3]) < 400) # Split
 train_dl = TorchQueueDataset(train_ds,

@@ -245,7 +245,7 @@ This example uses most of the arguments of the Queue and shows how to make the <
         <span class="n">GaussianNoise</span><span class="p">(),</span>
         <span class="n">apply_on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;vol&#39;</span><span class="p">]</span>
     <span class="p">)</span>
-<span class="n">train_ds</span> <span class="o">=</span> <span class="n">TorchDataset</span><span class="p">(</span><span class="s1">&#39;/run/hdd/torchvtk&#39;</span><span class="p">,</span>     <span class="c1"># Path to torchvtk folder</span>
+<span class="n">train_ds</span> <span class="o">=</span> <span class="n">TorchDataset</span><span class="p">(</span><span class="s1">&#39;/mnt/hdd/torchvtk&#39;</span><span class="p">,</span>     <span class="c1"># Path to torchvtk folder</span>
     <span class="n">preprocess_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>                          <span class="c1"># No transforms on load. Could be left out</span>
     <span class="n">filter_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">[</span><span class="mi">9</span><span class="p">:</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">400</span><span class="p">)</span> <span class="c1"># Split</span>
 <span class="n">train_dl</span> <span class="o">=</span> <span class="n">TorchQueueDataset</span><span class="p">(</span><span class="n">train_ds</span><span class="p">,</span>
