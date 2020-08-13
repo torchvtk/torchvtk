@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import colorsys
 
 # Persistent Homology peak extraction
 
@@ -57,7 +58,7 @@ def get_persistent_homology(seq):
     return sorted(peaks, key=lambda p: p.get_persistence(seq), reverse=True)
 
 
-def color_generator():
+def distinguishable_color_generator():
     ''' Generates distinguishable colors, compare
     http://alumni.media.mit.edu/~wad/color/numbers.html
     '''
@@ -78,6 +79,11 @@ def color_generator():
     ], dtype=np.float32) / 255.0
     for color in colors:
         yield color
+
+def random_color_generator():
+    ''' Generates random colors '''
+    h, s, l = np.random.rand(), 0.5 + np.random.rand() * 0.5, 0.4 + np.random.rand() * 0.2
+    yield np.array([float(256*i) for i in colorsys.hls_to_rgb(h,l,s)], dtype=np.float32) / 255.0
 
 def get_histogram_peaks(data, bins=1000, skip_outlier=True):
     vals, ranges = np.histogram(data, bins)
@@ -106,23 +112,30 @@ def colorize_trapeze(t, color):
     res[:, 4]   = t[:, 1]
     return res
 
-def get_tf_pts_from_peaks(peaks, height_range=(0.1, 0.9), width_range=(0.02, 0.2), max_num_peaks=5):
+def get_tf_pts_from_peaks(peaks, colors='distinguishable', height_range=(0.1, 0.9), width_range=(0.02, 0.2), peak_center_noise_std=0.05, max_num_peaks=5):
     ''' Compute transfer function with trapezoids around given peaks
+
     Args:
         peaks (np.array of [intensity, persistence]): The histogram peaks
+        colors (str): Either "distinguishable" or "random"
         height_range (tuple of floats): Range in which to draw trapezoid height (=opacity). Max range is (0, 1)
         width_range (tuple of floats): Range in which to draw trapezoid width around peak. Max range is (0, 1)
+        peak_center_noise_std (float): Standard deviation of the Gaussian noise applied to peak centers, to shift those randomly.
         max_num_peaks (int): Maximum number of peaks in the histogram. The number will be drawn as U(1, max_num_peaks)
+
     Returns:
         [ np.array [x, y] ]: List of TF primitives (List of coordinates [0,1]²) to be lerped
     '''
     num_peaks = np.random.randint(1, max_num_peaks)
     height_range_len = height_range[1] - height_range[0]
     width_range_len  = width_range[1] - width_range[0]
-    color_gen = color_generator()
+    if   colors == 'distinguishable': color_gen = distinguishable_color_generator()
+    elif colors == 'random':          color_gen = random_color_generator()
+    else: raise Exception(f'Invalid colors argument ({colors}). Use either "distinguishable" or "random".')
     def make_trapezoid(c, top_height, bot_width):
         bot_height = np.random.rand(1).item() * top_height
         top_width  = np.random.rand(1).item() * bot_width
+        c += np.random.randn() * peak_center_noise_std
         return np.stack([
           np.array([c - bot_width/2 -1e-2, 0]),    # left wall          ____________  __ top_height
           np.array([c - bot_width/2, bot_height]), # bottom left       / top_width  \
@@ -147,8 +160,8 @@ def get_tf_pts_from_peaks(peaks, height_range=(0.1, 0.9), width_range=(0.02, 0.2
     idx = np.argsort(res_arr[:, 0])
     return res_arr[idx]
 
-def random_tf_from_vol(vol, max_num_peaks=5, height_range=(0.1, 0.9), width_range=(0.02, 0.2), bins=1000):
+def random_tf_from_vol(vol, colors='random', max_num_peaks=5, height_range=(0.1, 0.95), width_range=(0.02, 0.3), peak_center_noise_std=0.05, bins=1000):
     if torch.is_tensor(vol): vol = vol.detach().cpu().float().numpy()
     peaks = get_histogram_peaks(vol, bins=bins)
-    tf    = get_tf_pts_from_peaks(peaks, height_range=height_range, width_range=width_range, max_num_peaks=max_num_peaks)
+    tf    = get_tf_pts_from_peaks(peaks, height_range=height_range, width_range=width_range, max_num_peaks=max_num_peaks, peak_center_noise_std=peak_center_noise_std)
     return torch.cat([torch.zeros(5)[None], torch.from_numpy(tf).float(), torch.tensor([[1,0,0,0,0.0]])])
