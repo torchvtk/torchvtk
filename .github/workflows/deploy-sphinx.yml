@@ -41,10 +41,10 @@ jobs:
         git commit -m "Update documentation" -a || true
         # The above command will fail if no changes were present, so we ignore
         # the return code.
+
     - name: Push changes to torchvtk.github.io
-      uses: ad-m/github-push-action@master
+      uses: peaceiris/actions-gh-pages@v3
       with:
-        repository: torchvtk/torchvtk.github.io
-        branch: master
-        directory: torchvtk.github.io
-        github_token: ${{ secrets.PAGES_SECRET }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          publish_branch: master  
