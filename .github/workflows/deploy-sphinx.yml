@@ -30,7 +30,7 @@ jobs:
       with:
         name: DocumentationHTML
         path: docs/_build/html/
-    - name: Commit documentation changes to gh-pages
+    - name: Commit documentation changes to torchvtk.github.io
       run: |
         git clone https://github.com/torchvtk/torchvtk.github.io.git
         cp -r docs/_build/html/* torchvtk.github.io/
@@ -44,6 +44,7 @@ jobs:
     - name: Push changes to torchvtk.github.io
       uses: ad-m/github-push-action@master
       with:
+        repository: torchvtk/torchvtk.github.io
         branch: master
         directory: torchvtk.github.io
         github_token: ${{ secrets.GITHUB_TOKEN }}
