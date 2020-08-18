@@ -47,4 +47,4 @@ jobs:
         repository: torchvtk/torchvtk.github.io
         branch: master
         directory: torchvtk.github.io
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        github_token: ${{ secrets.PAGES_SECRET }}
