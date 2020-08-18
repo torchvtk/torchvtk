@@ -45,6 +45,7 @@ jobs:
     - name: Push changes to torchvtk.github.io
       uses: peaceiris/actions-gh-pages@v3
       with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          external_repository: torchvtk/torchvtk.github.io
           publish_dir: ./public
           publish_branch: master  
