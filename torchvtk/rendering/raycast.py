@@ -23,18 +23,16 @@ def homogenize_mat(mat):
     ret[..., :mat.size(-2), :mat.size(-1)] = flat_mat
     return ret.reshape(*mat.shape[:-2], mat.size(-2)+1, mat.size(-1)+1)
 
-def homogenize_vec(vec):
+def homogenize_vec(vec, dim=None):
     ''' Adds an additional component to `vec` with value 1 to make it a homogeneous coordinate. '''
-    assert torch.is_tensor(vec)
-    ret = torch.eye(vec.size(-1)+1, dtype=vec.dtype, device=vec.device)[-1]
-    if vec.ndim > 1:
-        flat_vec = vec.view(-1, vec.size(-1))
-        num_vecs = flat_vec.size(0)
-        ret = ret[None].expand(num_vecs, -1)
-    else: flat_vec = vec
-    ret[..., :vec.size(-1)] = flat_vec
-    return ret.reshape(*vec.shape[:-1], vec.size(-1)+1)
-
+    print(vec.shape)
+    assert torch.is_tensor(vec) and 3 in vec.shape
+    if dim is None: dim = vec.ndim - list(reversed(vec.shape)).index(3) - 1
+    print(dim)
+    ad_shape = list(vec.shape); ad_shape[dim] = 1
+    nu = torch.ones(ad_shape, dtype=vec.dtype, device=vec.device)
+    print(nu.shape)
+    return torch.cat([vec, nu], dim=dim)
 
 def get_proj_mat(fov, aspect, near=0.1, far=100, dtype=None, device=None):
     ''' Computes a projection matrix according to inputs
@@ -86,6 +84,25 @@ def get_view_mat(look_from, look_to=None, look_up=None, dtype=None):
                                     torch.bmm(z.unsqueeze(-2), look_from.unsqueeze(-1))]).squeeze()
     return ret.to(dtype)
 
+def lookAt(look_from, look_up=None):
+    view_dir = F.normalize(-look_from)
+    if look_up is None:
+        look_up = torch.tensor([1.0, .0, 0], dtype=look_from.dtype, device=look_from.device).expand(look_from.size(0), -1)
+        right = torch.cross(look_up, view_dir)
+        up = torch.cross(right, view_dir)
+    else:
+        up = F.normalize(look_up)
+        right = torch.cross(look_up, view_dir)
+    mat = torch.eye(4).expand(look_from.size(0), -1, -1)
+    mat[:, 0, :3] = right
+    mat[:, 1, :3] = up
+    mat[:, 2, :3] = view_dir
+    tmat = torch.eye(4).expand(look_from.size(0), -1, -1)
+    # tmat[:, :3,  3] = -look_from
+    fmat = torch.matmul(mat, tmat).permute(0, 2, 1)
+    print(fmat)
+    return fmat
+
 def get_rot_mat(look_from, old_look_from=None):
     if old_look_from is None:
         old_look_from = torch.zeros_like(look_from)
@@ -133,12 +150,18 @@ class VolumeRaycaster(nn.Module):
         Z = torch.linspace(-1, 1, ray_samples)
         W = torch.linspace(-1, 1, self.w)
         H = torch.linspace(-1, 1, self.h)
-        self.samples = self.get_coord_grid(Z, H, W)
+        self.samples = self.get_coord_grid(Z, H, W, perspective=True)
 
-    def get_coord_grid(self, z, y, x):
+    def get_coord_grid(self, z, y, x, perspective=False, fovy=0.52, ar=1.0):
         ''' Computes the samples given linspaces of the correct sizes for each spatial dimension. '''
         z, y, x = torch.meshgrid(z, y, x)
-        return torch.stack([x, y, z], dim=-1)
+        coords = torch.stack([x, y, z], dim=-1)
+
+        if perspective:
+            fovx = ar * fovy
+            sins = torch.sin(torch.Tensor([fovx/2, fovy/2]))
+            coords[...,[0,1]] *= 1 + sins * coords[...,[2]]
+        return coords
 
     def get_perspective_coord_grid(self, view_mat):
         bs = view_mat.size(0)
@@ -175,37 +198,38 @@ class VolumeRaycaster(nn.Module):
         samples = torch.stack([x,y,z, torch.ones_like(x)], dim=-1).expand(bs,-1,-1,-1,-1)
         samples_poses = torch.bmm(samples.reshape(bs, -1, 4), inv_tfm).reshape(bs, self.ray_samples, self.h, self.w, 4)
 
-    def forward(self, vol, tfm=None, output_alpha=False):
-        ''' Renders a volume (using given transforms) using raycasting.
+    def get_camera_matrix(self, look_from):
+        nu  = F.normalize(look_from)
+        old = torch.tensor([0, 0, 1.0], dtype=nu.dtype, device=nu.device).expand(nu.size(0),-1)
+        k  = (old + nu) / 2
+        kc = k.unsqueeze(-1) # Column vector
+        kr = kc.permute(0,2,1)               # Row vector
 
+        R = 2* (torch.matmul(kc, kr) / (k*k).sum(1).view(-1,1,1)) - torch.eye(3).expand(nu.size(0), -1,-1)
+        R[torch.isnan(R).sum(dim=(1,2)).bool()] = torch.flip(torch.eye(3, dtype=nu.dtype, device=nu.device), [0])
+        return R
+
+    def forward(self, vol, view_mat=None, output_alpha=False):
+        ''' Renders a volume (with given view matrix) using raycasting.
         Args:
             vol (Tensor): Batch of volumes to render. Shape (BS, C, D, H, W)
-            tfm (Tensor or function): Either a (BS, 4, 4) transformation matrix or a function
-                that transforms sample coordinates of shape `ray_samples, height, width, 4`.
+            view_mat (Tensor or function): A (BS, 4, 4) transformation matrix representing the view matrix..
             output_alpha (bool): Whether to output RGBA instead of RGB. Default is False
 
         Returns:
-            Batch of projected images of shape (BS, 3, H, W) with RGB (and optionally Alpha) channels
+            Batch of raycast images of shape (BS, 3, H, W) with RGB (and optionally Alpha) channels
         '''
         density = vol[:, [3]]
         color   = vol[:, :3]
         bs = color.size(0)
         # Expand for all items in batch
         sample_coords = self.samples.expand(bs, -1, -1, -1, -1).to(vol.device).to(vol.dtype)
-        if torch.is_tensor(tfm):
-            tfm = tfm.to(vol.dtype).to(vol.device)
-            n_ch = tfm.size(-1)
-            if   sample_coords.size(-1) < n_ch: sample_coords = homogenize_vec(sample_coords)
-            elif sample_coords.size(-1) > n_ch: sample_coords = sample_coords[..., :n_ch]
-            sample_coords = (torch.bmm(tfm, sample_coords.reshape(bs, -1, n_ch).permute(0,2,1))
-                # .permute(0, 2, 1) # Permute back
-                .view(bs, self.ray_samples, self.h, self.w, n_ch)
-                .contiguous())
-            sample_coords[..., :3] /= sample_coords[..., [3]] # divide by homogeneous
-            sample_coords = sample_coords[..., :3]
-            self.sample_coords = sample_coords.cpu()
-        elif tfm is None: pass
-        else: sample_coords = tfm(sample_coords)
+        if view_mat is not None:
+            old_shape = sample_coords.shape
+            sample_coords = homogenize_vec(sample_coords.reshape(bs, -1, 3).permute(0,2,1))
+            sample_coords = torch.matmul(view_mat, sample_coords).permute(0,2,1)[...,:3].reshape(old_shape)
+            sample_coords *= 1.4 # scale to match ground truth scale
+
         # Compute opacity and transmission along rays
         density = self.density_factor * density / self.ray_samples
         density = F.grid_sample(density, sample_coords)
@@ -222,3 +246,6 @@ class VolumeRaycaster(nn.Module):
         # Concatenate to RGBA image
         if output_alpha: return torch.cat([render, alpha], dim=1)
         else:            return render
+
+
+# %%
