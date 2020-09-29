@@ -219,8 +219,8 @@ class VolumeRaycaster(nn.Module):
         Returns:
             Batch of raycast images of shape (BS, 3, H, W) with RGB (and optionally Alpha) channels
         '''
-        density = vol[:, [3]]
-        color   = vol[:, :3]
+        density = vol[:, [3]].permute(0, 1, 4, 3, 2) # (BS, C, D, H, W) -> (BS, C, W, H, D) for this layer
+        color   = vol[:, :3].permute(0, 1, 4, 3, 2)  # same
         bs = color.size(0)
         # Expand for all items in batch
         sample_coords = self.samples.expand(bs, -1, -1, -1, -1).to(vol.device).to(vol.dtype)

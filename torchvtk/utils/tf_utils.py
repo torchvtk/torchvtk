@@ -55,7 +55,7 @@ def apply_tf_torch(x, tf_pts):
         torch.Tensor: Tensor with TF applied of shape (N, C, ...) with batch size N (same as `x`) and number of channels C (same as `tf_pts`)
     '''
     if isinstance(tf_pts, list) and x.ndim == 5:
-        return torch.stack([apply_tf_torch(x, tf) for vol, tf in zip(x, tf_pts)]) # If tf_pts is in a list, perform for each item in that list
+        return torch.stack([apply_tf_torch(vol, tf) for vol, tf in zip(x, tf_pts)]) # If tf_pts is in a list, perform for each item in that list
     assert x.ndim < 5 and torch.is_tensor(tf_pts)
     dev = x.device
     tf_pts = tf_pts.to(dev)
