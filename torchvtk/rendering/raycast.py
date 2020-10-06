@@ -25,13 +25,10 @@ def homogenize_mat(mat):
 
 def homogenize_vec(vec, dim=None):
     ''' Adds an additional component to `vec` with value 1 to make it a homogeneous coordinate. '''
-    print(vec.shape)
     assert torch.is_tensor(vec) and 3 in vec.shape
     if dim is None: dim = vec.ndim - list(reversed(vec.shape)).index(3) - 1
-    print(dim)
     ad_shape = list(vec.shape); ad_shape[dim] = 1
     nu = torch.ones(ad_shape, dtype=vec.dtype, device=vec.device)
-    print(nu.shape)
     return torch.cat([vec, nu], dim=dim)
 
 def get_proj_mat(fov, aspect, near=0.1, far=100, dtype=None, device=None):
@@ -100,7 +97,6 @@ def lookAt(look_from, look_up=None):
     tmat = torch.eye(4).expand(look_from.size(0), -1, -1)
     # tmat[:, :3,  3] = -look_from
     fmat = torch.matmul(mat, tmat).permute(0, 2, 1)
-    print(fmat)
     return fmat
 
 def get_rot_mat(look_from, old_look_from=None):
@@ -132,7 +128,7 @@ def get_random_pos(bs=1, distance=(1,5)):
 
 #%%
 class VolumeRaycaster(nn.Module):
-    def __init__(self, density_factor=100, ray_samples=512, resolution=(640,480)):
+    def __init__(self, density_factor=100.0, ray_samples=512, resolution=(640,480)):
         ''' Initializes differentiable raycasting layer
 
         Args:
@@ -220,7 +216,7 @@ class VolumeRaycaster(nn.Module):
             Batch of raycast images of shape (BS, 3, H, W) with RGB (and optionally Alpha) channels
         '''
         density = vol[:, [3]].permute(0, 1, 4, 3, 2) # (BS, C, D, H, W) -> (BS, C, W, H, D) for this layer
-        color   = vol[:, :3].permute(0, 1, 4, 3, 2)  # same
+        color   = vol[:, :3 ].permute(0, 1, 4, 3, 2) # same
         bs = color.size(0)
         # Expand for all items in batch
         sample_coords = self.samples.expand(bs, -1, -1, -1, -1).to(vol.device).to(vol.dtype)
@@ -228,7 +224,7 @@ class VolumeRaycaster(nn.Module):
             old_shape = sample_coords.shape
             sample_coords = homogenize_vec(sample_coords.reshape(bs, -1, 3).permute(0,2,1))
             sample_coords = torch.matmul(view_mat, sample_coords).permute(0,2,1)[...,:3].reshape(old_shape)
-            sample_coords *= 1.4 # scale to match ground truth scale
+            sample_coords *= 1.3 #torch.norm(view_mat[:, 3, :3]) / 2# scale to match ground truth scale
 
         # Compute opacity and transmission along rays
         density = self.density_factor * density / self.ray_samples
@@ -246,6 +242,9 @@ class VolumeRaycaster(nn.Module):
         # Concatenate to RGBA image
         if output_alpha: return torch.cat([render, alpha], dim=1)
         else:            return render
+
+
+# %%
 
 
 # %%

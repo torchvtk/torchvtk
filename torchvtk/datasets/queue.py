@@ -18,10 +18,13 @@ def noop(a, *args, **kwargs): return a
 def dict_collate_fn(items, key_filter=None, stack_tensors=True):
     ''' Collate function for dictionary data
 
+    This stacks tensors only if they are stackable, meaning they are of the same shape.
+
     Args:
         items (list): List of individual items for a Dataset
         key_filter (list of str or callable, optional): A list of keys to filter the dict data. Defaults to None.
         stack_tensors (bool, optional): Wether to stack dict entries of type torch.Tensors. Disable if you have unstackable tensors. They will be stacked as a list. Defaults to True.
+        unstackable_to_list (bool, optional): Checks all tensors to be stacked. If they cannot be stacked, they are returned as list. Defaults to True. Asserts same shapes when False.
 
     Returns:
         dict: One Dictionary with tensors stacked
@@ -29,14 +32,18 @@ def dict_collate_fn(items, key_filter=None, stack_tensors=True):
     keys = items[0].keys()
     if isinstance(key_filter, (list,tuple)):
         keys = key_filter
-    elif hasattr(key_filter, __call__):
+    elif hasattr(key_filter, "__call__"):
         keys = filter(key_filter, keys)
 
     batch = {}
     for k in keys:
         vals = [it[k] for it in items]
         if stack_tensors and torch.is_tensor(vals[0]):
-              batch[k] = torch.stack(vals)
+            shapes = list(filter(lambda a: a.shape, vals))
+            stackable = shapes.count(shapes[0]) == len(shapes)
+            if stackable:
+                batch[k] = torch.stack(vals)
+            else: batch[k] = vals
         else: batch[k] = vals
     return batch
 
@@ -200,10 +207,8 @@ class TorchQueueDataset(IterableDataset):
               mem_budget = psutil.virtual_memory().available * ram_use / 1e6
         else: mem_budget = ram_use
         if self.avg_item_size is not None:
-            print(self.avg_item_size)
             if torch.is_tensor(self.avg_item_size):
                 avg_sz = self.avg_item_size.element_size() * self.avg_item_size.nelement() / 1e6
-                print(avg_sz)
             elif isinstance(self.avg_item_size, numbers.Number):
                 avg_sz = self.avg_item_size
             else: raise Exception(f'Invalid average item size given: {self.avg_item_size}')
