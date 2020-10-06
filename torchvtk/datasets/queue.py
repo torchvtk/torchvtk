@@ -39,7 +39,7 @@ def dict_collate_fn(items, key_filter=None, stack_tensors=True):
     for k in keys:
         vals = [it[k] for it in items]
         if stack_tensors and torch.is_tensor(vals[0]):
-            shapes = list(filter(lambda a: a.shape, vals))
+            shapes = list(map(lambda a: a.shape, vals))
             stackable = shapes.count(shapes[0]) == len(shapes)
             if stackable:
                 batch[k] = torch.stack(vals)
