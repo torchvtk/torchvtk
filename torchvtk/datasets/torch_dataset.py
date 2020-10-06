@@ -56,7 +56,7 @@ class TorchDataset(Dataset):
     def __len__(self): return len(self.items)
 
     def __getitem__(self, i):
-        data = torch.load(self.items[i])
+        data = torch.load(str(self.items[i]))
         if self.preprocess_fn is not None:
               return self.preprocess_fn(data)
         else: return data
