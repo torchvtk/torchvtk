@@ -128,7 +128,7 @@ def get_random_pos(bs=1, distance=(1,5)):
 
 #%%
 class VolumeRaycaster(nn.Module):
-    def __init__(self, density_factor=100.0, ray_samples=512, resolution=(640,480)):
+    def __init__(self, density_factor=100.0, ray_samples=256, resolution=(224,224)):
         ''' Initializes differentiable raycasting layer
 
         Args:
