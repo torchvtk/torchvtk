@@ -12,12 +12,11 @@ setup(
     version=__version__,
     license='MIT',
     packages=find_packages(),
-    url='https://github.com/xeTaiz/torchvtk',
-    author='Dominik Engel, Marc Mezger',
+    url='https://github.com/torchvtk/torchvtk',
+    author='Dominik Engel, Marc Fabian Mezger',
     install_requires=[
-        'torch', 'torchvision',
+        'torch >= 1.6', 'torchvision',
         'numpy', 'matplotlib', 'psutil',
-        'torchsearchsorted @ https://github.com/aliutkus/torchsearchsorted/tarball/master#egg=torchsearchsorted',
         'torchinterp1d @ https://github.com/aliutkus/torchinterp1d/tarball/master#egg=torchinterp1d'
     ],
 )
