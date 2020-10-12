@@ -82,8 +82,9 @@ def distinguishable_color_generator():
 
 def random_color_generator():
     ''' Generates random colors '''
-    h, s, l = np.random.rand(), 0.5 + np.random.rand() * 0.5, 0.4 + np.random.rand() * 0.2
-    yield np.array([float(256*i) for i in colorsys.hls_to_rgb(h,l,s)], dtype=np.float32) / 255.0
+    while True:
+        h, s, l = np.random.rand(), 0.5 + np.random.rand() * 0.5, 0.4 + np.random.rand() * 0.2
+        yield np.array([float(256*i) for i in colorsys.hls_to_rgb(h,l,s)], dtype=np.float32) / 255.0
 
 def get_histogram_peaks(data, bins=1000, skip_outlier=True):
     vals, ranges = np.histogram(data, bins)
