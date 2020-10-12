@@ -112,7 +112,7 @@ def colorize_trapeze(t, color):
     res[:, 4]   = t[:, 1]
     return res
 
-def get_tf_pts_from_peaks(peaks, colors='distinguishable', height_range=(0.1, 0.9), width_range=(0.02, 0.2), peak_center_noise_std=0.05, max_num_peaks=5):
+def get_tf_pts_from_peaks(peaks, colors='random', height_range=(0.1, 0.9), width_range=(0.02, 0.2), peak_center_noise_std=0.05, max_num_peaks=5):
     ''' Compute transfer function with trapezoids around given peaks
 
     Args:
@@ -163,5 +163,5 @@ def get_tf_pts_from_peaks(peaks, colors='distinguishable', height_range=(0.1, 0.
 def random_tf_from_vol(vol, colors='random', max_num_peaks=5, height_range=(0.1, 0.95), width_range=(0.02, 0.3), peak_center_noise_std=0.05, bins=1000):
     if torch.is_tensor(vol): vol = vol.detach().cpu().float().numpy()
     peaks = get_histogram_peaks(vol, bins=bins)
-    tf    = get_tf_pts_from_peaks(peaks, height_range=height_range, width_range=width_range, max_num_peaks=max_num_peaks, peak_center_noise_std=peak_center_noise_std)
+    tf    = get_tf_pts_from_peaks(peaks, colors=colors, height_range=height_range, width_range=width_range, max_num_peaks=max_num_peaks, peak_center_noise_std=peak_center_noise_std)
     return torch.cat([torch.zeros(5)[None], torch.from_numpy(tf).float(), torch.tensor([[1,0,0,0,0.0]])])
