@@ -4,7 +4,21 @@ import torch.nn.functional as F
 import numpy as np
 
 from xml.dom import minidom
-from torchinterp1d import Interp1d
+try:
+    from torchinterp1d import Interp1d
+except ImportError:
+    _has_torchinterp1d = False
+else:
+    _has_torchinterp1d = True
+
+
+def requires_torchinterp1d(func):
+    def _dummy(*args, **kwargs):
+        raise ImportError('You need to install torchinterp1d using:\n pip install git+https://github.com/aliutkus/torchinterp1d.git@master#egg=torchinterp1d')
+    if _has_torchinterp1d: return func
+    else:                  return _dummy
+
+
 
 
 def read_inviwo_tf(fn):
@@ -25,6 +39,7 @@ def tex_from_pts(tf_pts, resolution=4096):
     if torch.is_tensor(tf_pts):
         return apply_tf_torch(torch.linspace(0.0, 1.0, resolution), tf_pts)
 
+@requires_torchinterp1d
 def apply_tf_tex_torch(vol, tf_tex):
     ''' Applies a (batch of) transfer function textures `tf_tex` to a (batch of) volume `vol`
 
@@ -44,6 +59,7 @@ def apply_tf_tex_torch(vol, tf_tex):
     vol_flat = vol.expand(out_shape).reshape(tf_flat.size(0), -1).to(torch.float32)
     return Interp1d()(x_flat, tf_flat, vol_flat).reshape(out_shape).to(vol.dtype)
 
+@requires_torchinterp1d
 def apply_tf_torch(x, tf_pts):
     ''' Applies the TF described by points `tf_pts` (N x [0,1]^C+1 with x pos and C channels) to `x`. The operation always computes on torch.float32. The output is cast to `x.dtype`
 
