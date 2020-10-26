@@ -12,7 +12,7 @@ from torchvtk.datasets.download import download_all, extract_all
 from torchvtk.converters.dicom import cq500_to_torch, test_has_gdcm
 from torchvtk.utils import pool_map
 
-def _preload_dict_tensors(it, device=torch.device('cpu')):
+def _preload_dict_tensors(it, device='cpu'):
     for k, v in it.items():
         if torch.is_tensor(v): it[k] = v.to(device)
 
@@ -88,11 +88,11 @@ class TorchDataset(Dataset):
         if delete_old_from_disk: shutil.rmtree(self.path)
         return TorchDataset(target_path)
 
-    def preload(self, device=torch.device('cpu'), num_workers=0):
+    def preload(self, device='cpu', num_workers=0):
         ''' Preloads the dataset into memory.
 
         Args:
-            device (torch.device, optional): Device to store the dataset on. Defaults to torch.device('cpu').
+            device (torch.device, optional): Device to store the dataset on. Defaults to 'cpu'.
             num_workers (int, optional): Number of workers to load items into memory. Defaults to 0.
 
         Returns:

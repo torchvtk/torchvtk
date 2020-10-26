@@ -144,8 +144,6 @@ class TorchQueueDataset(IterableDataset):
         ''' Current Queue length '''
         return len(self.queue)
 
-    def __len__(self): return self.epoch_len
-
     def get_dataloader(self, **kwargs):
         '''
         Returns:
