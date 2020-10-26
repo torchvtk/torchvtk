@@ -14,7 +14,7 @@ setup(
     packages=find_packages(),
     url='https://github.com/torchvtk/torchvtk',
     author='Dominik Engel, Marc Fabian Mezger',
-    dependency_links=['https://github.com/aliutkus/torchinterp1d/tarball/master#egg=torchinterp1d']
+    dependency_links=['https://github.com/aliutkus/torchinterp1d/tarball/master#egg=torchinterp1d'],
     install_requires=[
         'torch >= 1.6', 'torchvision',
         'numpy', 'matplotlib', 'psutil', 'PyGLM',
