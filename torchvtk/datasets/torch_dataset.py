@@ -15,6 +15,7 @@ from torchvtk.utils import pool_map
 def _preload_dict_tensors(it, device='cpu'):
     for k, v in it.items():
         if torch.is_tensor(v): it[k] = v.to(device)
+    return it
 
 class DatasetWork:
     def __init__(self, items, target_path, process_fn):
@@ -46,6 +47,7 @@ class TorchDataset(Dataset):
                 items = filter(filter_fn, items)
             self.items = list(items)
         elif isinstance(ds_files, (list, tuple)):
+            assert len(ds_files) > 0
             for f in ds_files:
                 assert Path(f).is_file() and Path(f).suffix == '.pt'
             self.path = ds_files[0].parent
@@ -96,16 +98,9 @@ class TorchDataset(Dataset):
             num_workers (int, optional): Number of workers to load items into memory. Defaults to 0.
 
         Returns:
-            TorchDataset: New TorchDataset using the preloaded data.
+            PreloadedTorchDataset: New TorchDataset using the preloaded data.
         '''
-        self.data = [self[i] for i in range(len(self))]
-        pool_map(partial(_preload_dict_tensors, device=device), self.data, num_workers=num_workers)
-        def new_get(i):
-            if self.preprocess_fn is not None:
-                return self.preprocess_fn(self.data[i])
-            else: return self.data[i]
-        self.__getitem__ = new_get
-        return self
+        return PreloadedTorchDataset(self, device=device, num_workers=num_workers)
 
     def __repr__(self):
         it = self[0]
@@ -159,3 +154,17 @@ class TorchDataset(Dataset):
             print(f'Removing original CQ500 files ({orig_path})...')
             shutil.rmtree(orig_path)
             return TorchDataset(cq500path, **kwargs)
+
+
+class PreloadedTorchDataset(TorchDataset):
+    def __init__(self, torch_ds, device='cpu', num_workers=0):
+        super().__init__(torch_ds.items, filter_fn=torch_ds.filter_fn, preprocess_fn=torch_ds.preprocess_fn)
+        self.data = pool_map(partial(_preload_dict_tensors, device=device), torch_ds, num_workers=num_workers)
+        self.device = device
+        print(f'Preloaded TorchDataset ({self.path}) to ({device}).')
+
+    def __getitem__(self, i):
+        if self.preprocess_fn is not None:
+            return self.preprocess_fn(self.data[i])
+         else:
+            return self.data[i]
