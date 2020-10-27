@@ -101,8 +101,9 @@ class TorchDataset(Dataset):
         self.data = [self[i] for i in range(len(self))]
         pool_map(partial(_preload_dict_tensors, device=device), self.data, num_workers=num_workers)
         def new_get(i):
-            print('Retrieving from cache: ', i)
-            return self.data[i]
+            if self.preprocess_fn is not None:
+                return self.preprocess_fn(self.data[i])
+            else: return self.data[i]
         self.__getitem__ = new_get
         return self
 
