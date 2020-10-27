@@ -248,4 +248,4 @@ class TFGenerator():
             self.last_im = torch.zeros(1,3,*self.raycast_kwargs['resolution'], dtype=vol.dtype)
         else:
             self.peakgen_kwargs['valid_fn'] = None
-        return random_tf_from_vol(vol, **self.peakgen_kwargs)
+        return random_tf_from_vol(vol, **self.peakgen_kwargs).to(torch.float32)
