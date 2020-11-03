@@ -91,6 +91,9 @@ def random_color_generator():
         h, s, l = np.random.rand(), 0.2 + np.random.rand() * 0.8, 0.35 + np.random.rand() * 0.3
         yield np.array([float(255*i) for i in colorsys.hls_to_rgb(h,l,s)], dtype=np.float32) / 255.0
 
+def fixed_color_generator(color=(180, 40, 40.0)):
+    while True: yield np.array(color).astype(np.float32) / 255.0
+
 def get_histogram_peaks(data, bins=1024, skip_outlier=True):
     vals, ranges = np.histogram(data, bins)
     peaks = get_persistent_homology(vals)
@@ -130,7 +133,7 @@ def get_tf_pts_from_peaks(peaks, colors='random', height_range=(0.1, 0.9), width
 
     Args:
         peaks (np.array of [intensity, persistence]): The histogram peaks
-        colors (str): Either "distinguishable" or "random"
+        colors (str): Either "distinguishable", "random" or "fixed"
         height_range (tuple of floats): Range in which to draw trapezoid height (=opacity). Max range is (0, 1)
         width_range (tuple of floats): Range in which to draw trapezoid width around peak. Max range is (0, 1)
         peak_center_noise_std (float): Standard deviation of the Gaussian noise applied to peak centers, to shift those randomly.
@@ -146,6 +149,7 @@ def get_tf_pts_from_peaks(peaks, colors='random', height_range=(0.1, 0.9), width
     width_range_len  = width_range[1] - width_range[0]
     if   colors == 'distinguishable': color_gen = distinguishable_color_generator()
     elif colors == 'random':          color_gen = random_color_generator()
+    elif colors == 'fixed':           color_gen = fixed_color_generator()
     else: raise Exception(f'Invalid colors argument ({colors}). Use either "distinguishable" or "random".')
     def make_trapezoid(c, top_height, bot_width):
         c += np.random.randn() * peak_center_noise_std
@@ -163,6 +167,8 @@ def get_tf_pts_from_peaks(peaks, colors='random', height_range=(0.1, 0.9), width
           np.array([c + bot_width/2 +1e-2, 0])     # right wall     |<- left wall    |
         ])                                         #               |        c       |__ 0
 
+    if peaks is None:
+        peaks = np.random.rand(100, 2)
     trapezes = [make_trapezoid(c, # Center of peak
         top_height= height_range_len * np.random.rand(1).item() + height_range[0],
         bot_width = width_range_len  * np.random.rand(1).item() + width_range[0]
@@ -191,9 +197,9 @@ def tf_pts_border(tf_pts):
     r = torch.eye(tf_pts.size(-1))[None, 0]
     return torch.cat([l, tf_pts, r], dim=0)
 
-def random_tf_from_vol(vol, colors='random', max_num_peaks=5, height_range=(0.1, 0.7), width_range=(0.02, 0.3), peak_center_noise_std=0.05, bins=1024, valid_fn=None):
+def random_tf_from_vol(vol, colors='random', max_num_peaks=5, height_range=(0.1, 0.7), width_range=(0.02, 0.3), peak_center_noise_std=0.05, bins=1024, valid_fn=None, use_hist=True):
     if torch.is_tensor(vol): vol = vol.detach().cpu().float().numpy()
-    peaks = get_histogram_peaks(vol, bins=bins)
+    peaks = get_histogram_peaks(vol, bins=bins) if use_hist else None
     tf    = get_tf_pts_from_peaks(peaks, colors=colors, height_range=height_range, width_range=width_range, max_num_peaks=max_num_peaks, peak_center_noise_std=peak_center_noise_std, peak_valid_fn=valid_fn)
     return tf_pts_border(tf)
 
@@ -203,7 +209,7 @@ class TFGenerator():
 
         Args:
             mode (str, optional): Either 'random_peaks' for random non-overlapping trapezoids or 'verified_peaks' for additionally ensuring that each peak can be seen from a given. Defaults to 'random_peaks'.
-            colors (str, optional): Either 'random' or 'distinguishable'. Defaults to 'random'.
+            colors (str, optional): Either 'random', 'distinguishable' or 'fixed'. Defaults to 'random'.
             peakgen_kwargs (dict, optional): Keyword args for the peak generation through `random_tf_from_vol`. Defaults to {}.
             raycast_kwargs (dict, optional): Keyword args for the Volume Raycaster used for peak validation, see `torchvtk.rendering.VolumeRaycaster`. Defaults to {}.
         '''
@@ -215,7 +221,8 @@ class TFGenerator():
             'peak_center_noise_std': 0.05,
             'max_num_peaks': 5,
             'bins': 1024,
-            'colors': colors
+            'colors': colors,
+            'use_hist': True
         }
         self.peakgen_kwargs.update(peakgen_kwargs)
         self.raycast_kwargs = {
@@ -242,7 +249,7 @@ class TFGenerator():
             return False
 
     def generate(self, vol, view_mat=None):
-        if view_mat is not None:
+        if view_mat is not None and self.mode == 'verified_peaks':
             self.peakgen_kwargs['valid_fn'] = partial(self.validate_peak,
                 vol=vol, view_mat=view_mat)
             self.last_im = torch.zeros(1,3,*self.raycast_kwargs['resolution'], dtype=vol.dtype)
