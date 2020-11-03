@@ -138,9 +138,22 @@ class Resize(DictTransform):
 
     def transform(self, x):
         if self.is_factor:
-            return F.interpolate(make_5d(x), scale=self.size, mode=self.mode).squeeze(0)
+            return F.interpolate(make_5d(x), mode=self.mode, scale_factor=self.size).squeeze(0)
         else:
-            return F.interpolate(make_5d(x), size=self.size, mode=self.mode).squeeze(0)
+            return F.interpolate(make_5d(x), mode=self.mode, size=self.size).squeeze(0)
+
+
+class Noop(DictTransform):
+    def __init__(self, **kwargs):
+        ''' Just sets device and dtype, does nothing else.
+
+        Args:
+            device (str, torch.device): The device to move the tensors on. Defaults to not changing anything
+            dtype (torch.dtype): The dtype to move the device to. Defaults to not changing anything
+        '''
+        super().__init__(**kwargs)
+
+    def transform(self, x): return x
 
 
 class GaussianNoise(DictTransform):

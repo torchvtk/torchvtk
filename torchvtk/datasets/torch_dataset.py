@@ -1,16 +1,19 @@
 #%%
 import torch
 import torch.multiprocessing as mp
+import torch.nn.functional as F
 from torch.utils.data import Dataset
 import numpy as np
 
 from pathlib import Path
 from functools import partial
+from bisect import bisect
 import shutil, os, pprint
 import torchvtk.datasets.urls as urls
 from torchvtk.datasets.download import download_all, extract_all
 from torchvtk.converters.dicom import cq500_to_torch, test_has_gdcm
-from torchvtk.utils import pool_map
+from torchvtk.utils import pool_map, make_5d
+from torchvtk.transforms import Resize
 
 def _preload_dict_tensors(it, device='cpu'):
     for k, v in it.items():
@@ -22,7 +25,7 @@ class DatasetWork:
         self.items = items
         self.target_path = target_path
         self.process_fn = process_fn
-    def work_fn(self, i):
+    def __call__(self, i):
         fn = self.items[i]
         tfn = self.target_path/fn.name
 
@@ -39,6 +42,7 @@ class TorchDataset(Dataset):
         '''
         super().__init__()
         self.preprocess_fn = preprocess_fn
+        self.filter_fn     = filter_fn
         if  isinstance(ds_files, (str, Path)):
             self.path = Path(ds_files)
             assert self.path.is_dir()
@@ -83,7 +87,7 @@ class TorchDataset(Dataset):
         print(f'Preprocessing TorchDataset ({self.path}) to {target_path}...')
 
         work = DatasetWork(self.items, target_path, process_fn)
-        pool_map(work.work_fn, [i for i in range(len(self))], num_workers=num_workers)
+        pool_map(work, [i for i in range(len(self))], num_workers=num_workers)
 
         items = target_path.rglob('*.pt')
         assert len(list(items)) == len(self)
@@ -101,6 +105,24 @@ class TorchDataset(Dataset):
             PreloadedTorchDataset: New TorchDataset using the preloaded data.
         '''
         return PreloadedTorchDataset(self, device=device, num_workers=num_workers)
+
+    def tile(self, keys_to_tile, tile_sz=128, overlap=2, dim=3):
+        ''' Converts the Dataset to a Tiled Dataset, drawing only parts of the data
+        Since the data needs to be loaded to determine the number of tiles, a tile is drawn randomly after loading the volume, Without guaranteeing full coverage.
+
+        Args:
+            keys_to_tile ([str]): List of strings matching the keys of the data dictionaries that need to be tiled. All must have the same shape and result in the same tiling.
+            tile_sz (int/tuple of ints, optional): Size of the tiles drawn. Either int or tuple with length matching the given `dim`. Defaults to 128.
+            overlap (int/tuple of its, optional): . Defaults to 2.
+            dim (int, optional): Dimensionality of the data. If `tile_sz` or `overlap` is given as tuple this must match their lengths. Defaults to 3.
+
+        Returns:
+            TiledTorchDataset: Tiling-aware `TorchDataset`
+        '''
+        return TiledTorchDataset(self, keys_to_tile,
+            tile_sz=tile_sz,
+            overlap=overlap,
+            dim=dim)
 
     def __repr__(self):
         it = self[0]
@@ -155,16 +177,177 @@ class TorchDataset(Dataset):
             shutil.rmtree(orig_path)
             return TorchDataset(cq500path, **kwargs)
 
+class DataLoadingWork:
+    def __init__(self, device):
+        self.device = device
+
+    def __call__(self, fn):
+        return _preload_dict_tensors(torch.load(str(fn)), device=self.device)
 
 class PreloadedTorchDataset(TorchDataset):
     def __init__(self, torch_ds, device='cpu', num_workers=0):
         super().__init__(torch_ds.items, filter_fn=torch_ds.filter_fn, preprocess_fn=torch_ds.preprocess_fn)
-        self.data = pool_map(partial(_preload_dict_tensors, device=device), torch_ds, num_workers=num_workers)
+        work = DataLoadingWork(device)
+        self.data = pool_map(work, torch_ds.items, num_workers=num_workers)
         self.device = device
         print(f'Preloaded TorchDataset ({self.path}) to ({device}).')
 
     def __getitem__(self, i):
         if self.preprocess_fn is not None:
             return self.preprocess_fn(self.data[i])
-         else:
+        else:
             return self.data[i]
+
+    def preload(self, device='cpu', num_workers=0):
+        ''''This does nothing, as the dataset you're calling this on is preloaded already '''
+        return self
+
+    def tile(self, keys_to_tile, tile_sz=128, overlap=2, dim=3):
+        ''' Converts the Dataset to a Tiled Dataset, drawing only parts of the data.
+        Since this is a preloaded dataset, the tiling locations are fixed from the beginning and `__len__` will return the number of tiles.
+
+        Args:
+            keys_to_tile ([str]): List of strings matching the keys of the data dictionaries that need to be tiled. All must have the same shape and result in the same tiling.
+            tile_sz (int/tuple of ints, optional): Size of the tiles drawn. Either int or tuple with length matching the given `dim`. Defaults to 128.
+            overlap (int/tuple of its, optional): . Defaults to 2.
+            dim (int, optional): Dimensionality of the data. If `tile_sz` or `overlap` is given as tuple this must match their lengths. Defaults to 3.
+
+        Returns:
+            PreloadedTiledTorchDataset: Tiling-aware `PreloadedTorchDataset`
+        '''
+        return PreloadedTiledTorchDataset(self, keys_to_tile,
+            tile_sz=tile_sz,
+            overlap=overlap,
+            dim=dim)
+
+# %%
+
+def get_tile_locations(shape, tile_sz, overlap, dim=3):
+    if isinstance(shape, torch.Size):
+        max_dims = shape[-dim:]
+    elif isinstance(shape, (tuple, list)) and len(shape) == dim:
+        max_dims = shape
+    else:
+        raise Exception(f'Shape must the torch.Size or tuple/list with length {self.dim}. Got {shape} instead.')
+
+    idxs = []
+    for tile, maxd, overl in zip(tile_sz, max_dims, overlap):
+        end = maxd +1 - tile if maxd > tile else 0
+        step = tile - overl
+        idx = list(range(0, end, step)) if end > step else [0]
+        if idx[-1] < end-1:
+            idx.append(end-1)
+        idxs.append(torch.LongTensor(idx))
+    start = torch.unique(torch.stack(torch.meshgrid(idxs), dim=-1), dim=0)
+    end   = start + torch.LongTensor(tile_sz)
+    return torch.stack([start, end], dim=-2).reshape(-1, 2, 3)
+
+
+class TiledTorchDataset(TorchDataset):
+    def __init__(self, torch_ds, keys_to_tile, dim=3, tile_sz=128, overlap=2):
+        super().__init__(torch_ds.items, filter_fn=torch_ds.filter_fn, preprocess_fn=torch_ds.preprocess_fn)
+        self.keys_to_tile = keys_to_tile
+        self.dim = dim
+        self.tile_sz = tile_sz if isinstance(tile_sz, (tuple, list)) else (tile_sz,)*dim
+        self.overlap = overlap if isinstance(overlap, (tuple, list)) else (overlap,)*dim
+        assert len(self.tile_sz) == dim and len(self.overlap) == dim
+
+    def __getitem__(self, i):
+        item = torch.load(str(self.items[i]))
+        tile = {**item}
+        for k in self.keys_to_tile:
+            tile_locations = self._get_tile_locations(item[k].shape)
+            n_tiles = len(tile_locations)
+            if 'num_tiles' in tile.keys():
+                assert n_tiles == tile['num_tiles']
+            tile['num_tiles'] = n_tiles
+        tile_idx = torch.randint(0, tile['num_tiles'], (1,)).item()
+        crop = tile_locations[tile_idx]
+        tile['tile_location'] = crop
+        for k in self.keys_to_tile:
+            prev = [slice(None)]*(item[k].ndim - self.dim)
+            slices = prev + [slice(c[0].item(), c[1].item()) for c in crop.transpose(0, 1)]
+            tile[k] = item[k][tuple(slices)]
+            if tuple(tile[k].shape[-self.dim:]) != self.tile_sz:
+                old_dtype = tile[k].dtype
+                tile[k] = F.interpolate(make_5d(tile[k]).float(), size=self.tile_sz).squeeze(0).to(old_dtype)
+        if self.preprocess_fn is not None:
+            return self.preprocess_fn(tile)
+        else:
+            return tile
+
+    def _get_tile_locations(self, shape): # TODO: docstring
+        return get_tile_locations(shape, self.tile_sz, self.overlap, self.dim)
+
+    def preload(self, device='cpu', num_workers=0):
+        return (TorchDataset(self.items,
+                filter_fn=self.filter_fn,
+                preprocess_fn=self.preprocess_fn)
+                .preload(device=device, num_workers=num_workers)
+                .tile(self.keys_to_tile,
+                    dim=self.dim,
+                    tile_sz=self.tile_sz,
+                    overlap=self.overlap)
+        )
+
+    def tile(self, keys_to_tile, tile_sz=128, overlap=2, dim=3):
+        ''''This does nothing, as the dataset you're calling this on is tiled already '''
+        return self
+
+
+class PreloadedTiledTorchDataset(PreloadedTorchDataset):
+    def __init__(self, torch_ds, keys_to_tile, dim=3, tile_sz=128, overlap=2, **preload_kwargs):
+        super().__init__(torch_ds, **preload_kwargs)
+        self.keys_to_tile = keys_to_tile
+        self.dim = dim
+        self.tile_sz = tile_sz if isinstance(tile_sz, (tuple, list)) else (tile_sz,)*dim
+        self.overlap = overlap if isinstance(overlap, (tuple, list)) else (overlap,)*dim
+        assert len(self.tile_sz) == dim and len(self.overlap) == dim
+        self.data = torch_ds.data
+        self.cum_num_tiles = [0]
+        for data in self.data:
+            for k in keys_to_tile:
+                data['tile_locations'] = self._get_tile_locations(data[k].shape)
+                n_tiles = len(data['tile_locations'])
+                if 'num_tiles' in data.keys():
+                    assert n_tiles == data['num_tiles']
+                data['num_tiles'] = n_tiles
+            self.cum_num_tiles.append(n_tiles + self.cum_num_tiles[-1])
+
+    def __len__(self): return self.cum_num_tiles[-1]
+
+    def __getitem__(self, i):
+        item_id = bisect(self.cum_num_tiles, i) - 1
+        item = self.data[item_id]
+        tile_id = i - self.cum_num_tiles[item_id]
+        crop = item['tile_locations'][tile_id]
+        tile = {'tile_id': tile_id, 'tile_location': crop, **item}
+        for k in self.keys_to_tile:
+            prev = [slice(None)]*(item[k].ndim - self.dim)
+            slices = prev + [slice(c[0].item(), c[1].item()) for c in crop.transpose(0, 1)]
+            tile[k] = item[k][tuple(slices)]
+            if tuple(tile[k].shape[-self.dim:]) != self.tile_sz:
+                old_dtype = tile[k].dtype
+                tile[k] = F.interpolate(make_5d(tile[k]).float(), size=self.tile_sz).squeeze(0).to(old_dtype)
+        if self.preprocess_fn is not None:
+            return self.preprocess_fn(tile)
+        else:
+            return tile
+
+    def _get_tile_locations(self, shape): # TODO: docstring
+        return get_tile_locations(shape, self.tile_sz, self.overlap, self.dim)
+
+
+    def tile(self, keys_to_tile, tile_sz=128, overlap=2, dim=3):
+        ''''This does nothing, as the dataset you're calling this on is tiled already '''
+        return self
+
+    def preload(self, device='cpu', num_workers=0):
+        ''''This does nothing, as the dataset you're calling this on is preloaded already '''
+        return self
+
+
+
+
+
+# %%
