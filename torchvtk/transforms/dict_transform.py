@@ -150,11 +150,47 @@ class Noop(DictTransform):
         Args:
             device (str, torch.device): The device to move the tensors on. Defaults to not changing anything
             dtype (torch.dtype): The dtype to move the device to. Defaults to not changing anything
+            kwargs: Arguments for `DictTransform`
         '''
         super().__init__(**kwargs)
 
     def transform(self, x): return x
 
+class NormalizeMinMax(DictTransform):
+    def __init__(self, min=0.0, max=1.0, **kwargs):
+        ''' Normalizes tensors to a set min-max range
+
+        Args:
+            min (float, optional): New minimum value. Defaults to 0.0.
+            max (float, optional): New maximum value. Defaults to 1.0.
+            kwargs: Arguments for `DictTransform`
+        '''
+        super().__init__(**kwargs)
+        self.min = min
+        self.max = max
+
+    def transform(self, data):
+        mi, ma = data.min(), data.max()
+        scl = (self.max - self.min) / (ma - mi)
+        return (data - mi) * scl + self.min
+
+class NormalizeStandardize(DictTransform):
+    def __init__(self, mean=0.0, std=1.0, **kwargs):
+        ''' Normalizes tensors to have a set mean and standard deviation
+
+        Args:
+            mean (float, optional): New mean of the sample. Defaults to 0.0.
+            std (float, optional): New standard deviation of the sample. Defaults to 1.0.
+            kwargs: Arguments for `DictTransform`
+        '''
+        super().__init__(**kwargs)
+        self.mean = mean
+        self.std = std
+
+    def transform(self, data):
+        mean, std = data.mean(), data.std()
+        scl = self.std / std
+        return (data - mean) * scl + self.mean
 
 class GaussianNoise(DictTransform):
     def __init__(self, std_deviation=0.01, mean=0, **kwargs):

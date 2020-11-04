@@ -26,6 +26,33 @@
    :show-inheritance:
 ```
 
+### Noop
+```eval_rst
+.. autoclass:: torchvtk.transforms::Noop
+   :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
+```
+
+### NormalizeMinMax
+```eval_rst
+.. autoclass:: torchvtk.transforms::NormalizeMinMax
+   :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
+```
+
+### NormalizeStandardize
+```eval_rst
+.. autoclass:: torchvtk.transforms::NormalizeStandardize
+   :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
+```
+
 ### Crop
 ```eval_rst
 .. autoclass:: torchvtk.transforms::Crop
