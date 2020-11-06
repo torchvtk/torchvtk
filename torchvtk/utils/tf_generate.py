@@ -128,6 +128,25 @@ def colorize_trapeze(t, color):
     res[:, 4]   = t[:, 1]
     return res
 
+def make_trapezoid(c, top_height, bot_width, fixed_shape=False):
+    # bot_width = bot_width * c + 1e-2     # allow for wider peaks in higher density
+    # int_contrib = np.clip(c * (1/0.6), 0, 1) # higher opacity on higher density (usually bones, which are often occluded)
+    # top_height = (int_contrib + top_height)  / 2.0 # allow for mostly low peaks on skin, higher peaks on bones
+    if fixed_shape:
+        bot_height = top_height
+        top_width  = bot_width
+    else:
+        bot_height = np.random.rand(1).item() * top_height
+        top_width  = np.random.rand(1).item() * bot_width
+    return np.stack([
+      np.array([c - bot_width/2 -1e-2, 0]),    # left wall          ____________  __ top_height
+      np.array([c - bot_width/2, bot_height]), # bottom left       / top_width  \
+      np.array([c - top_width/2, top_height]), # top left        /__ bot_width __\__ bot_height
+      np.array([c + top_width/2, top_height]), # top right      |                |
+      np.array([c + bot_width/2, bot_height]), # bottom right   |   right wall ->|
+      np.array([c + bot_width/2 +1e-2, 0])     # right wall     |<- left wall    |
+    ])
+
 def get_tf_pts_from_peaks(peaks, colors='random', height_range=(0.1, 0.9), width_range=(0.02, 0.2), peak_center_noise_std=0.05, max_num_peaks=5, peak_valid_fn=None, fixed_shape=False):
     ''' Compute transfer function with non-overlapping trapezoids around given peaks
 
@@ -151,32 +170,15 @@ def get_tf_pts_from_peaks(peaks, colors='random', height_range=(0.1, 0.9), width
     if   colors == 'distinguishable': color_gen = distinguishable_color_generator()
     elif colors == 'random':          color_gen = random_color_generator()
     elif colors == 'fixed':           color_gen = fixed_color_generator()
-    else: raise Exception(f'Invalid colors argument ({colors}). Use either "distinguishable" or "random".')
-    def make_trapezoid(c, top_height, bot_width):
-        c += np.random.randn() * peak_center_noise_std
-        # bot_width = bot_width * c + 1e-2     # allow for wider peaks in higher density
-        # int_contrib = np.clip(c * (1/0.6), 0, 1) # higher opacity on higher density (usually bones, which are often occluded)
-        # top_height = (int_contrib + top_height)  / 2.0 # allow for mostly low peaks on skin, higher peaks on bones
-        if fixed_shape:
-            bot_height = top_height
-            top_width  = bot_width
-        else:
-            bot_height = np.random.rand(1).item() * top_height
-            top_width  = np.random.rand(1).item() * bot_width
-        return np.stack([
-          np.array([c - bot_width/2 -1e-2, 0]),    # left wall          ____________  __ top_height
-          np.array([c - bot_width/2, bot_height]), # bottom left       / top_width  \
-          np.array([c - top_width/2, top_height]), # top left        /__ bot_width __\__ bot_height
-          np.array([c + top_width/2, top_height]), # top right      |                |
-          np.array([c + bot_width/2, bot_height]), # bottom right   |   right wall ->|
-          np.array([c + bot_width/2 +1e-2, 0])     # right wall     |<- left wall    |
-        ])                                         #               |        c       |__ 0
+    else: raise Exception(f'Invalid colors argument ({colors}). Use either "distinguishable" or "random".')                                        #               |        c       |__ 0
 
     if peaks is None:
         peaks = np.random.rand(100, 2)
-    trapezes = [make_trapezoid(c, # Center of peak
+        peaks = np.stack([np.linspace(1/20, 1-1/20, 19)]*2, axis=1)
+    trapezes = [make_trapezoid(c     + np.random.randn() * peak_center_noise_std, # Center of peak
         top_height= height_range_len * np.random.rand(1).item() + height_range[0],
-        bot_width = width_range_len  * np.random.rand(1).item() + width_range[0]
+        bot_width = width_range_len  * np.random.rand(1).item() + width_range[0],
+        fixed_shape=fixed_shape
         ) for c, p in peaks]
     result = []
     np.random.shuffle(trapezes)
@@ -202,9 +204,12 @@ def tf_pts_border(tf_pts):
     r = torch.eye(tf_pts.size(-1))[None, 0]
     return torch.cat([l, tf_pts, r], dim=0)
 
-def random_tf_from_vol(vol, colors='random', max_num_peaks=5, height_range=(0.1, 0.7), width_range=(0.02, 0.3), peak_center_noise_std=0.05, bins=1024, valid_fn=None, use_hist=True, fixed_shape=False):
+def random_tf_from_vol(vol, colors='random', max_num_peaks=5, height_range=(0.1, 0.7), width_range=(0.02, 0.3), peak_center_noise_std=0.05, bins=1024, valid_fn=None, use_hist=True, fixed_shape=False, override_peaks=None):
     if torch.is_tensor(vol): vol = vol.detach().cpu().float().numpy()
-    peaks = get_histogram_peaks(vol, bins=bins) if use_hist else None
+    if override_peaks is not None:
+        peaks = np.stack([np.linspace(1/20, 1-1/20, 19)]*2, axis=1)
+    else:
+        peaks = get_histogram_peaks(vol, bins=bins) if use_hist else None
     tf    = get_tf_pts_from_peaks(peaks, colors=colors, height_range=height_range, width_range=width_range, max_num_peaks=max_num_peaks, peak_center_noise_std=peak_center_noise_std, peak_valid_fn=valid_fn, fixed_shape=fixed_shape)
     return tf_pts_border(tf)
 
