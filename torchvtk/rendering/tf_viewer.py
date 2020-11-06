@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from torchvtk.utils import tex_from_pts
 
 
-def show(img, ax=plt, title=None, interpolation='nearest'):
+def show(img, ax=plt, title=None, interpolation='nearest', xticks=False):
     '''Displays a Tensor as image
 
     Args:
@@ -16,8 +16,11 @@ def show(img, ax=plt, title=None, interpolation='nearest'):
     '''
     npimg = img.squeeze().detach().float().cpu().numpy()
     if title is not None: ax.set_title(title)
-    ax.tick_params(axis='both', which='both',
+    ax.tick_params(axis='y' if xticks else 'both', which='both',
         bottom=False, right=False, left=False, labelbottom=False, labelleft=False)
+    if xticks:
+        ax.set_xticks(np.linspace(0, 1, 11) * (img.size(-1)-1))
+        ax.set_xticklabels(list(map(lambda n: f'{n:0.1f}', np.linspace(0, 1, 11))))
     ax.imshow(np.transpose(npimg, (1,2,0)), interpolation=interpolation)
 
 def show_tf(tf, ax=plt, title=None):
@@ -34,7 +37,7 @@ def show_tf(tf, ax=plt, title=None):
     if   im.size(0) == 3: show(im, ax=ax, title=title)
     elif im.size(0) == 4:
         im[:3][:, im[3] == 0.0] = 0.0
-        show(im[:3], ax=ax, title=title)
+        show(im[:3], ax=ax, title=title, xticks=True)
         ax.plot(range(im.size(2)), 50 - im[3, 0] * 50)
 
 def plot_render_tf(render, tf, title=''):
