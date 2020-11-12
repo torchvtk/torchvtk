@@ -7,6 +7,7 @@ import numpy as np
 from itertools import cycle
 from functools import partial
 from pathlib   import Path
+from numbers   import Number
 import time, math, psutil, os, numbers
 from collections import defaultdict
 
@@ -15,7 +16,7 @@ from torchvtk.datasets import TorchDataset
 #%%
 def noop(a, *args, **kwargs): return a
 
-def dict_collate_fn(items, key_filter=None, stack_tensors=True):
+def dict_collate_fn(items, key_filter=None, stack_tensors=True, convert_np=True, convert_numbers=True):
     ''' Collate function for dictionary data
 
     This stacks tensors only if they are stackable, meaning they are of the same shape.
@@ -24,7 +25,8 @@ def dict_collate_fn(items, key_filter=None, stack_tensors=True):
         items (list): List of individual items for a Dataset
         key_filter (list of str or callable, optional): A list of keys to filter the dict data. Defaults to None.
         stack_tensors (bool, optional): Wether to stack dict entries of type torch.Tensors. Disable if you have unstackable tensors. They will be stacked as a list. Defaults to True.
-        unstackable_to_list (bool, optional): Checks all tensors to be stacked. If they cannot be stacked, they are returned as list. Defaults to True. Asserts same shapes when False.
+        convert_np (bool, optional): Convert NumPy arrays to torch.Tensors and stack them. Defaults to True.
+        convert_numbers (bool, optional): Converts standard Python numbers to torch.Tensors and stacks them. Defaults to True.
 
     Returns:
         dict: One Dictionary with tensors stacked
@@ -38,6 +40,11 @@ def dict_collate_fn(items, key_filter=None, stack_tensors=True):
     batch = {}
     for k in keys:
         vals = [it[k] for it in items]
+        if convert_np and isinstance(vals[0], np.ndarray):
+            vals = list(map(torch.from_numpy, vals))
+        if convert_numbers and isinstance(vals[0], Number):
+            batch[k] = torch.tensor(vals)
+            continue
         if stack_tensors and torch.is_tensor(vals[0]):
             shapes = list(map(lambda a: a.shape, vals))
             stackable = shapes.count(shapes[0]) == len(shapes)

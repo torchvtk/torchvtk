@@ -45,11 +45,15 @@ class TorchDataset(Dataset):
         self.filter_fn     = filter_fn
         if  isinstance(ds_files, (str, Path)):
             self.path = Path(ds_files)
-            assert self.path.is_dir()
-            items = self.path.rglob('*.pt')
-            if filter_fn is not None:
-                items = filter(filter_fn, items)
-            self.items = list(items)
+            if self.path.is_dir():
+                items = self.path.rglob('*.pt')
+                if filter_fn is not None:
+                    items = filter(filter_fn, items)
+                self.items = list(items)
+            elif self.path.is_file():
+                raise Exception(f"Given ds_files is the path to a file. Use TorchDataset.from_file() instead.")
+            else:
+                raise Exception(f"Given ds_files is no valid path: {self.path}")
         elif isinstance(ds_files, (list, tuple)):
             assert len(ds_files) > 0
             for f in ds_files:
@@ -58,6 +62,13 @@ class TorchDataset(Dataset):
             if filter_fn is not None:
                   self.items = list(filter(filter_fn, ds_files))
             else: self.items = list(ds_files)
+
+    @staticmethod
+    def from_file(file_path, filter_fn=None, preprocess_fn=None):
+        path = Path(file_path)
+        assert path.exists() and path.is_file()
+        ds = TorchDataset([path], filter_fn=filter_fn, preprocess_fn=preprocess_fn)
+        return PreloadedTorchDataset(ds, override_data=torch.load(str(path)))
 
     def __len__(self): return len(self.items)
 
@@ -185,12 +196,15 @@ class DataLoadingWork:
         return _preload_dict_tensors(torch.load(str(fn)), device=self.device)
 
 class PreloadedTorchDataset(TorchDataset):
-    def __init__(self, torch_ds, device='cpu', num_workers=0):
+    def __init__(self, torch_ds, device='cpu', num_workers=0, override_data=None):
         super().__init__(torch_ds.items, filter_fn=torch_ds.filter_fn, preprocess_fn=torch_ds.preprocess_fn)
-        work = DataLoadingWork(device)
-        self.data = pool_map(work, torch_ds.items, num_workers=num_workers)
         self.device = device
-        print(f'Preloaded TorchDataset ({self.path}) to ({device}).')
+        if override_data is None:
+            work = DataLoadingWork(device)
+            self.data = pool_map(work, torch_ds.items, num_workers=num_workers)
+            print(f'Preloaded TorchDataset ({self.path}) to ({device}).')
+        else:
+            self.data = override_data
 
     def __getitem__(self, i):
         if self.preprocess_fn is not None:
@@ -219,8 +233,6 @@ class PreloadedTorchDataset(TorchDataset):
             tile_sz=tile_sz,
             overlap=overlap,
             dim=dim)
-
-# %%
 
 def get_tile_locations(shape, tile_sz, overlap, dim=3):
     if isinstance(shape, torch.Size):
