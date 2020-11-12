@@ -215,7 +215,6 @@ def random_tf_from_vol(vol, colors='random', max_num_peaks=5, height_range=(0.1,
             peaks = np.stack([np.linspace(1/20, 1-1/20, 19)]*2, axis=1)
     else:
         peaks = get_histogram_peaks(vol, bins=bins) if use_hist else None
-    print(peaks)
     tf    = get_tf_pts_from_peaks(peaks, colors=colors, height_range=height_range, width_range=width_range, max_num_peaks=max_num_peaks, peak_center_noise_std=peak_center_noise_std, peak_valid_fn=valid_fn, fixed_shape=fixed_shape)
     return tf_pts_border(tf)
 
