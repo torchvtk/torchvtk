@@ -333,7 +333,11 @@ class PreloadedTiledTorchDataset(PreloadedTorchDataset):
         item = self.data[item_id]
         tile_id = i - self.cum_num_tiles[item_id]
         crop = item['tile_locations'][tile_id]
-        tile = {'tile_id': tile_id, 'tile_location': crop, **item}
+        shapes = {f'{k}_shape': item[k].shape for k in self.keys_to_tile}
+        tile = {
+            'tile_id': tile_id,
+            'item_id': item_id,
+            'tile_location': crop, **shapes, **item}
         for k in self.keys_to_tile:
             prev = [slice(None)]*(item[k].ndim - self.dim)
             slices = prev + [slice(c[0].item(), c[1].item()) for c in crop.transpose(0, 1)]
