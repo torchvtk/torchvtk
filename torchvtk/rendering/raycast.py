@@ -2,7 +2,7 @@
 # PlatonicGAN: https://henzler.github.io/publication/platonicgan/
 # See https://github.com/henzler/platonicgan/blob/master/scripts/renderer
 #%%
-import math, glm
+import math
 import torch
 import torch.nn.functional as F
 from torch import nn
@@ -57,17 +57,18 @@ def get_proj_mat(fov, aspect, near=0.1, far=100, dtype=None, device=None):
                          [0, 0, b,-1],
                          [0, 0, c, 0]]).to(dtype).to(device)
 
-def get_random_view_mat(distance=(2,3)):
-    if isinstance(distance, (int, float)): distance = (distance, distance)
-    assert isinstance(distance, (list, tuple)) and len(distance) == 2
-    look_from = np.random.normal(0, 1, (3,)) # rand pos with distance in [2,3]
-    look_from = glm.vec3(look_from / np.linalg.norm(look_from) * np.random.uniform(distance[0], distance[1], (1,)))
-    look_to = glm.vec3(0.5)
-    up = glm.vec3(0.0, 1, 0)
-    view_dir = glm.normalize(look_to - look_from)
-    right = glm.cross(view_dir, up)
-    look_up = glm.cross(right, view_dir)
-    return torch.tensor(glm.lookAt(look_from, look_to, look_up).to_list())
+# import glm
+# def get_random_view_mat(distance=(2,3)):
+#     if isinstance(distance, (int, float)): distance = (distance, distance)
+#     assert isinstance(distance, (list, tuple)) and len(distance) == 2
+#     look_from = np.random.normal(0, 1, (3,)) # rand pos with distance in [2,3]
+#     look_from = glm.vec3(look_from / np.linalg.norm(look_from) * np.random.uniform(distance[0], distance[1], (1,)))
+#     look_to = glm.vec3(0.5)
+#     up = glm.vec3(0.0, 1, 0)
+#     view_dir = glm.normalize(look_to - look_from)
+#     right = glm.cross(view_dir, up)
+#     look_up = glm.cross(right, view_dir)
+#     return torch.tensor(glm.lookAt(look_from, look_to, look_up).to_list())
 
 def get_view_mat(look_from, look_to=None, look_up=None, dtype=None):
     ''' Computes a view matrix based on camera parameters.

@@ -17,6 +17,6 @@ setup(
     dependency_links=['https://github.com/aliutkus/torchinterp1d/tarball/master#egg=torchinterp1d'],
     install_requires=[
         'torch >= 1.6', 'torchvision',
-        'numpy', 'matplotlib', 'psutil', 'PyGLM',
+        'numpy', 'matplotlib', 'psutil',
     ],
 )
