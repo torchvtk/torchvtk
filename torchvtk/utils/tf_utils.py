@@ -37,7 +37,15 @@ def tex_from_pts(tf_pts, resolution=4096):
     if isinstance(tf_pts, np.ndarray):
         tf_pts = torch.from_numpy(tf_pts)
     if torch.is_tensor(tf_pts):
-        return apply_tf_torch(torch.linspace(0.0, 1.0, resolution), tf_pts)
+        if tf_pts.ndim == 3:
+            return torch.stack([tex_from_pts(tfp, resolution) for tfp in tf_pts])
+        else:
+            return apply_tf_torch(
+            torch.linspace(0.0, 1.0, resolution,
+                dtype=tf_pts.dtype, device=tf_pts.device),
+            tf_pts)
+    elif isinstance(tf_pts, (list, tuple)) and torch.is_tensor(tf_pts[0]):
+        return torch.stack([tex_from_pts(tfp, resolution) for tfp in tf_pts])
 
 @requires_torchinterp1d
 def apply_tf_tex_torch(vol, tf_tex):

@@ -1,10 +1,11 @@
+# %%
 from functools import partial
+import logging
 
 import numpy as np
 import torch
 import colorsys
 
-from torchvtk.rendering import VolumeRaycaster, plot_comp_render_tf
 from torchvtk.utils import make_5d, tex_from_pts
 
 # Persistent Homology peak extraction
@@ -91,7 +92,7 @@ def random_color_generator():
         h, s, l = np.random.rand(), 0.2 + np.random.rand() * 0.8, 0.35 + np.random.rand() * 0.3
         yield np.array([float(255*i) for i in colorsys.hls_to_rgb(h,l,s)], dtype=np.float32) / 255.0
 
-def fixed_color_generator(color=(180, 40, 40.0)):
+def fixed_color_generator(color=(180, 170, 170.0)):
     while True: yield np.array(color).astype(np.float32) / 255.0
 
 def get_histogram_peaks(data, bins=1024, skip_outlier=True):
@@ -139,12 +140,12 @@ def make_trapezoid(c, top_height, bot_width, fixed_shape=False):
         bot_height = np.random.rand(1).item() * top_height
         top_width  = np.random.rand(1).item() * bot_width
     return np.stack([
-      np.array([c - bot_width/2 -1e-2, 0]),    # left wall          ____________  __ top_height
+      np.array([c - bot_width/2 -2e-2, 0]),    # left wall          ____________  __ top_height
       np.array([c - bot_width/2, bot_height]), # bottom left       / top_width  \
       np.array([c - top_width/2, top_height]), # top left        /__ bot_width __\__ bot_height
       np.array([c + top_width/2, top_height]), # top right      |                |
       np.array([c + bot_width/2, bot_height]), # bottom right   |   right wall ->|
-      np.array([c + bot_width/2 +1e-2, 0])     # right wall     |<- left wall    |
+      np.array([c + bot_width/2 +2e-2, 0])     # right wall     |<- left wall    |
     ])
 
 def get_tf_pts_from_peaks(peaks, colors='random', height_range=(0.1, 0.9), width_range=(0.02, 0.2), peak_center_noise_std=0.05, max_num_peaks=5, peak_valid_fn=None, fixed_shape=False):
@@ -164,7 +165,10 @@ def get_tf_pts_from_peaks(peaks, colors='random', height_range=(0.1, 0.9), width
         [ np.array [x, y] ]: List of TF primitives (List of coordinates [0,1]²) to be lerped
     '''
     if peak_valid_fn is None: peak_valid_fn = lambda a, b: True
-    n_peaks = np.random.randint(1, max_num_peaks+1)
+    if max_num_peaks is None:
+        n_peaks = len(peaks)
+    else:
+        n_peaks = np.random.randint(1, max_num_peaks+1)
     height_range_len = height_range[1] - height_range[0]
     width_range_len  = width_range[1] - width_range[0]
     if   colors == 'distinguishable': color_gen = distinguishable_color_generator()
@@ -174,7 +178,7 @@ def get_tf_pts_from_peaks(peaks, colors='random', height_range=(0.1, 0.9), width
 
     if peaks is None:
         peaks = np.random.rand(100, 2)
-        peaks = np.stack([np.linspace(1/20, 1-1/20, 19)]*2, axis=1)
+        peaks = np.stack([np.linspace(0.05, 0.75, 15)]*2, axis=1)
     trapezes = [make_trapezoid(c     + np.random.randn() * peak_center_noise_std, # Center of peak
         top_height= height_range_len * np.random.rand(1).item() + height_range[0],
         bot_width = width_range_len  * np.random.rand(1).item() + width_range[0],
@@ -197,6 +201,58 @@ def get_tf_pts_from_peaks(peaks, colors='random', height_range=(0.1, 0.9), width
         if len(result) >= n_peaks or fail_count > 5: break # max 5 render tries
     return flatten_clip_sort_peaks(result)
 
+def create_peaky_tf(peaks, widths, default_color=(0.7, 0.66, 0.66), default_height=0.99, warn_overlap=True):
+    ''' Creates a peaky tf with given peak centers, widths and optional rgb, o
+    Beware: The output of this function is undefined for overlapping trapezes! A warning will be printed.
+
+    Args:
+        peaks (array): Array of shape (N) only peak centers / (N, 2) centers and opacity / (N, 4) centers and rgb / (N, 5) centers, opacity and rgb.
+        widths (array): Array of shape (N), same length as peaks.
+        default_color (array, optional): RGB value as array. Defaults to (0.7, 0.66, 0.66).
+        default_height (float, optional): Default opacity of none is given in peaks. Defaults to 0.99.
+        warn_overlap (bool, optional): Prints a warning if the resulting Transfer Function has overlapping trapezes. Defaults to True.
+
+    Returns:
+        Array: Point-based Transfer Function (N, 5) with the given peaks
+    '''
+    trapezes = []
+    for p, w in zip(peaks, widths):
+        if not hasattr(p, '__len__'): c, o, rgb = p, default_height, default_color
+        elif len(p) == 2:             c, o, rgb = p[0], p[1], default_color
+        elif len(p) == 4:             c, o, rgb = p[0], default_height, p[1:]
+        elif len(p) == 5:             c, o, rgb = p[0], p[1], p[2:]
+        else: raise Exception(f'Invalid input for peaks: list of {p}. See docstring of create_peaky_tf()')
+        if warn_overlap and overlaps_trapeze(make_trapezoid(c, o, w, fixed_shape=True), trapezes):
+            logging.warning(f'create_peaky_tf() has overlapping trapezes. First overlapping trapeze in the sequence: (center={c}, width={w}, index={len(trapezes)})')
+        trapezes.append(colorize_trapeze(make_trapezoid(c, o, w, fixed_shape=True), rgb))
+
+    return tf_pts_border(flatten_clip_sort_peaks(trapezes))
+
+def create_cos_tf(phases, amplitudes, frequencies=range):
+    n = len(phases)
+    if not torch.is_tensor(phases): phases = torch.Tensor(phases)
+    if not torch.is_tensor(amplitudes): amplitudes = torch.Tensor(amplitudes)
+    if hasattr(frequencies, __call__):
+        freqs = torch.Tensor(frequencies(n))
+    else:
+        assert len(frequencies) == n
+    def tf(x):
+        x.expand(*([-1]*x.ndim), n)
+        torch.cos(freqs * (x + phases)) * amplitudes
+
+
+def tries():
+    n = 20
+    amps = torch.rand(n)
+    #freqs = torch.cat([torch.arange(2, 2+n//2), torch.arange(n//2, n)**1.4]).round()
+    freqs = torch.arange(2, n+2)**1.2
+    phases = torch.rand(n) * pi
+    x = torch.linspace(0,1,100).unsqueeze(-1).expand(-1, n)
+    plt.ylim((0,1))
+    pts = (torch.cos(pi * freqs * (x + phases)) * amps).sum(-1) / (amps.sum() *0.5) + 0.5
+    plt.title(f'{freqs.round().tolist()}')
+    plt.stackplot(torch.linspace(0,1,100), pts)
+
 def tf_pts_border(tf_pts):
     if isinstance(tf_pts, np.ndarray):
         tf_pts = torch.from_numpy(tf_pts)
@@ -214,7 +270,7 @@ def random_tf_from_vol(vol, colors='random', max_num_peaks=5, height_range=(0.1,
         else:
             peaks = np.stack([np.linspace(1/20, 1-1/20, 19)]*2, axis=1)
     else:
-        peaks = get_histogram_peaks(vol, bins=bins) if use_hist else None
+        peaks = get_histogram_peaks(vol, bins=bins) if use_hist and vol is not None else None
     tf    = get_tf_pts_from_peaks(peaks, colors=colors, height_range=height_range, width_range=width_range, max_num_peaks=max_num_peaks, peak_center_noise_std=peak_center_noise_std, peak_valid_fn=valid_fn, fixed_shape=fixed_shape)
     return tf_pts_border(tf)
 
@@ -230,11 +286,10 @@ class TFGenerator():
         '''
         self.mode = mode
         self.peakgen_kwargs = {
-            'max_num_peaks': 5,
-            'height_range': (0.02, 0.9),
-            'width_range': (0.02, 0.3),
+            'max_num_peaks': 4,
+            'height_range': (0.02, 0.95),
+            'width_range': (0.005, 0.1),
             'peak_center_noise_std': 0.05,
-            'max_num_peaks': 5,
             'bins': 1024,
             'colors': colors,
             'use_hist': True
@@ -247,7 +302,7 @@ class TFGenerator():
         }
         self.raycast_kwargs.update(raycast_kwargs)
         if self.mode == 'verified_peaks':
-            self.raycaster = VolumeRaycaster(**self.raycast_kwargs)
+            self.raycaster = torchvtk.rendering.VolumeRaycaster(**self.raycast_kwargs)
         self.figs = []
 
     def validate_peak(self, tf_before, tf_after, vol, view_mat, l1_thresh=1e-2):
@@ -263,7 +318,7 @@ class TFGenerator():
         else:
             return False
 
-    def generate(self, vol, view_mat=None):
+    def generate(self, vol=None, view_mat=None):
         if view_mat is not None and self.mode == 'verified_peaks':
             self.peakgen_kwargs['valid_fn'] = partial(self.validate_peak,
                 vol=vol, view_mat=view_mat)
@@ -271,3 +326,6 @@ class TFGenerator():
         else:
             self.peakgen_kwargs['valid_fn'] = None
         return random_tf_from_vol(vol, **self.peakgen_kwargs).to(torch.float32)
+
+
+# %%
