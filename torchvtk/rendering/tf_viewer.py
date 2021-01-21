@@ -13,8 +13,9 @@ def show(img, ax=plt, title=None, interpolation='nearest', xticks=False):
         ax (pyplot.Axis, optional): Axis to show image in. Defaults to plt.
         title (str, optional): Title of the plot. Defaults to None.
         interpolation (str, optional): Interpolation mode for pyplot. Usually 'linear' or 'nearest'. Defaults to 'nearest'.
+        xticks (bool): Wether to show xticks. Defaults to False.
     '''
-    npimg = img.squeeze().detach().float().cpu().numpy()
+    npimg = img.detach().float().cpu().numpy()
     if title is not None: ax.set_title(title)
     ax.tick_params(axis='y' if xticks else 'both', which='both',
         bottom=False, right=False, left=False, labelbottom=False, labelleft=False)
@@ -33,12 +34,20 @@ def show_tf(tf, ax=plt, title=None):
     '''
     if tf.ndim == 2 and tf.size(-1) <= 5:
         tf = tex_from_pts(tf, 256)
-    im = tf.detach().squeeze().unsqueeze(-2).expand(-1, 50, -1).contiguous().cpu()
+    h = tf.size(-1) // 5
+    im = tf.detach().unsqueeze(-2).expand(-1, h, -1).contiguous().cpu()
+    if im.dtype == torch.float16: im = im.float()
+    if   im.size(0) == 1:
+        imm = torch.cat([torch.zeros_like(im)]*3, dim=0)
+        show(imm, ax=ax, title=title, xticks=True)
+        ax.set_ylim((h, 0))
+        ax.plot(range(im.size(-1)), h - im[0,0] * h)
     if   im.size(0) == 3: show(im, ax=ax, title=title)
     elif im.size(0) == 4:
-        im[:3][:, im[3] == 0.0] = 0.0
+        im[:3][:, im[3] < 1e-3] = 0.0
         show(im[:3], ax=ax, title=title, xticks=True)
-        ax.plot(range(im.size(2)), 50 - im[3, 0] * 50)
+        ax.set_ylim((h, 0))
+        ax.plot(range(im.size(2)), h - im[3, 0] * h)
 
 def plot_render_tf(render, tf, title=''):
     '''Plots a Rendering and Transfer Function Nicely atop of each other
@@ -58,6 +67,31 @@ def plot_render_tf(render, tf, title=''):
     fig, axs = plt.subplots(2,1, gridspec_kw=gs, figsize=(5,6))
     show(render, axs[0], f'{title} Rendering')
     show_tf(tf,  axs[1], f'{title} Transfer Function')
+    return fig
+
+def plot_renders(renders):
+    '''Plots multiple renders
+
+    Args:
+        renders (Iterable, Tensor): list or stacked renderings
+    '''
+    gs = {
+        'width_ratios': [1,1,1],
+        'height_ratios': [1]
+    }
+    fig, axs = plt.subplots(1, len(renders), gridspec_kw=gs, figsize=(len(renders) * 5, 5))
+    for ren, ax in zip(renders, axs): show(ren, ax)
+    return fig
+
+def plot_render_2tf(render, tf1, tf2, title=''):
+    gs = {
+        'width_ratios': [5],
+        'height_ratios': [5, 1, 1]
+    }
+    fig, axs = plt.subplots(3,1, gridspec_kw=gs, figsize=(5,7))
+    show(render, axs[0], f'{title} Rendering / TF1 / TF2')
+    show_tf(tf1, axs[1])
+    show_tf(tf2, axs[2])
     return fig
 
 def plot_tf(tf, title=''):
@@ -97,4 +131,11 @@ def plot_comp_render_tf(pairs):
             title = ''
         show(render, axs[0, i], f'{title} Rendering')
         show_tf(tf,  axs[1, i], f'{title} Transfer Function')
+    return fig
+
+def plot_tfs(tfs, titles=None):
+    if titles is None: titles = ['']*len(tfs)
+    fig, axs = plt.subplots(len(tfs),1)
+    for tf, ax, t in zip(tfs, axs, titles):
+        show_tf(tf, ax, title=t)
     return fig
