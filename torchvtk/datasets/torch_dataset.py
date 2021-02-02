@@ -248,7 +248,7 @@ def get_tile_locations(shape, tile_sz, overlap, dim=3):
         step = tile - overl
         idx = list(range(0, end, step)) if end > step else [0]
         if idx[-1] < end-1:
-            idx.append(end-1)
+            idx = list(map(lambda x: x + (end-idx[-1])//2, idx)) # center tiles if the size is no divisible
         idxs.append(torch.LongTensor(idx))
     start = torch.unique(torch.stack(torch.meshgrid(idxs), dim=-1), dim=0)
     end   = start + torch.LongTensor(tile_sz)
