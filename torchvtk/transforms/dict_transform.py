@@ -383,12 +383,12 @@ class RandRot90(DictTransform):
         self.ndim = ndim
 
     def transform(self, items):
-        n = torch.randint(0, 4, (self.ndim))
-        axs = combinations(range(self.ndim), 2)
+        n = torch.randint(0, 4, (self.ndim,))
+        axs = list(combinations(range(-self.ndim,0), 2))
         random.shuffle(axs)
         def tfm(x):
-            for i in axs:
-                x = torch.rot90(x, n[i], axs[i])
+            for k, ax in zip(n, axs):
+                x = torch.rot90(x, k, ax)
             return x
         return [tfm(x) for x in items]
 # %%
