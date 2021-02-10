@@ -1,5 +1,6 @@
 # %%
-import math
+import math, random
+from itertools import combinations
 from abc import abstractmethod
 from torchvtk.utils.volume_utils import make_nd
 import numpy as np
@@ -370,4 +371,24 @@ class RandFlip(DictTransform):
         if len(idxs) == 0: return items
         return [torch.flip(x, idxs).contiguous() for x in items]
 
+class RandRot90(DictTransform):
+    ''' Randomly rotates between 0-3 times for 90 degrees along each axis in random order '''
+    def __init__(self, ndim, **kwargs):
+        ''' Randomly rotates tensor.
+
+        Args:
+            ndim (int): Number of spatial dimensions to be rotated.ArithmeticError
+        '''
+        super().__init__(**kwargs)
+        self.ndim = ndim
+
+    def transform(self, items):
+        n = torch.randint(0, 4, (self.ndim))
+        axs = combinations(range(self.ndim), 2)
+        random.shuffle(axs)
+        def tfm(x):
+            for i in axs:
+                x = torch.rot90(x, n[i], axs[i])
+            return x
+        return [tfm(x) for x in items]
 # %%
