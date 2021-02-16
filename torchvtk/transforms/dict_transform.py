@@ -52,7 +52,12 @@ class DictTransform:
                 self.apply_on = [apply_on]
 
     def __call__(self, inp):
-        data = inp.copy()
+        if isinstance(inp, dict):
+            data = inp.copy()
+        elif torch.is_tensor(inp):
+            data = inp.clone()
+        else:
+            data = inp
         def to_tensor(tmp):
             if isinstance(tmp, np.ndarray):  # Convert from NumPy
                 tmp = torch.from_numpy(tmp)
@@ -70,7 +75,7 @@ class DictTransform:
         elif isinstance(data, (list, tuple)):
             data = self.transform(list(map(to_tensor, data)))
         elif torch.is_tensor(data):
-            data = self.transform([data])
+            data = self.transform([data.clone()])
         elif isinstance(data, np.ndarray):
             data = self.transform([to_tensor(data)])
         else:
@@ -100,6 +105,28 @@ class Lambda(DictTransform):
             return self.tfm(items)
         else:
             return [self.tfm(x) for x in items]
+
+class RandLambda(DictTransform):
+    def __init__(self, func, rand_range=(0,1), as_list=False, **kwargs):
+        ''' Applies a given function, wrapped in a `DictTransform`
+
+        Args:
+            func (function): The function to be executed
+            as_list (bool): Wether all inputs specified in `apply_on` are passed as a list, or as separate items. Defaults to False (separate items).
+            rand_range (2-tuple): Min and Max for drawing a random variable uniformly. Defaults to (0,1)
+            kwargs: Arguments for `DictTransform`
+        '''
+        super().__init__(**kwargs)
+        self.as_list = as_list
+        self.mi, self.ma = rand_range
+        self.tfm = func
+
+    def transform(self, items):
+        r = np.random.uniform(self.mi, self.ma, (1,)).item()
+        if self.as_list:
+            return self.tfm(items, r)
+        else:
+            return [self.tfm(x, r) for x in items]
 
 class Composite(DictTransform):
     def __init__(self, *tfms, apply_on=None, device=None, dtype=None):
