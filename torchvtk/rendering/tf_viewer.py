@@ -76,7 +76,7 @@ def plot_renders(renders):
         renders (Iterable, Tensor): list or stacked renderings
     '''
     gs = {
-        'width_ratios': [1,1,1],
+        'width_ratios': [1]*len(renders),
         'height_ratios': [1]
     }
     fig, axs = plt.subplots(1, len(renders), gridspec_kw=gs, figsize=(len(renders) * 5, 5))
