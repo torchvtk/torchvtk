@@ -342,7 +342,6 @@ class PreloadedTiledTorchDataset(PreloadedTorchDataset):
         for data in self.data:
             for k in keys_to_tile:
                 data['tile_locations'] = self._get_tile_locations(data[k].shape)
-                print(data['tile_locations'])
                 n_tiles = len(data['tile_locations'])
                 if 'num_tiles' in data.keys():
                     assert n_tiles == data['num_tiles']

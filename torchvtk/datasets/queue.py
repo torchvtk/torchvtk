@@ -50,7 +50,9 @@ def dict_collate_fn(items, key_filter=None, stack_tensors=True, convert_np=True,
             stackable = shapes.count(shapes[0]) == len(shapes)
             if stackable:
                 batch[k] = torch.stack(vals)
-            else: batch[k] = vals
+            else:
+                print(f'Warning: dict_collate_fn() could not stack tensors! Shapes: {shapes}')
+                batch[k] = vals
         else: batch[k] = vals
     return batch
 
