@@ -288,7 +288,7 @@ class TiledTorchDataset(TorchDataset):
                 for k in self.keys_to_tile:
                     prev = [slice(None)]*(item[k].ndim - self.dim)
                     slices = prev + [slice(c[0].item(), c[1].item()) for c in crop.transpose(0, 1)]
-                    t[k] = item[k][tuple(slices)]
+                    t[k] = item[k][tuple(slices)].clone()
                 if self.preprocess_fn is not None:
                     all_tiles.append(self.preprocess_fn(t))
                 else: all_tiles.append(t)
@@ -301,7 +301,7 @@ class TiledTorchDataset(TorchDataset):
             for k in self.keys_to_tile:
                 prev = [slice(None)]*(item[k].ndim - self.dim)
                 slices = prev + [slice(c[0].item(), c[1].item()) for c in crop.transpose(0, 1)]
-                tile[k] = item[k][tuple(slices)]
+                tile[k] = item[k][tuple(slices)].clone()
                 # if tuple(tile[k].shape[-self.dim:]) != self.tile_sz:
                 #     old_dtype = tile[k].dtype
                 #     tile[k] = F.interpolate(make_5d(tile[k]).float(), size=self.tile_sz).squeeze(0).to(old_dtype)
@@ -364,7 +364,7 @@ class PreloadedTiledTorchDataset(PreloadedTorchDataset):
         for k in self.keys_to_tile:
             prev = [slice(None)]*(item[k].ndim - self.dim)
             slices = prev + [slice(c[0].item(), c[1].item()) for c in crop.transpose(0, 1)]
-            tile[k] = item[k][tuple(slices)]
+            tile[k] = item[k][tuple(slices)].clone()
             # if tuple(tile[k].shape[-self.dim:]) != self.tile_sz:
             #     old_dtype = tile[k].dtype
             #     tile[k] = F.interpolate(make_5d(tile[k]).float(), size=self.tile_sz).squeeze(0).to(old_dtype)
@@ -384,9 +384,5 @@ class PreloadedTiledTorchDataset(PreloadedTorchDataset):
     def preload(self, device='cpu', num_workers=0):
         ''''This does nothing, as the dataset you're calling this on is preloaded already '''
         return self
-
-
-
-
 
 # %%
