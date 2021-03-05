@@ -16,7 +16,7 @@ from torchvtk.datasets import TorchDataset
 #%%
 def noop(a, *args, **kwargs): return a
 
-def dict_collate_fn(items, key_filter=None, stack_tensors=True, convert_np=True, convert_numbers=True):
+def dict_collate_fn(items, key_filter=None, stack_tensors=True, convert_np=True, convert_numbers=True, warn_when_unstackable=True):
     ''' Collate function for dictionary data
 
     This stacks tensors only if they are stackable, meaning they are of the same shape.
@@ -51,7 +51,7 @@ def dict_collate_fn(items, key_filter=None, stack_tensors=True, convert_np=True,
             if stackable:
                 batch[k] = torch.stack(vals)
             else:
-                print(f'Warning: dict_collate_fn() could not stack tensors! Shapes: {shapes}')
+                if warn_when_unstackable: print(f'Warning: dict_collate_fn() could not stack tensors! Shapes: {shapes}')
                 batch[k] = vals
         else: batch[k] = vals
     return batch
