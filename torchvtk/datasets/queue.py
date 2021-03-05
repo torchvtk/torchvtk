@@ -27,6 +27,7 @@ def dict_collate_fn(items, key_filter=None, stack_tensors=True, convert_np=True,
         stack_tensors (bool, optional): Wether to stack dict entries of type torch.Tensors. Disable if you have unstackable tensors. They will be stacked as a list. Defaults to True.
         convert_np (bool, optional): Convert NumPy arrays to torch.Tensors and stack them. Defaults to True.
         convert_numbers (bool, optional): Converts standard Python numbers to torch.Tensors and stacks them. Defaults to True.
+        warn_when_unstackable (bool, list of str, optional): If True, prints a warning when a set of Tensors is unstackable. You can also specify a list of keys for which to print the warning. Defaults to True.
 
     Returns:
         dict: One Dictionary with tensors stacked
@@ -51,7 +52,9 @@ def dict_collate_fn(items, key_filter=None, stack_tensors=True, convert_np=True,
             if stackable:
                 batch[k] = torch.stack(vals)
             else:
-                if warn_when_unstackable: print(f'Warning: dict_collate_fn() could not stack tensors! Shapes: {shapes}')
+                if (isinstance(warn_when_unstackable, bool)          and      warn_when_unstackable) or \
+                   (isinstance(warn_when_unstackable, (tuple, list)) and k in warn_when_unstackable):
+                    print(f'Warning: dict_collate_fn() could not stack tensors! Shapes: {shapes}')
                 batch[k] = vals
         else: batch[k] = vals
     return batch
