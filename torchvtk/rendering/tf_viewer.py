@@ -133,6 +133,32 @@ def plot_comp_render_tf(pairs):
         show_tf(tf,  axs[1, i], f'{title} Transfer Function')
     return fig
 
+def plot_9comp_render_tf(pairs):
+    ''' Plots a comparison of render/TF pairs
+
+    Args:
+        pairs (List of Tuples): List of Tuples (Render, Transfer Function [, Name])
+
+    Returns:
+        pyplot.Figure: Pyplot figure with Renders/TFs arranged
+    '''
+    n = len(pairs)
+    gs = {
+        'width_ratios': [5,5,5],
+        'height_ratios': [5,1,5,1,5,1]
+    }
+    fig, axs = plt.subplots(6, 3, gridspec_kw=gs, figsize=(15, 18))
+    for i, pair in enumerate(pairs):
+        if len(pair) == 3:
+            render, tf, title = pair
+        else:
+            render, tf = pair
+            title = ''
+        show(render, axs[2*(i // 3),   i % 3], f'{title} Rendering')
+        show_tf(tf,  axs[2*(i // 3)+1, i % 3], f'{title} Transfer Function')
+    return fig
+
+
 def plot_tfs(tfs, titles=None):
     if titles is None: titles = ['']*len(tfs)
     fig, axs = plt.subplots(len(tfs),1)
