@@ -22,9 +22,8 @@ class TestMakeND(TensorTestCase):
         self.assertSameValues(make_nd(self.a, 5), self.a5r)
 
     def test_invalid_n_warning(self):
-        with self.assertRaises(Exception): make_nd(self.a, 1)
-        with self.assertRaises(Exception): make_nd(self.a, -42)
         with self.assertRaises(Exception): make_nd(self.a, 0)
+        with self.assertRaises(Exception): make_nd(self.a, -42)
 
     def test_shapes_match(self):
         self.assertSameShape(make_nd(self.a, 2), self.a2r)
