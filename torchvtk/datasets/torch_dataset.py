@@ -12,7 +12,7 @@ import shutil, os, pprint
 import torchvtk.datasets.urls as urls
 from torchvtk.datasets.download import download_all, extract_all
 from torchvtk.converters.dicom import cq500_to_torch, test_has_gdcm
-from torchvtk.utils import pool_map, make_5d
+from torchvtk.utils import pool_map, make_5d, clone
 from torchvtk.transforms import Resize
 
 def _preload_dict_tensors(it, device='cpu'):
@@ -283,12 +283,12 @@ class TiledTorchDataset(TorchDataset):
         if self.return_all_tiles: # Return all tiles from this item
             all_tiles = []
             for crop in tile_locations:
-                t = tile.copy()
+                t = clone(tile)
                 t['tile_location'] = crop
                 for k in self.keys_to_tile:
                     prev = [slice(None)]*(item[k].ndim - self.dim)
                     slices = prev + [slice(c[0].item(), c[1].item()) for c in crop.transpose(0, 1)]
-                    t[k] = item[k][tuple(slices)].clone()
+                    t[k] = clone(item[k][tuple(slices)])
                 if self.preprocess_fn is not None:
                     all_tiles.append(self.preprocess_fn(t))
                 else: all_tiles.append(t)
@@ -301,7 +301,7 @@ class TiledTorchDataset(TorchDataset):
             for k in self.keys_to_tile:
                 prev = [slice(None)]*(item[k].ndim - self.dim)
                 slices = prev + [slice(c[0].item(), c[1].item()) for c in crop.transpose(0, 1)]
-                tile[k] = item[k][tuple(slices)].clone()
+                tile[k] = clone(item[k][tuple(slices)])
                 # if tuple(tile[k].shape[-self.dim:]) != self.tile_sz:
                 #     old_dtype = tile[k].dtype
                 #     tile[k] = F.interpolate(make_5d(tile[k]).float(), size=self.tile_sz).squeeze(0).to(old_dtype)
@@ -363,7 +363,7 @@ class PreloadedTiledTorchDataset(PreloadedTorchDataset):
         for k in self.keys_to_tile:
             prev = [slice(None)]*(item[k].ndim - self.dim)
             slices = prev + [slice(c[0].item(), c[1].item()) for c in crop.transpose(0, 1)]
-            tile[k] = item[k][tuple(slices)].clone()
+            tile[k] = clone(item[k][tuple(slices)])
             # if tuple(tile[k].shape[-self.dim:]) != self.tile_sz:
             #     old_dtype = tile[k].dtype
             #     tile[k] = F.interpolate(make_5d(tile[k]).float(), size=self.tile_sz).squeeze(0).to(old_dtype)

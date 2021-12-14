@@ -3,6 +3,7 @@ import math, random
 from itertools import combinations
 from abc import abstractmethod
 from torchvtk.utils.volume_utils import make_nd
+from torchvtk.utils import clone
 import numpy as np
 import torch
 from torch.nn import functional as F
@@ -52,12 +53,7 @@ class DictTransform:
                 self.apply_on = [apply_on]
 
     def __call__(self, inp):
-        if isinstance(inp, dict):
-            data = inp.copy()
-        elif torch.is_tensor(inp):
-            data = inp.clone()
-        else:
-            data = inp
+        data = clone(inp)
         def to_tensor(tmp):
             if isinstance(tmp, np.ndarray):  # Convert from NumPy
                 tmp = torch.from_numpy(tmp)
@@ -348,6 +344,39 @@ class Crop(DictTransform):
         else:
             return self.get_crop_around(data, self.position, size)
 
+
+class RandCrop(DictTransform):
+    def __init__(self, tile_sz, dim=3, **kwargs):
+        super().__init__(**kwargs)
+        if isinstance(tile_sz, (tuple, list)):
+            self.tile_sz = torch.LongTensor(tile_sz)
+        else:
+            self.tile_sz = torch.LongTensor([tile_sz] * dim)
+        self.dim = dim
+    def transform(self, items):
+        shap = torch.LongTensor(list(items[0].shape[-self.dim:]))
+        begin = torch.floor(torch.rand((self.dim,)) * (shap - self.tile_sz)).long()
+        end = begin + self.tile_sz
+        idx = [slice(None, None)]*(items[0].ndim-self.dim) + [slice(b, e) for b,e in zip(begin.tolist(), end.tolist())]
+        return [clone(item[idx]) for item in items]
+
+class RandCropResize(DictTransform):
+    def __init__(self, min_tile_sz, dim=3, **kwargs):
+        super().__init__(**kwargs)
+        if isinstance(min_tile_sz, (tuple, list)):
+            self.min_tile_sz = torch.LongTensor(min_tile_sz)
+        else:
+            self.min_tile_sz = torch.LongTensor([min_tile_sz] * dim)
+        self.dim = dim
+    def transform(self, items):
+        shap = torch.LongTensor(list(items[0].shape[-self.dim:]))
+        tile_sz = torch.randint(self.min_tile_sz[-1], shap.min().item(), (1,)).expand(self.dim)
+        begin = torch.floor(torch.rand((self.dim,)) * (shap - tile_sz)).long()
+        end = begin + tile_sz
+        idx = [slice(None, None)]*(items[0].ndim-self.dim) + [slice(b, e) for b,e in zip(begin.tolist(), end.tolist())]
+        print(idx)
+        print(tile_sz.tolist())
+        return [F.interpolate(make_nd(item[idx], self.dim+2), size=self.min_tile_sz.tolist(), mode='trilinear').squeeze(0) for item in items]
 
 class RandPermute(DictTransform):
     ''' Chooses one of the 8 random permutations for the volume axes '''
