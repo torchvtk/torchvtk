@@ -22,3 +22,4 @@ setup(
     package_data={
         "torchvtk": ["data/cq500ct0.pt"]
     }
+)
