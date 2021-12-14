@@ -7,4 +7,3 @@ def clone(val):
     elif torch.is_tensor(val):                 return torch.clone(val)
     elif isinstance(val, (list, dict, tuple)): return val.copy()
     else:                                      return val
-0
