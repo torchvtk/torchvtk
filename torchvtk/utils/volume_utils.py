@@ -7,7 +7,9 @@ __all__ = ['make_nd', 'make_2d', 'make_3d', 'make_4d', 'make_5d',
 
 def make_nd(t, n):
     '''  Prepends singleton dimensions to `t` until n-dimensional '''
-    if n <= t.ndim:
+    if n < t.ndim:
+        raise Exception(f'make_nd cannot reduce cardinality. Your Tensor.ndim={t.ndim} > n={n}.')
+    elif n == t.ndim: 
         return t
     else:
         nons = [None]*(n-t.ndim)
