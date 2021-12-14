@@ -19,4 +19,6 @@ setup(
         'torch >= 1.6', 'torchvision',
         'numpy', 'matplotlib', 'psutil', 'tqdm',
     ],
-)
+    package_data={
+        "torchvtk": ["data/cq500ct0.pt"]
+    }
