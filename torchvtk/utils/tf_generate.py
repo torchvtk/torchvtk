@@ -83,7 +83,7 @@ def distinguishable_color_generator():
         [255, 205, 243],
         [255, 255, 255]
     ], dtype=np.float32) / 255.0
-    np.shuffle(colors)
+    np.random.shuffle(colors)
     for color in colors:
         yield color
 
