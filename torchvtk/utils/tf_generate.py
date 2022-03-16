@@ -168,6 +168,8 @@ def get_tf_pts_from_peaks(peaks, colors='random', height_range=(0.1, 0.9), width
     if peak_valid_fn is None: peak_valid_fn = lambda a, b: True
     if max_num_peaks is None:
         n_peaks = len(peaks)
+    elif isinstance(max_num_peaks, (tuple, list)) and len(max_num_peaks) == 2:
+        n_peaks = np.random.randint(max_num_peaks[0], max_num_peaks[1] + 1)
     else:
         n_peaks = np.random.randint(1, max_num_peaks+1)
     height_range_len = height_range[1] - height_range[0]
