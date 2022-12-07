@@ -5,7 +5,7 @@ import numpy as np
 
 from xml.dom import minidom
 try:
-    from torchinterp1d import Interp1d
+    from torchinterp1d import interp1d
 except ImportError:
     _has_torchinterp1d = False
 else:
@@ -65,7 +65,7 @@ def apply_tf_tex_torch(vol, tf_tex):
     tf_flat  = tf_tex.reshape(-1, res)
     x_flat   = torch.linspace(0, 1, res, device=vol.device, dtype=torch.float32).expand(tf_flat.size(0), -1)
     vol_flat = vol.expand(out_shape).reshape(tf_flat.size(0), -1).to(torch.float32)
-    return Interp1d()(x_flat, tf_flat, vol_flat).reshape(out_shape).to(vol.dtype)
+    return interp1d(x_flat, tf_flat, vol_flat).reshape(out_shape).to(vol.dtype)
 
 @requires_torchinterp1d
 def apply_tf_torch(x, tf_pts):
@@ -91,7 +91,7 @@ def apply_tf_torch(x, tf_pts):
     for i in range(1,nc):
         x_acc[i-1] = x + (i-1) # make intensity volume of shape (nc, D,H,W), with intensity values offset by 1 for each channel
         pts_acc[(i-1)*npt:i*npt] = tf_pts[:, [0,i]] + torch.Tensor([[i-1,0.0]]).to(dev) # offset TF values (xRGBO) similarly to get all channels aligned to intensity [0, nc-1]
-    return Interp1d()(pts_acc[:,0].float().contiguous(),
+    return interp1d(pts_acc[:,0].float().contiguous(),
                       pts_acc[:,1].float().contiguous(),
                       x_acc.float().reshape(-1).contiguous()
                 ).reshape(x_out_shap).to(x.dtype).contiguous() # Interp on flattened volume, reshape
